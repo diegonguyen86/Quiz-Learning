@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> Học Quiz cùng Khôi - Bản Full Khôi</title>
+    <title> Học Quiz cùng Khôi - Nhớ Lâu Cùng Bạn</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -73,6 +73,8 @@ C. Không biết
 D. Sai đề
 C. Không biết
 
+Nếu câu hỏi multiple choice thì ghi đáp án theo định dạng 
+Đáp án số 1, Đáp án số 2 (Ví dụ: C,D)
 (Cứ dán thả ga, còn lại app lo nhé)"></textarea>
             
             <button onclick="parseAndSaveData()" class="w-full bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
@@ -149,7 +151,10 @@ C. Không biết
         let currentQIndexInQueue = 0; 
         let mistakes = []; 
         let isReviewMode = false;
-        let selectedOptionIdx = -1;
+        
+        // 2 BIẾN MỚI CHO MULTIPLE CHOICE
+        let selectedOptions = []; 
+        let hasSubmitted = false;
 
         const screens = ['import-screen', 'welcome-screen', 'quiz-screen', 'result-screen', 'finish-screen'];
 
@@ -187,12 +192,20 @@ C. Không biết
                     ansLines.push(options.pop());
                 }
 
+                // LOGIC MỚI: Xử lý Multiple Choice (VD: "C,D." hoặc "C, D")
                 if (options.length >= 2 && ansLines.length > 0) {
-                    let ansChar = ansLines[0].charAt(0).toUpperCase();
-                    let correctIdx = options.findIndex(o => o.startsWith(ansChar + "."));
+                    let rawAns = ansLines[0].toUpperCase().replace(/\./g, ''); // Xóa dấu chấm đi, còn lại "C,D"
+                    let ansChars = rawAns.split(',').map(s => s.trim()); // Tách bằng dấu phẩy thành mảng ["C", "D"]
                     
-                    if (correctIdx !== -1) {
-                        parsedQs.push({ q: qLines.join('<br>'), o: options, a: correctIdx });
+                    let correctIndexes = [];
+                    ansChars.forEach(char => {
+                        let idx = options.findIndex(o => o.startsWith(char + "."));
+                        if (idx !== -1) correctIndexes.push(idx);
+                    });
+                    
+                    if (correctIndexes.length > 0) {
+                        // Lưu mảng các đáp án đúng vào 'a'
+                        parsedQs.push({ q: qLines.join('<br>'), o: options, a: correctIndexes });
                     }
                 }
             });
@@ -256,10 +269,13 @@ C. Không biết
         }
 
         function renderCurrentQuestion() {
-            selectedOptionIdx = -1;
+            selectedOptions = [];
+            hasSubmitted = false;
+            
             const elNextBtn = document.getElementById('next-btn');
             elNextBtn.disabled = true;
-            elNextBtn.className = "w-full md:w-auto justify-center bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3 px-8 rounded-xl transition flex items-center text-base";
+            elNextBtn.innerHTML = 'Chốt đáp án <i class="fas fa-check ml-2"></i>';
+            elNextBtn.className = "w-full md:w-auto justify-center bg-indigo-600 text-white font-bold py-3 px-8 rounded-xl opacity-50 cursor-not-allowed transition flex items-center text-base";
 
             const realIdx = queue[currentQIndexInQueue];
             const qData = ALL_QUESTIONS[realIdx];
@@ -274,7 +290,7 @@ C. Không biết
                 const btn = document.createElement('button');
                 btn.className = "option-btn w-full text-left p-3 md:p-4 border-2 border-gray-200 rounded-xl font-medium text-gray-700 bg-white active:bg-gray-50 text-sm md:text-base";
                 btn.innerHTML = opt;
-                btn.onclick = () => selectOption(idx, btn, qData.a);
+                btn.onclick = () => selectOption(idx, btn);
                 elOpts.appendChild(btn);
             });
 
@@ -287,35 +303,87 @@ C. Không biết
             }
         }
 
-        function selectOption(selectedIdx, btnElement, correctIdx) {
-            if (selectedOptionIdx !== -1) return;
-            selectedOptionIdx = selectedIdx;
-            const buttons = document.getElementById('options-container').querySelectorAll('button');
-            
-            if (selectedIdx === correctIdx) {
-                btnElement.classList.add('correct');
-                btnElement.innerHTML += ' <i class="fas fa-check-circle float-right text-xl mt-0.5"></i>';
+        function selectOption(idx, btnElement) {
+            if (hasSubmitted) return; // Nếu đã chốt đáp án thì không cho bấm nữa
+
+            const indexInArray = selectedOptions.indexOf(idx);
+            if (indexInArray > -1) {
+                // Đã chọn rồi -> Hủy chọn
+                selectedOptions.splice(indexInArray, 1);
+                btnElement.classList.remove('selected');
             } else {
-                btnElement.classList.add('wrong');
-                btnElement.innerHTML += ' <i class="fas fa-times-circle float-right text-xl mt-0.5"></i>';
-                buttons[correctIdx].classList.add('correct');
-                
-                const realIdx = queue[currentQIndexInQueue];
-                if(!mistakes.includes(realIdx)) mistakes.push(realIdx);
+                // Chưa chọn -> Thêm vào mảng
+                selectedOptions.push(idx);
+                btnElement.classList.add('selected');
             }
 
-            buttons.forEach(b => b.disabled = true);
+            // Kiểm tra bật/tắt nút Chốt đáp án
             const elNextBtn = document.getElementById('next-btn');
-            elNextBtn.disabled = false;
-            elNextBtn.className = "w-full md:w-auto justify-center bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base";
+            if (selectedOptions.length > 0) {
+                elNextBtn.disabled = false;
+                elNextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                elNextBtn.classList.add('active:bg-indigo-800', 'md:hover:bg-indigo-700', 'shadow-md');
+            } else {
+                elNextBtn.disabled = true;
+                elNextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                elNextBtn.classList.remove('active:bg-indigo-800', 'md:hover:bg-indigo-700', 'shadow-md');
+            }
         }
 
         function handleNext() {
-            currentQIndexInQueue++;
-            if (currentQIndexInQueue < queue.length) {
-                renderCurrentQuestion();
+            const realIdx = queue[currentQIndexInQueue];
+            const qData = ALL_QUESTIONS[realIdx];
+            const buttons = document.getElementById('options-container').querySelectorAll('button');
+            const elNextBtn = document.getElementById('next-btn');
+
+            if (!hasSubmitted) {
+                // BƯỚC 1: CHỐT ĐÁP ÁN VÀ CHẤM ĐIỂM
+                hasSubmitted = true;
+                let isCorrect = true;
+
+                // Kiểm tra xem user chọn có khớp 100% với đáp án gốc không
+                if (selectedOptions.length !== qData.a.length) {
+                    isCorrect = false;
+                } else {
+                    for (let ans of qData.a) {
+                        if (!selectedOptions.includes(ans)) {
+                            isCorrect = false;
+                            break;
+                        }
+                    }
+                }
+
+                buttons.forEach((btn, idx) => {
+                    btn.disabled = true; 
+                    btn.classList.remove('selected'); // Bỏ trạng thái đang chọn
+
+                    if (qData.a.includes(idx)) {
+                        // Đây là đáp án đúng (tô màu xanh)
+                        btn.classList.add('correct');
+                        btn.innerHTML += ' <i class="fas fa-check-circle float-right text-xl mt-0.5"></i>';
+                    } else if (selectedOptions.includes(idx) && !qData.a.includes(idx)) {
+                        // User chọn sai ô này (tô màu đỏ)
+                        btn.classList.add('wrong');
+                        btn.innerHTML += ' <i class="fas fa-times-circle float-right text-xl mt-0.5"></i>';
+                    }
+                });
+
+                if (!isCorrect) {
+                    if(!mistakes.includes(realIdx)) mistakes.push(realIdx);
+                }
+
+                // Đổi nút thành "Tiếp tục"
+                elNextBtn.innerHTML = 'Tiếp tục <i class="fas fa-arrow-right ml-2"></i>';
+                elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 active:bg-black md:hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base";
+
             } else {
-                finishPhase();
+                // BƯỚC 2: QUA CÂU TIẾP THEO
+                currentQIndexInQueue++;
+                if (currentQIndexInQueue < queue.length) {
+                    renderCurrentQuestion();
+                } else {
+                    finishPhase();
+                }
             }
         }
 
@@ -392,7 +460,6 @@ C. Không biết
             if(!inputVal) return alert("Vui lòng dán link Spotify vào ô!");
             try {
                 let embedUrl = inputVal;
-                // Nhận dạng link spotify chuẩn để tự động chuyển sang dạng khung Embed
                 if (inputVal.includes('open.spotify.com') && !inputVal.includes('/embed/')) {
                     const url = new URL(inputVal);
                     embedUrl = 'https://open.spotify.com/embed' + url.pathname;
