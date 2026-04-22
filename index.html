@@ -72,7 +72,7 @@ B. Quả trứng
 C. Không biết
 D. Sai đề
 C. Không biết
-<b>Lưu Ý:<b>Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đáp án 2 (Ví dụ: A,B)
+Lưu Ý:Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đáp án 2 (Ví dụ: A,B)
 
 (Cứ dán thả ga, còn lại app lo nhé)"></textarea>
             
@@ -415,7 +415,8 @@ C. Không biết
 
                 elNextBtn.innerHTML = 'Tiếp tục (Enter) <i class="fas fa-arrow-right ml-2"></i>';
                 elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 active:bg-black md:hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base";
-
+                elNextBtn.disabled = true;
+                setTimeout(() => { elNextBtn.disabled = false; }, 500); // Khóa 0.5s để người dùng kịp nhìn kết quả
             } else {
                 // QUA CÂU TIẾP THEO
                 currentQIndexInQueue++;
