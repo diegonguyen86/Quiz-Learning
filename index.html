@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> Học Quiz Cùng Nhau - Nhớ Lâu Cùng Bạn</title>
+    <title>Quiz Learning - PM Master</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -72,7 +72,6 @@
                 <i class="fas fa-moon dark:hidden"></i>
                 <i class="fas fa-sun hidden dark:block"></i>
             </button>
-
             <button id="desktop-back-btn" onclick="goToDashboard()" class="hidden text-sm text-indigo-600 dark:text-indigo-400 font-medium px-3 py-1 border border-indigo-200 dark:border-indigo-800 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
                 <i class="fas fa-home mr-1"></i> Về Kho Đề
             </button>
@@ -87,7 +86,6 @@
     </header>
 
     <main class="flex-1 overflow-y-auto p-3 md:p-8 flex justify-center items-start pb-24 md:pb-8 relative">
-        
         <div id="auth-screen" class="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center mt-4 md:mt-10 fade-in"></div>
 
         <div id="dashboard-screen" class="max-w-5xl w-full fade-in hidden">
@@ -236,7 +234,6 @@
 
         const screens = ['auth-screen', 'dashboard-screen', 'import-screen', 'welcome-screen', 'quiz-screen', 'result-screen', 'finish-screen'];
 
-        // QUẢN LÝ GIAO DIỆN
         function showScreen(screenId) {
             screens.forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(screenId).classList.remove('hidden');
@@ -244,7 +241,6 @@
             const isPlaying = ['quiz-screen', 'welcome-screen', 'result-screen', 'finish-screen'].includes(screenId);
             document.getElementById('header-progress').style.display = isPlaying ? 'block' : 'none';
             
-            // Xử lý nút back an toàn
             const dBtn = document.getElementById('desktop-back-btn');
             const mBtn = document.getElementById('mobile-back-btn');
             if(isPlaying) {
@@ -256,7 +252,6 @@
             }
         }
 
-        // DARK MODE
         function toggleDarkMode() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -265,7 +260,6 @@
             document.documentElement.classList.add('dark');
         }
 
-        // ĐÃ SỬA LỖI ĐĂNG NHẬP / ĐĂNG XUẤT 
         auth.getRedirectResult().catch((error) => {
             console.error(error);
             renderLoginUI();
@@ -321,8 +315,10 @@
 
         function logoutApp() { if(confirm("Bạn có chắc muốn đăng xuất?")) auth.signOut(); }
 
-        // MÃ SHARE UUID
-        function generateShareCode() { return Math.random().toString(36).substring(2, 8).toUpperCase() + Math.floor(Math.random()*1000); }
+        // TẠO MÃ SHARE SIÊU BẢO MẬT (UUID NGẪU NHIÊN DÀI)
+        function generateShareCode() { 
+            return 'PM-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now().toString(36).substring(3).toUpperCase(); 
+        }
 
         async function goToDashboard() {
             activeQuizId = null; editQuizId = null;
@@ -350,11 +346,12 @@
                                         <h3 class="font-bold text-lg truncate pr-2" title="${data.title}">${data.title}</h3>
                                         <button onclick="resetQuiz('${doc.id}', '${data.title}')" class="text-orange-400 hover:text-orange-600 transition" title="Làm lại từ đầu"><i class="fas fa-sync-alt text-xs"></i></button>
                                     </div>
-                                    <div class="flex items-center gap-2 mb-4 mt-2">
-                                        <span class="text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded truncate max-w-[150px] border border-indigo-100 dark:border-indigo-800">
+                                    <div class="flex items-center gap-1.5 mb-4 mt-2">
+                                        <span class="text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded truncate max-w-[120px] border border-indigo-100 dark:border-indigo-800">
                                             Mã: <b class="font-mono">${sCode}</b>
                                         </span>
-                                        <button onclick="copyShareCode('${sCode}')" class="text-gray-400 hover:text-indigo-500 text-[10px] bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded"><i class="fas fa-copy"></i> Copy</button>
+                                        <button onclick="copyShareCode('${sCode}')" class="text-gray-500 hover:text-indigo-600 text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded transition" title="Copy mã"><i class="fas fa-copy"></i></button>
+                                        <button onclick="refreshShareCode('${doc.id}')" class="text-gray-500 hover:text-orange-500 text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded transition" title="Đổi mã bảo mật mới"><i class="fas fa-random"></i> Đổi</button>
                                     </div>
                                     
                                     <div class="w-full bg-gray-100 dark:bg-gray-900 rounded-full h-1.5 mb-1">
@@ -376,7 +373,6 @@
                                 </div>
                             </div>
                         `;
-                        // Auto-fill missing codes
                         if(!data.shareCode) doc.ref.update({ shareCode: generateShareCode() });
                     });
                 }
@@ -388,6 +384,15 @@
             if(code === "Chưa có") return;
             navigator.clipboard.writeText(code);
             alert("Đã copy mã bảo mật: " + code + "\nGửi mã này cho bạn bè để họ nhập bộ đề nhé!");
+        }
+
+        // HÀM REFRESH ĐỔI MÃ MỚI
+        async function refreshShareCode(quizId) {
+            if(!confirm("Bạn có chắc muốn cấp lại Mã Share mới?\nNgười giữ mã cũ sẽ KHÔNG THỂ tải bộ đề này được nữa.")) return;
+            try {
+                await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).update({ shareCode: generateShareCode() });
+                goToDashboard();
+            } catch(e) { alert("Lỗi cập nhật mã!"); }
         }
 
         async function importByShareCode() {
@@ -403,12 +408,15 @@
                     title: data.title + " (Được Share)",
                     questions: data.questions,
                     progress: 0,
-                    shareCode: generateShareCode(), // Cấp mã mới cho bản copy
+                    shareCode: generateShareCode(),
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 alert("Đã tải bộ đề thành công vào Kho của bạn!");
                 goToDashboard();
-            } catch (e) { alert("Lỗi tải đề!"); }
+            } catch (e) { 
+                console.error("Firebase Error:", e);
+                alert("Lỗi tải đề! (Nếu bạn là chủ web, hãy bấm F12 -> Mở tab Console -> Nhấn vào Link màu đỏ để tạo Index cho tính năng ShareCode nhé)"); 
+            }
         }
 
         function openImportScreen() {
@@ -615,7 +623,6 @@
             const realIdx = queue[currentQIndexInQueue];
             const qData = ALL_QUESTIONS[realIdx];
             
-            // Xử lý Render Hình Ảnh (Nếu có link ảnh)
             let qText = qData.q;
             const urlRegex = /(https?:\/\/[^\s<]+(?:\.jpg|\.png|\.gif|\.jpeg|\.webp))/gi;
             qText = qText.replace(urlRegex, (url) => `<img src="${url}" class="max-h-64 rounded-xl mx-auto my-4 shadow-md border border-gray-200 dark:border-gray-700">`);
@@ -741,7 +748,6 @@
             document.getElementById('section-text').innerText = currentSection < TOTAL_SECTIONS ? `Section ${currentSection + 1}/${TOTAL_SECTIONS}` : `Hoàn thành!`;
         }
 
-        // ĐÃ FIX LẠI TRẠM NHẠC SPOTIFY CHUẨN
         let isMusicMin = true;
         function toggleMusicWidget() {
             const widget = document.getElementById('music-widget'); const icon = document.getElementById('music-toggle-icon');
@@ -754,7 +760,6 @@
             let url = document.getElementById('spotify-input').value.trim();
             if(!url) return alert("Vui lòng dán link Spotify vào ô!");
             try {
-                // Tự động chuyển link bài hát/playlist thông thường thành link Embed (Nhúng)
                 if (url.includes('spotify.com') && !url.includes('/embed/')) {
                     const urlObj = new URL(url);
                     url = 'https://open.spotify.com/embed' + urlObj.pathname + '?utm_source=generator&theme=0';
