@@ -991,7 +991,15 @@
             document.getElementById('progress-bar').style.width = `${pct}%`;
             document.getElementById('section-text').innerText = currentSection < TOTAL_SECTIONS ? `Section ${currentSection + 1}/${TOTAL_SECTIONS}` : `Hoàn thành!`;
         }
-// ==========================================
+
+        // ==========================================
+        // SPOTIFY GỐC TỪ FILE INDEX CỦA ANH
+        // ==========================================
+        // ==========================================
+        // SPOTIFY GỐC 100% CỦA ANH KHÔI
+        // ==========================================
+        let isMusicMin = true;
+        // ==========================================
         // KHỞI TẠO PLAYLIST LOFI MẶC ĐỊNH
         // ==========================================
         window.addEventListener('DOMContentLoaded', () => {
@@ -1000,13 +1008,6 @@
             const defaultPlaylist = "https://" + spDomain + "/embed/playlist/0vvXsWCC9xrXsKd4VrS807?utm_source=generator&theme=0";
             document.getElementById('spotify-player').src = defaultPlaylist;
         });
-        // ==========================================
-        // SPOTIFY GỐC TỪ FILE INDEX CỦA ANH
-        // ==========================================
-        // ==========================================
-        // SPOTIFY GỐC 100% CỦA ANH KHÔI
-        // ==========================================
-        let isMusicMin = true;
         function toggleMusicWidget() {
             const widget = document.getElementById('music-widget');
             const icon = document.getElementById('music-toggle-icon');
