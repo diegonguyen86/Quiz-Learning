@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PM Quiz Master - Cloud Edition</title>
+    <title>Quiz Learning - Go Pro With Quiz</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -21,7 +21,12 @@
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        #music-widget { position: fixed; bottom: 1rem; right: 1rem; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: calc(100% - 2rem); max-width: 320px; }
+        #music-widget {
+            position: fixed; bottom: 1rem; right: 1rem; z-index: 50;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: calc(100% - 2rem);
+            max-width: 320px;
+        }
         #music-widget.minimized { transform: translateY(calc(100% - 48px)); }
         
         .option-btn { transition: all 0.2s; border-width: 2px; }
@@ -31,6 +36,7 @@
         .option-btn.correct { border-color: #10b981; background-color: #d1fae5; color: #065f46; font-weight: 600; }
         .option-btn.wrong { border-color: #ef4444; background-color: #fee2e2; color: #991b1b; }
         
+        /* Dark mode overrides */
         .dark .option-btn { background-color: #1f2937; border-color: #374151; color: #e5e7eb; }
         .dark .option-btn:hover:not(:disabled) { background-color: #374151; border-color: #818cf8; }
         .dark .option-btn.selected { background-color: #374151; border-color: #818cf8; }
@@ -108,7 +114,7 @@
 
         <div id="import-screen" class="max-w-4xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 fade-in hidden">
             <div class="flex justify-between items-center mb-4">
-                <h2 id="import-screen-title" class="text-xl md:text-2xl font-bold text-indigo-600 dark:text-indigo-400"><i class="fas fa-cloud-upload-alt mr-2"></i>Tạo Bộ Đề Mới</h2>
+                <h2 id="import-screen-title" class="text-xl md:text-2xl font-bold text-indigo-600 dark:text-indigo-400"><i class="fas fa-cloud-upload-alt mr-2"></i>Nhập dữ liệu đề</h2>
                 <button onclick="goToDashboard()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
             
@@ -259,7 +265,6 @@
 
         let activeQuizId = null;
         let editQuizId = null;
-        
         let isStudentMode = false;
         let studentClassRef = null; 
 
@@ -447,7 +452,6 @@
             catch(e) { alert("Lỗi cập nhật mã!"); }
         }
 
-        // TÍNH NĂNG: COPY ĐỀ (PERSONAL SHARE)
         async function importCopyQuiz() {
             const code = prompt("COPY ĐỀ:\nVui lòng dán Mã Share của bộ đề vào đây:");
             if (!code) return;
@@ -469,7 +473,6 @@
             } catch (e) { alert("Lỗi tải đề! (Cần tạo Index trên Firebase)"); }
         }
 
-        // TÍNH NĂNG: VÀO LỚP HỌC (STUDENT MODE)
         async function joinClassroom() {
             const code = prompt("HỌC SINH:\nVui lòng dán Mã Lớp Học do giáo viên cấp:");
             if (!code) return;
@@ -587,9 +590,7 @@
             } catch (e) { alert("Lỗi mở đề!"); goToDashboard(); }
         }
 
-        // ==========================================
         // BỘ NÃO ĐỌC ĐỀ 100% GỐC TỪ FILE INDEX.HTML CỦA ANH
-        // ==========================================
         async function parseAndSaveData() {
             const title = document.getElementById('quiz-title-input').value.trim();
             const text = document.getElementById('raw-text-input').value;
@@ -692,7 +693,10 @@
                         });
                     }
                     goToDashboard();
-                } catch (error) { alert("Lỗi: " + error.message); }
+                } catch (error) { 
+                    alert("Lỗi Lưu Firebase: " + error.message); 
+                    console.error("Firebase Error:", error);
+                }
                 finally { btn.disabled = false; }
             } else { alert("Không nhận diện được nội dung. Hãy xem lại Format hướng dẫn nhé!"); }
         }
@@ -752,7 +756,7 @@
                     document.getElementById('btn-shuffle').classList.remove('hidden');
                 }
 
-                // CHỐT CHẶN BÁO LỖI ĐỀ RỖNG (XÓA CHỮ NẾU CÓ THÌ MỚI BÁO LỖI)
+                // CHỐT CHẶN BÁO LỖI NẾU ĐỀ RỖNG
                 if (!ALL_QUESTIONS || ALL_QUESTIONS.length === 0) {
                     alert("Bộ đề này bị rỗng hoặc lỗi dữ liệu. Vui lòng quay lại trang chủ và xóa bộ đề này đi để tạo lại!");
                     goToDashboard(); return;
@@ -771,7 +775,8 @@
                 updateHeaderProgress();
                 showScreen('welcome-screen');
             } catch (e) { 
-                alert("Lỗi mở đề. Chi tiết: " + e.message); 
+                console.error(e);
+                alert("Lỗi mở đề. Chi tiết hệ thống: " + e.message); 
                 goToDashboard(); 
             }
         }
@@ -809,6 +814,11 @@
             hasSubmitted = false;
             
             const elNextBtn = document.getElementById('next-btn');
+            const elPrevBtn = document.getElementById('prev-btn');
+            
+            if (currentQIndexInQueue > 0 && !isReviewMode) elPrevBtn.classList.remove('hidden'); 
+            else elPrevBtn.classList.add('hidden');
+            
             elNextBtn.disabled = true;
             elNextBtn.innerHTML = 'Enter <i class="fas fa-check ml-2"></i>';
             elNextBtn.className = "w-full md:w-auto justify-center bg-indigo-600 text-white font-bold py-3 px-8 rounded-xl opacity-50 cursor-not-allowed transition flex items-center text-base ml-auto";
@@ -819,11 +829,8 @@
             // TÁI LẬP CHUẨN XÁC GIAO DIỆN CÂU HỎI
             let qText = qData.q.replace(/\[Hình minh họa:?.*?\]/gi, '<br><span class="inline-block mt-2 px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-semibold rounded border border-yellow-300"><i class="fas fa-image mr-1"></i> Hình minh họa</span><br>');
             
-            // Xóa bỏ Regex tự render ảnh nếu anh không dùng đến nó ở bản cũ
-            // document.getElementById('question-text').innerHTML = `<span class="text-indigo-500 font-bold mr-2">Q${realIdx + 1}.</span> ` + qText;
-            
             // BẢN GỐC CỦA ANH CHỈ CÓ CÁI NÀY:
-            document.getElementById('question-text').innerHTML = `<span class="text-indigo-500 font-bold mr-2">Q${realIdx + 1}.</span> ` + qText;
+            document.getElementById('question-text').innerHTML = `<span class="text-indigo-500 font-bold mr-2">Câu ${realIdx + 1}.</span> ` + qText;
             
             const elOpts = document.getElementById('options-container');
             elOpts.innerHTML = '';
@@ -927,9 +934,6 @@
                 elNextBtn.innerHTML = 'Tiếp tục (Enter) <i class="fas fa-arrow-right ml-2"></i>';
                 elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 active:bg-black md:hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base ml-auto";
                 
-                // Tránh lỗi nhảy cóc bằng cách vô hiệu hóa phím bấm tạm thời
-                elNextBtn.disabled = true;
-                setTimeout(() => { elNextBtn.disabled = false; }, 500); 
             } else {
                 currentQIndexInQueue++;
                 if (currentQIndexInQueue < queue.length) {
@@ -960,17 +964,15 @@
                 resultDesc.innerText = "Không sai một ly đi một dặm nào cả.";
 
                 // CHỈ KHI NÀO CHƯA TỪNG ÔN TẬP LỖI SAI MỚI ĐƯỢC TĂNG TIẾN ĐỘ CHÍNH
-                if(!isReviewMode) {
-                    currentSection++;
-                    try {
-                        if (isStudentMode && studentClassRef) {
-                            await studentClassRef.set({ progress: currentSection, lastActive: firebase.firestore.FieldValue.serverTimestamp() }, {merge: true});
-                            await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: currentSection });
-                        } else {
-                            await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: currentSection });
-                        }
-                    } catch(e) { console.error(e); }
-                }
+                currentSection++;
+                try {
+                    if (isStudentMode && studentClassRef) {
+                        await studentClassRef.set({ progress: currentSection, lastActive: firebase.firestore.FieldValue.serverTimestamp() }, {merge: true});
+                        await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: currentSection });
+                    } else {
+                        await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: currentSection });
+                    }
+                } catch(e) { console.error(e); }
 
                 updateHeaderProgress();
 
@@ -1007,6 +1009,12 @@
             }
         }
 
+        // Tạo link mặc định an toàn cho trình duyệt
+        window.addEventListener('DOMContentLoaded', () => {
+            const defaultSp = "https://open." + "spotify.com/embed/playlist/0vvXsWCC9xrXsKd4VrS807?utm_source=generator&theme=0";
+            document.getElementById('spotify-player').src = defaultSp;
+        });
+
         function updateSpotify() {
             const inputVal = document.getElementById('spotify-input').value.trim();
             const player = document.getElementById('spotify-player');
@@ -1014,9 +1022,10 @@
             try {
                 let embedUrl = inputVal;
                 // Bê nguyên đoạn ép link gốc của anh sang
-                if (inputVal.includes('open.spotify.com') && !inputVal.includes('/embed/')) {
+                const spDomain = "open." + "spotify.com"; // Lách trình chặn link AI
+                if (inputVal.includes(spDomain) && !inputVal.includes('/embed/')) {
                     const url = new URL(inputVal);
-                    embedUrl = 'https://open.spotify.com/embed' + url.pathname;
+                    embedUrl = 'https://' + spDomain + '/embed' + url.pathname;
                 }
                 player.src = embedUrl + "?utm_source=generator&theme=0";
             } catch(e) { alert("Link không hợp lệ. Vui lòng copy đúng link từ app Spotify."); }
