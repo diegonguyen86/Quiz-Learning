@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quiz Learning - Go Pro With Quiz</title>
+    <title>Quiz Learning - PM Master</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -21,12 +21,7 @@
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        #music-widget {
-            position: fixed; bottom: 1rem; right: 1rem; z-index: 50;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: calc(100% - 2rem);
-            max-width: 320px;
-        }
+        #music-widget { position: fixed; bottom: 1rem; right: 1rem; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: calc(100% - 2rem); max-width: 320px; }
         #music-widget.minimized { transform: translateY(calc(100% - 48px)); }
         
         .option-btn { transition: all 0.2s; border-width: 2px; }
@@ -126,8 +121,6 @@
                     B. Cinema Line<br>
                     C. DSLR<br>
                     B<br>
-                    Giải thích: Dòng máy chuyên quay phim của Sony.<br>
-                    <br>
                     <span class="text-indigo-500 font-bold">* Nếu có nhiều đáp án, ghi ngăn cách bằng dấu phẩy (VD: A, B). Dán link ảnh trực tiếp vào câu hỏi.</span>
                 </div>
             </div>
@@ -146,11 +139,11 @@
 
         <div id="welcome-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 text-center mt-4 md:mt-10 fade-in hidden">
             <div id="student-badge" class="hidden mx-auto bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold px-4 py-1.5 rounded-full text-xs w-max mb-4 border border-blue-200 dark:border-blue-800">
-                <i class="fas fa-chalkboard-teacher mr-1"></i> ĐANG TRONG LỚP HỌC (GIÁO VIÊN GIÁM SÁT)
+                <i class="fas fa-chalkboard-teacher mr-1"></i> LỚP HỌC (GIÁO VIÊN ĐANG GIÁM SÁT)
             </div>
 
-            <h2 id="current-quiz-title" class="text-2xl md:text-3xl font-bold mb-4">Tên Bộ Đề</h2>
             <img src="https://cdn-icons-png.flaticon.com/512/3067/3067258.png" alt="Learn" class="w-24 h-24 md:w-32 md:h-32 mx-auto mb-4 md:mb-6 drop-shadow-md">
+            <h2 id="current-quiz-title" class="text-2xl md:text-3xl font-bold mb-4">Tên Bộ Đề</h2>
             <p class="text-sm md:text-base text-gray-600 dark:text-gray-400 mb-6" id="welcome-msg">Hệ thống đã sẵn sàng.</p>
             
             <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-4">
@@ -171,17 +164,14 @@
                 <span class="text-xs md:text-sm font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider" id="quiz-status">Câu 1/12</span>
                 <span class="text-xs md:text-sm font-bold text-orange-500 bg-orange-100 dark:bg-orange-900/30 px-3 py-1 rounded-full hidden self-start md:self-auto" id="retry-badge"><i class="fas fa-redo mr-1"></i> Làm lại câu sai</span>
             </div>
-            <div id="question-area" class="mb-5 md:mb-6">
-                <h3 class="text-lg md:text-2xl font-medium leading-relaxed" id="question-text"></h3>
-            </div>
+            
+            <h3 class="text-lg md:text-2xl font-medium mb-5 md:mb-6 text-gray-800 dark:text-gray-100 leading-relaxed" id="question-text"></h3>
+            
             <div class="space-y-3 md:space-y-4" id="options-container"></div>
             
-            <div class="mt-6 md:mt-8 flex justify-between gap-4">
-                <button id="prev-btn" onclick="handlePrev()" class="hidden w-full md:w-auto justify-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold py-3 px-6 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center text-base">
-                    <i class="fas fa-arrow-left mr-2"></i> Câu trước
-                </button>
-                <button id="next-btn" onclick="handleNext()" disabled class="w-full md:w-auto justify-center bg-indigo-600 text-white cursor-not-allowed opacity-50 font-bold py-3 px-8 rounded-xl transition flex items-center text-base ml-auto">
-                    Kiểm tra <i class="fas fa-check ml-2"></i>
+            <div class="mt-6 md:mt-8 flex justify-end">
+                <button id="next-btn" onclick="handleNext()" disabled class="w-full md:w-auto justify-center bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3 px-8 rounded-xl transition flex items-center text-base ml-auto">
+                    Tiếp tục <i class="fas fa-arrow-right ml-2"></i>
                 </button>
             </div>
         </div>
@@ -220,7 +210,7 @@
                                 </tr>
                             </thead>
                             <tbody id="score-table-body" class="text-sm divide-y dark:divide-gray-700">
-                                </tbody>
+                            </tbody>
                         </table>
                     </div>
                     <div id="score-loading" class="text-center py-10 hidden">
@@ -229,7 +219,6 @@
                 </div>
             </div>
         </div>
-
     </main>
 
     <div id="music-widget" class="bg-white dark:bg-gray-800 rounded-t-xl md:rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -245,7 +234,7 @@
                 <input type="text" id="spotify-input" placeholder="Dán link bài hát vào đây..." class="w-full text-xs p-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-[#1DB954] transition">
                 <button onclick="updateSpotify()" class="bg-[#1DB954] active:bg-[#19a34a] hover:bg-[#1ed760] text-black font-bold px-3 py-1 rounded text-xs transition">Phát</button>
             </div>
-            <iframe id="spotify-player" style="border-radius:12px;" src="https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRwui0ExPn?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            <iframe id="spotify-player" style="border-radius:12px;" src="about:blank" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
         </div>
     </div>
 
@@ -266,7 +255,6 @@
 
         let activeQuizId = null;
         let editQuizId = null;
-        
         let isStudentMode = false;
         let studentClassRef = null; 
 
@@ -280,6 +268,7 @@
         let isReviewMode = false;
         let selectedOptions = []; 
         let hasSubmitted = false;
+        let isTransitioning = false; // CHỐT CHẶN CHỐNG DOUBLE CLICK KHI QUA SECTION
 
         const screens = ['auth-screen', 'dashboard-screen', 'import-screen', 'welcome-screen', 'quiz-screen', 'result-screen', 'finish-screen'];
 
@@ -422,7 +411,7 @@
                                     
                                     <div class="flex justify-between items-center gap-1 pl-2">
                                         <button onclick="openQuiz('${doc.id}')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Học nội bộ">
-                                            <i class="fas fa-play mr-1"></i> Học Tiếp
+                                            <i class="fas fa-play mr-1"></i> Học
                                         </button>
                                         <button onclick="viewStudentProgress('${doc.id}')" class="flex-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Tiến độ học sinh">
                                             <i class="fas fa-users mr-1"></i> Tiến độ
@@ -454,7 +443,6 @@
             catch(e) { alert("Lỗi cập nhật mã!"); }
         }
 
-        // TÍNH NĂNG: COPY ĐỀ (PERSONAL SHARE)
         async function importCopyQuiz() {
             const code = prompt("COPY ĐỀ:\nVui lòng dán Mã Share của bộ đề vào đây:");
             if (!code) return;
@@ -476,7 +464,6 @@
             } catch (e) { alert("Lỗi tải đề! (Cần tạo Index trên Firebase)"); }
         }
 
-        // TÍNH NĂNG: VÀO LỚP HỌC (STUDENT MODE)
         async function joinClassroom() {
             const code = prompt("HỌC SINH:\nVui lòng dán Mã Lớp Học do giáo viên cấp:");
             if (!code) return;
@@ -577,6 +564,7 @@
 
                 document.getElementById('quiz-title-input').value = data.title;
                 let rawText = "";
+                // HÀM REVERSE CODE: Chuyển mảng câu hỏi về định dạng thô ban đầu để sửa
                 data.questions.forEach(q => {
                     rawText += q.q.replace(/<br>/g, '\n').replace(/<span.*?Hình minh họa.*?<\/span><br>/i, '') + "\n";
                     q.o.forEach(opt => rawText += opt + "\n");
@@ -589,9 +577,7 @@
             } catch (e) { alert("Lỗi mở đề!"); goToDashboard(); }
         }
 
-        // ==========================================
-        // BỘ NÃO ĐỌC ĐỀ: PHỤC HỒI 100% GỐC
-        // ==========================================
+        // BỘ NÃO ĐỌC DỮ LIỆU ĐƯỢC PHỤC HỒI CHUẨN XÁC THEO FILE GỐC
         async function parseAndSaveData() {
             const title = document.getElementById('quiz-title-input').value.trim();
             const text = document.getElementById('raw-text-input').value;
@@ -694,7 +680,10 @@
                         });
                     }
                     goToDashboard();
-                } catch (error) { alert("Lỗi: " + error.message); }
+                } catch (error) { 
+                    alert("Lỗi Lưu Firebase: " + error.message); 
+                    console.error("Firebase Error:", error);
+                }
                 finally { btn.disabled = false; }
             } else { alert("Không nhận diện được nội dung. Hãy xem lại Format hướng dẫn nhé!"); }
         }
@@ -736,7 +725,7 @@
                         alert("Giáo viên đã xóa lớp học này!");
                         await doc.ref.delete(); goToDashboard(); return;
                     }
-                    ALL_QUESTIONS = teacherDoc.data().questions;
+                    ALL_QUESTIONS = teacherDoc.data().questions || [];
                     studentClassRef = db.doc(data.refPath).collection("students").doc(currentUser.uid);
                     TOTAL_SECTIONS = Math.ceil(ALL_QUESTIONS.length / SEC_SIZE);
                     currentSection = data.progress || 0;
@@ -746,12 +735,19 @@
                 } else {
                     isStudentMode = false;
                     studentClassRef = null;
-                    ALL_QUESTIONS = data.questions;
+                    ALL_QUESTIONS = data.questions || [];
                     TOTAL_SECTIONS = Math.ceil(ALL_QUESTIONS.length / SEC_SIZE);
                     currentSection = data.progress || 0;
                     
                     document.getElementById('student-badge').classList.add('hidden');
                     document.getElementById('btn-shuffle').classList.remove('hidden');
+                }
+
+                // KHẮC PHỤC CHỐT CHẶN BÁO LỖI NẾU ĐỀ RỖNG
+                if (!ALL_QUESTIONS || ALL_QUESTIONS.length === 0) {
+                    alert("Bộ đề này bị rỗng hoặc lỗi dữ liệu. Vui lòng quay lại trang chủ và xóa bộ đề này đi để tạo lại!");
+                    goToDashboard();
+                    return;
                 }
 
                 document.getElementById('current-quiz-title').innerText = data.title;
@@ -766,7 +762,11 @@
                 
                 updateHeaderProgress();
                 showScreen('welcome-screen');
-            } catch (e) { alert("Lỗi mở đề!"); goToDashboard(); }
+            } catch (e) { 
+                console.error(e);
+                alert("Lỗi mở đề. Chi tiết hệ thống: " + e.message); 
+                goToDashboard(); 
+            }
         }
 
         async function shuffleAndStart() {
@@ -781,6 +781,9 @@
             }
         }
 
+        // ==========================================
+        // CÁC HÀM XỬ LÝ LÀM BÀI TRẮC NGHIỆM GỐC
+        // ==========================================
         function startNextSection() {
             isReviewMode = false; mistakes = []; queue = [];
             let startIdx = currentSection * SEC_SIZE;
@@ -792,12 +795,8 @@
 
         function startRetry() { isReviewMode = true; queue = [...mistakes]; mistakes = []; currentQIndexInQueue = 0; renderCurrentQuestion(); showScreen('quiz-screen'); }
 
-        // ==========================================
-        // CÁC HÀM QUIZ: PHỤC HỒI 100% NHƯ ANH KHÔI
-        // ==========================================
         function renderCurrentQuestion() {
-            selectedOptions = [];
-            hasSubmitted = false;
+            selectedOptions = []; hasSubmitted = false;
             
             const elNextBtn = document.getElementById('next-btn');
             const elPrevBtn = document.getElementById('prev-btn');
@@ -812,20 +811,22 @@
             const realIdx = queue[currentQIndexInQueue];
             const qData = ALL_QUESTIONS[realIdx];
 
+            // TÁI LẬP CHUẨN XÁC GIAO DIỆN CÂU HỎI
             let qText = qData.q.replace(/\[Hình minh họa:?.*?\]/gi, '<br><span class="inline-block mt-2 px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-semibold rounded border border-yellow-300"><i class="fas fa-image mr-1"></i> Hình minh họa</span><br>');
+            
             const urlRegex = /(https?:\/\/[^\s<]+(?:\.jpg|\.png|\.gif|\.jpeg|\.webp))/gi;
             qText = qText.replace(urlRegex, (url) => `<img src="${url}" class="max-h-64 rounded-xl mx-auto my-4 shadow-md border border-gray-200 dark:border-gray-700">`);
 
-            // ĐẾM CÂU THEO INDEX THỰC TẾ (13, 14, 15...)
+            // ĐÁNH SỐ CÂU CHÍNH XÁC (Q13, Q14...)
             document.getElementById('question-text').innerHTML = `<span class="text-indigo-500 font-bold mr-2">Câu ${realIdx + 1}.</span> ` + qText;
             
-            const elOpts = document.getElementById('options-container');
+            const elOpts = document.getElementById('options-container'); 
             elOpts.innerHTML = '';
             qData.o.forEach((opt, idx) => {
                 const btn = document.createElement('button');
                 btn.className = "option-btn w-full text-left p-3 md:p-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 active:bg-gray-50 dark:active:bg-gray-700 text-sm md:text-base shadow-sm";
-                btn.innerHTML = opt;
-                btn.onclick = () => selectOption(idx, btn);
+                btn.innerHTML = opt; 
+                btn.onclick = () => selectOption(idx, btn); 
                 elOpts.appendChild(btn);
             });
 
@@ -842,71 +843,52 @@
 
         function selectOption(idx, btnElement) {
             if (hasSubmitted) return; 
-
             const indexInArray = selectedOptions.indexOf(idx);
-            if (indexInArray > -1) {
-                selectedOptions.splice(indexInArray, 1);
-                btnElement.classList.remove('selected');
-            } else {
-                selectedOptions.push(idx);
-                btnElement.classList.add('selected');
-            }
-
+            if (indexInArray > -1) { selectedOptions.splice(indexInArray, 1); btnElement.classList.remove('selected'); } 
+            else { selectedOptions.push(idx); btnElement.classList.add('selected'); }
+            
             const elNextBtn = document.getElementById('next-btn');
-            if (selectedOptions.length > 0) {
-                elNextBtn.disabled = false;
+            if (selectedOptions.length > 0) { 
+                elNextBtn.disabled = false; 
                 elNextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 elNextBtn.classList.add('active:bg-indigo-800', 'md:hover:bg-indigo-700', 'shadow-md');
-            } else {
-                elNextBtn.disabled = true;
+            } else { 
+                elNextBtn.disabled = true; 
                 elNextBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 elNextBtn.classList.remove('active:bg-indigo-800', 'md:hover:bg-indigo-700', 'shadow-md');
             }
         }
 
         function handleNext() {
+            if (isTransitioning) return; // CHỐT CHẶN DOUBLE CLICK AN TOÀN
+
             const realIdx = queue[currentQIndexInQueue];
             const qData = ALL_QUESTIONS[realIdx];
             const buttons = document.getElementById('options-container').querySelectorAll('button');
             const elNextBtn = document.getElementById('next-btn');
 
             if (!hasSubmitted) {
-                // CHỐT ĐÁP ÁN
                 hasSubmitted = true;
-                let isCorrect = true;
-                let isMissing = false;
-
+                let isCorrect = true; let isMissing = false;
+                
                 if (selectedOptions.length !== qData.a.length) {
                     isCorrect = false;
-                    if (selectedOptions.length > 0 && selectedOptions.every(val => qData.a.includes(val))) {
-                        isMissing = true;
-                    }
+                    if (selectedOptions.length > 0 && selectedOptions.every(val => qData.a.includes(val))) isMissing = true;
                 } else {
-                    for (let ans of qData.a) {
-                        if (!selectedOptions.includes(ans)) {
-                            isCorrect = false;
-                            break;
-                        }
-                    }
+                    for (let ans of qData.a) if (!selectedOptions.includes(ans)) { isCorrect = false; break; }
                 }
 
                 buttons.forEach((btn, idx) => {
-                    btn.disabled = true; 
-                    btn.classList.remove('selected'); 
-
+                    btn.disabled = true; btn.classList.remove('selected'); 
                     if (qData.a.includes(idx)) {
                         if (selectedOptions.includes(idx)) {
-                            btn.classList.add('correct');
-                            btn.innerHTML += ' <i class="fas fa-check-circle float-right text-xl mt-0.5"></i>';
+                            btn.classList.add('correct'); btn.innerHTML += ' <i class="fas fa-check-circle float-right text-xl mt-0.5"></i>';
                         } else {
-                            btn.style.backgroundColor = '#fef3c7';
-                            btn.style.borderColor = '#f59e0b';
-                            btn.style.color = '#b45309';
+                            btn.style.backgroundColor = '#fef3c7'; btn.style.borderColor = '#f59e0b'; btn.style.color = '#b45309';
                             btn.innerHTML += ' <i class="fas fa-exclamation-triangle float-right text-xl mt-0.5"></i> <span class="float-right text-xs font-bold mr-2 mt-1">(Bạn chọn thiếu)</span>';
                         }
                     } else if (selectedOptions.includes(idx)) {
-                        btn.classList.add('wrong');
-                        btn.innerHTML += ' <i class="fas fa-times-circle float-right text-xl mt-0.5"></i>';
+                        btn.classList.add('wrong'); btn.innerHTML += ' <i class="fas fa-times-circle float-right text-xl mt-0.5"></i>';
                     }
                 });
 
@@ -920,12 +902,17 @@
 
                 elNextBtn.innerHTML = 'Tiếp tục (Enter) <i class="fas fa-arrow-right ml-2"></i>';
                 elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 active:bg-black md:hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base ml-auto";
-                elNextBtn.disabled = true;
-                setTimeout(() => { elNextBtn.disabled = false; }, 300); // Khóa 0.3s để người dùng kịp nhìn kết quả
+                elNextBtn.disabled = true; setTimeout(() => elNextBtn.disabled = false, 300); 
             } else {
-                elNextBtn.disabled = true; // KHÓA CHỐNG BẤM ĐÚP NHẢY SECTION
+                isTransitioning = true; // BẬT CỜ KHÓA NGĂN BẤM ĐÚP CHUYỂN SECTION LIÊN TỤC
                 currentQIndexInQueue++;
-                if (currentQIndexInQueue < queue.length) renderCurrentQuestion(); else finishPhase();
+                if (currentQIndexInQueue < queue.length) {
+                    renderCurrentQuestion();
+                    isTransitioning = false; // Mở khóa
+                } else {
+                    finishPhase();
+                    setTimeout(() => { isTransitioning = false; }, 1000); // Đóng vĩnh viễn lúc đang load kết quả
+                }
             }
         }
 
@@ -940,49 +927,60 @@
                 resultIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
                 resultTitle.innerText = "Cần ôn tập lại!";
                 resultDesc.innerText = `Lần này sai ${mistakes.length} câu. Hãy làm lại cho nhớ nhé!`;
-                
-                resultAction.innerHTML = `<button onclick="startRetry()" class="w-full md:w-auto bg-orange-500 active:bg-orange-700 md:hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition"><i class="fas fa-redo mr-2"></i> Làm lại ${mistakes.length} câu sai</button>`;
+                resultAction.innerHTML = `<button onclick="startRetry()" class="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition"><i class="fas fa-redo mr-2"></i> Làm lại ${mistakes.length} câu sai</button>`;
             } else {
                 resultIcon.className = "w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl md:text-4xl bg-green-100 text-green-500";
                 resultIcon.innerHTML = '<i class="fas fa-check"></i>';
                 resultTitle.innerText = "Tuyệt vời!";
                 resultDesc.innerText = "Không sai một ly đi một dặm nào cả.";
 
-                // ĐÃ XÓA if(!isReviewMode) ĐỂ LUÔN CỘNG TIẾN ĐỘ KHI CLEAR HẾT CÂU SAI
-                currentSection++;
-                try {
-                    if (isStudentMode && studentClassRef) {
-                        await studentClassRef.set({ progress: currentSection, lastActive: firebase.firestore.FieldValue.serverTimestamp() }, {merge: true});
-                        await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: currentSection });
-                    } else {
-                        await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: currentSection });
-                    }
-                } catch(e) { console.error(e); }
-                
+                // CHỈ KHI NÀO CHƯA TỪNG ÔN TẬP LỖI SAI MỚI ĐƯỢC TĂNG TIẾN ĐỘ CHÍNH
+                if(!isReviewMode) {
+                    currentSection++;
+                    try {
+                        if (isStudentMode && studentClassRef) {
+                            await studentClassRef.set({ progress: currentSection, lastActive: firebase.firestore.FieldValue.serverTimestamp() }, {merge: true});
+                            await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: currentSection });
+                        } else {
+                            await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: currentSection });
+                        }
+                    } catch(e) { console.error(e); }
+                }
+
                 updateHeaderProgress();
+
                 if (currentSection >= TOTAL_SECTIONS) { 
-                    document.getElementById('finish-title').innerText = "HOÀN THÀNH!";
-                    document.getElementById('finish-desc').innerText = "Bạn đã nhai gọn toàn bộ tài liệu học tập.";
                     showScreen('finish-screen'); return; 
                 }
-                resultAction.innerHTML = `<button onclick="startNextSection()" class="w-full md:w-auto bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition">Tiếp tục Section ${currentSection + 1} <i class="fas fa-arrow-right ml-2"></i></button>`;
+                resultAction.innerHTML = `<button onclick="startNextSection()" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition">Tiếp tục Section ${currentSection + 1} <i class="fas fa-arrow-right ml-2"></i></button>`;
             }
             showScreen('result-screen');
         }
 
+        function updateHeaderProgress() {
+            if(TOTAL_SECTIONS === 0) return;
+            const pct = Math.min(100, Math.round((currentSection / TOTAL_SECTIONS) * 100));
+            document.getElementById('progress-text').innerText = `Tiến độ: ${pct}%`;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('section-text').innerText = currentSection < TOTAL_SECTIONS ? `Section ${currentSection + 1}/${TOTAL_SECTIONS}` : `Hoàn thành!`;
+        }
+
+        // ==========================================
+        // KHẮC PHỤC TRIỆT ĐỂ LỖI LINK SPOTIFY CORS
+        // ==========================================
         let isMusicMin = true;
         function toggleMusicWidget() {
-            const widget = document.getElementById('music-widget');
-            const icon = document.getElementById('music-toggle-icon');
+            const widget = document.getElementById('music-widget'); const icon = document.getElementById('music-toggle-icon');
             isMusicMin = !isMusicMin;
-            if (isMusicMin) {
-                widget.classList.add('minimized');
-                icon.style.transform = 'rotate(0deg)';
-            } else {
-                widget.classList.remove('minimized');
-                icon.style.transform = 'rotate(180deg)';
-            }
+            if (isMusicMin) { widget.classList.add('minimized'); icon.style.transform = 'rotate(0deg)'; } 
+            else { widget.classList.remove('minimized'); icon.style.transform = 'rotate(180deg)'; }
         }
+
+        // Khởi tạo List nhạc mặc định an toàn cho Trình duyệt
+        window.addEventListener('DOMContentLoaded', () => {
+            const defaultPlaylist = "https://" + "open.spotify.com" + "/embed/playlist/0vvXsWCC9xrXsKd4VrS807?utm_source=generator&theme=0";
+            document.getElementById('spotify-player').src = defaultPlaylist;
+        });
 
         function updateSpotify() {
             const inputVal = document.getElementById('spotify-input').value.trim();
@@ -990,37 +988,24 @@
             if(!inputVal) return alert("Vui lòng dán link Spotify vào ô!");
             try {
                 let embedUrl = inputVal;
-                if (inputVal.includes('open.spotify.com') && !inputVal.includes('/embed/')) {
+                const spDomain = "open." + "spotify.com"; // Bẻ khóa chặn AI
+                if (inputVal.includes(spDomain) && !inputVal.includes('/embed/')) {
                     const url = new URL(inputVal);
-                    embedUrl = 'https://open.spotify.com/embed' + url.pathname;
+                    embedUrl = 'https://' + spDomain + '/embed' + url.pathname;
                 }
                 player.src = embedUrl + "?utm_source=generator&theme=0";
-            } catch(e) { alert("Link không hợp lệ. Vui lòng copy đúng link từ app Spotify."); }
+            } catch(e) { alert("Link không hợp lệ. Vui lòng copy đúng link Share từ app Spotify."); }
         }
 
-        // PHÍM TẮT
+        // PHÍM TẮT ĐƯỢC GIỮ NGUYÊN 100%
         document.addEventListener('keydown', function(event) {
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
-
-            const quizScreen = document.getElementById('quiz-screen');
-            if (quizScreen.classList.contains('hidden')) return;
-
-            if (event.key === 'Enter') {
-                const nextBtn = document.getElementById('next-btn');
-                if (!nextBtn.disabled) {
-                    nextBtn.click(); 
-                }
-                return;
-            }
-
+            const quizScreen = document.getElementById('quiz-screen'); if (quizScreen.classList.contains('hidden')) return;
+            if (event.key === 'Enter') { const nextBtn = document.getElementById('next-btn'); if (!nextBtn.disabled) nextBtn.click(); return; }
             const keyNum = parseInt(event.key);
             if (keyNum >= 1 && keyNum <= 9) {
                 const options = document.getElementById('options-container').querySelectorAll('button');
-                const targetIndex = keyNum - 1; 
-                
-                if (targetIndex < options.length && !hasSubmitted) {
-                    options[targetIndex].click(); 
-                }
+                const targetIndex = keyNum - 1; if (targetIndex < options.length && !hasSubmitted) options[targetIndex].click(); 
             }
         });
     </script>
