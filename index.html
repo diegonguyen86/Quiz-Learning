@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> Học Quiz cùng Khôi - Nhớ Lâu Cùng Bạn</title>
+    <title> Học Quiz Cùng Nhau - Nhớ Lâu Cùng Bạn</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -41,7 +41,7 @@
         <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start cursor-pointer" onclick="goToDashboard()">
             <div class="flex items-center gap-3">
                 <img src="logo.png" alt="Logo" class="h-10 w-10 rounded-full border-2 border-indigo-500" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3067/3067258.png'">
-                <h1 class="text-xl font-bold text-gray-800">PM Quiz Master</h1>
+                <h1 class="text-xl font-bold text-gray-800">Quiz Learning</h1>
             </div>
             <button id="mobile-back-btn" onclick="goToDashboard(); event.stopPropagation();" class="hidden md:hidden text-xs text-indigo-600 font-medium px-2 py-1 border border-indigo-200 rounded bg-indigo-50">
                 <i class="fas fa-arrow-left"></i> Kho Đề
@@ -102,7 +102,7 @@
                     C. Không biết<br>
                     D. Sai đề<br>
                     C. Không biết<br>
-                    <span class="text-indigo-500 font-bold">Giải thích: (Nếu có) Đây là câu hỏi triết học chưa có lời giải...</span>
+                    <span class="text-indigo-500 font-bold">Nếu câu có nhiều đáp án thì chỉ cần điền theo dạng đáp án 1, đáp án 2 (ví dụ A,B)</span>
                 </div>
             </div>
             
@@ -114,7 +114,7 @@
             <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 outline-none mb-4 font-mono text-xs md:text-sm" placeholder="Dán nội dung bộ đề vào đây..."></textarea>
             
             <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
-                <i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây
+                <i class="fas fa-cogs mr-2"></i> Xử lý
             </button>
         </div>
 
@@ -163,7 +163,7 @@
         <div id="finish-screen" class="max-w-2xl w-full bg-white rounded-2xl shadow-lg p-6 md:p-8 text-center fade-in hidden mt-4 md:mt-10">
             <img src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png" alt="Trophy" class="w-32 h-32 md:w-40 md:h-40 mx-auto mb-6">
             <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 mb-4">CHÚC MỪNG BẠN!</h2>
-            <p class="text-sm md:text-lg text-gray-600 mb-6">Bạn đã nhai gọn toàn bộ tài liệu của bộ đề này.</p>
+            <p class="text-sm md:text-lg text-gray-600 mb-6">Bạn đã nhai gọn toàn bộ tài liệu của bộ đề này (măm măm).</p>
             <button onclick="goToDashboard()" class="bg-indigo-500 active:bg-indigo-700 md:hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition">
                 <i class="fas fa-arrow-left mr-2"></i> Về Kho Đề
             </button>
@@ -236,7 +236,7 @@
             document.getElementById('auth-screen').innerHTML = `
                 <img src="https://cdn-icons-png.flaticon.com/512/2950/2950691.png" alt="Login" class="w-24 h-24 mx-auto mb-6">
                 <h2 class="text-2xl font-bold mb-2 text-gray-800">Đăng nhập để học</h2>
-                <p class="text-gray-600 mb-6 text-sm px-4">Hệ thống đồng bộ đám mây cho sinh viên. Mọi tiến độ được lưu vĩnh viễn.</p>
+                <p class="text-gray-600 mb-6 text-sm px-4">Chào mừng bạn đã đến với Quiz Learning, nơi bạn có thể học và tạo Quiz ghi nhớ.</p>
                 <button onclick="loginWithGoogle()" class="w-full bg-white border border-gray-300 text-gray-700 font-bold py-3 px-4 rounded-xl shadow-sm hover:bg-gray-50 transition flex items-center justify-center gap-3">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
                     Đăng nhập bằng Google
@@ -403,7 +403,7 @@
                     document.getElementById('raw-text-input').value = '';
                     goToDashboard();
                 } catch (error) { alert("Lỗi: " + error.message); }
-                finally { btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây'; btn.disabled = false; }
+                finally { btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý'; btn.disabled = false; }
             } else { alert("Không nhận diện được nội dung. Hãy xem lại Format hướng dẫn bên trên nhé!"); }
         }
 
