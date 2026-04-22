@@ -276,7 +276,23 @@ Lưu Ý:Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đ
             updateHeaderProgress();
             showScreen('welcome-screen');
         }
-
+// TÍNH NĂNG TRỘN ĐỀ
+        function shuffleAndStart() {
+            if(confirm("Hệ thống sẽ xáo trộn toàn bộ câu hỏi và bắt đầu lại từ đầu. Bạn đã sẵn sàng chưa?")) {
+                // Thuật toán xáo trộn ngẫu nhiên
+                for (let i = ALL_QUESTIONS.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [ALL_QUESTIONS[i], ALL_QUESTIONS[j]] = [ALL_QUESTIONS[j], ALL_QUESTIONS[i]];
+                }
+                
+                // Lưu lại mảng đã trộn và đưa tiến độ về 0
+                currentSection = 0;
+                localStorage.setItem(DATA_KEY, JSON.stringify(ALL_QUESTIONS));
+                localStorage.setItem(PROG_KEY, "0");
+                
+                startNextSection();
+            }
+        }
         function startNextSection() {
             isReviewMode = false;
             mistakes = [];
