@@ -72,6 +72,7 @@ B. Quả trứng
 C. Không biết
 D. Sai đề
 C. Không biết
+<b>Lưu Ý:<b>Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đáp án 2 (Ví dụ: A,B)
 
 (Cứ dán thả ga, còn lại app lo nhé)"></textarea>
             
@@ -214,7 +215,7 @@ C. Không biết
                 alert(`Thành công rực rỡ! Đã lấy xuất sắc ${parsedQs.length} câu hỏi từ tài liệu.`);
                 location.reload();
             } else {
-                alert("Không nhận diện được câu hỏi nào. Bạn copy đúng định dạng có các câu trả lời A. B. C. nhé!");
+                alert("Không nhận diện được câu hỏi nào. Bạn copy đúng định dạng có các câu trả lời theo hướng dẫn nhé!");
             }
         }
 
@@ -272,7 +273,7 @@ C. Không biết
             
             const elNextBtn = document.getElementById('next-btn');
             elNextBtn.disabled = true;
-            elNextBtn.innerHTML = 'Chốt đáp án <i class="fas fa-check ml-2"></i>';
+            elNextBtn.innerHTML = 'Enter <i class="fas fa-check ml-2"></i>';
             elNextBtn.className = "w-full md:w-auto justify-center bg-indigo-600 text-white font-bold py-3 px-8 rounded-xl opacity-50 cursor-not-allowed transition flex items-center text-base";
 
             const realIdx = queue[currentQIndexInQueue];
