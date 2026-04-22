@@ -57,7 +57,7 @@
                 <h1 class="text-xl font-bold">PM Quiz Master</h1>
             </div>
             <button id="mobile-back-btn" onclick="goToDashboard(); event.stopPropagation();" class="hidden md:hidden text-xs text-indigo-600 dark:text-indigo-400 font-medium px-2 py-1 border border-indigo-200 dark:border-indigo-800 rounded bg-indigo-50 dark:bg-indigo-900/30">
-                <i class="fas fa-arrow-left"></i> Về Trang Chủ
+                <i class="fas fa-arrow-left"></i> Trang Chủ
             </button>
         </div>
         
@@ -94,7 +94,8 @@
 
         <div id="dashboard-screen" class="max-w-6xl w-full fade-in hidden">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <h2 class="text-2xl font-bold"><i class="fas fa-layer-group text-indigo-500 mr-2"></i>Kho Đề PM Master</h2>
+                <h2 class="text-2xl font-bold"><i class="fas fa-layer-group text-indigo-500 mr-2"></i>Kho Đề Quản Lý</h2>
+                
                 <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
                     <button onclick="importCopyQuiz()" class="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center">
                         <i class="fas fa-copy mr-2"></i> Copy Đề
@@ -115,11 +116,29 @@
                 <h2 id="import-screen-title" class="text-xl md:text-2xl font-bold text-indigo-600 dark:text-indigo-400"><i class="fas fa-cloud-upload-alt mr-2"></i>Tạo Bộ Đề Mới</h2>
                 <button onclick="goToDashboard()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
+            
+            <div class="bg-blue-50 dark:bg-indigo-900/20 border-l-4 border-blue-400 p-4 mb-6 rounded text-gray-700 dark:text-gray-300">
+                <p class="text-sm font-bold mb-1"><i class="fas fa-info-circle mr-1"></i> Ghi chú Format chuẩn:</p>
+                <div class="bg-white dark:bg-gray-900 p-3 rounded border border-blue-100 dark:border-gray-700 font-mono text-[10px] md:text-xs">
+                    Máy ảnh trong hình là loại gì?<br>
+                    https://upload.wikimedia.org/wikipedia/commons/1/1a/Sony_FX6.jpg<br>
+                    A. Mirrorless<br>
+                    B. Cinema Line<br>
+                    C. DSLR<br>
+                    B<br>
+                    Giải thích: Dòng máy chuyên quay phim của Sony.<br>
+                    <br>
+                    <span class="text-indigo-500 font-bold">* Nếu có nhiều đáp án, ghi ngăn cách bằng dấu phẩy (VD: A, B). Dán link ảnh trực tiếp vào câu hỏi.</span>
+                </div>
+            </div>
+            
             <div class="mb-4">
                 <label class="block text-sm font-bold mb-2">Tên bộ đề (Môn học / Chủ đề):</label>
-                <input type="text" id="quiz-title-input" class="w-full p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none" placeholder="VD: Multimedia Production">
+                <input type="text" id="quiz-title-input" class="w-full p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none" placeholder="VD: Multimedia Production...">
             </div>
+
             <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none mb-4 font-mono text-xs md:text-sm" placeholder="Dán nội dung bộ đề vào đây..."></textarea>
+            
             <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
                 <i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây
             </button>
@@ -176,8 +195,8 @@
 
         <div id="finish-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 text-center fade-in hidden mt-4 md:mt-10">
             <img src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png" alt="Trophy" class="w-32 h-32 md:w-40 md:h-40 mx-auto mb-6 drop-shadow-lg">
-            <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">CHÚC MỪNG BẠN!</h2>
-            <p class="text-sm md:text-lg mb-6 text-gray-600 dark:text-gray-400">Bạn đã nhai gọn toàn bộ tài liệu của bộ đề này.</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-4" id="finish-title">CHÚC MỪNG BẠN!</h2>
+            <p class="text-sm md:text-lg mb-6 text-gray-600 dark:text-gray-400" id="finish-desc">Bạn đã nhai gọn toàn bộ tài liệu của bộ đề này.</p>
             <button onclick="goToDashboard()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition">
                 <i class="fas fa-arrow-left mr-2"></i> Về Kho Đề
             </button>
@@ -210,10 +229,11 @@
                 </div>
             </div>
         </div>
+
     </main>
 
     <div id="music-widget" class="bg-white dark:bg-gray-800 rounded-t-xl md:rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="bg-[#1DB954] text-black px-4 py-2.5 md:py-3 flex justify-between items-center cursor-pointer active:bg-[#19a34a] md:hover:bg-[#1ed760] transition" onclick="toggleMusicWidget()">
+        <div class="bg-[#1DB954] text-black px-4 py-2.5 md:py-3 flex justify-between items-center cursor-pointer active:bg-[#19a34a] hover:bg-[#1ed760] transition" onclick="toggleMusicWidget()">
             <div class="flex items-center gap-2 font-bold">
                 <i class="fab fa-spotify text-lg"></i> <span class="text-sm">Trạm Nhạc Spotify</span>
             </div>
@@ -223,7 +243,7 @@
             <div class="text-xs text-gray-400 mb-1 hidden md:block">Dán link Playlist/Bài hát Spotify vào đây:</div>
             <div class="flex gap-2">
                 <input type="text" id="spotify-input" placeholder="Dán link bài hát vào đây..." class="w-full text-xs p-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-[#1DB954] transition">
-                <button onclick="updateSpotify()" class="bg-[#1DB954] active:bg-[#19a34a] md:hover:bg-[#1ed760] text-black font-bold px-3 py-1 rounded text-xs transition">Phát</button>
+                <button onclick="updateSpotify()" class="bg-[#1DB954] active:bg-[#19a34a] hover:bg-[#1ed760] text-black font-bold px-3 py-1 rounded text-xs transition">Phát</button>
             </div>
             <iframe id="spotify-player" style="border-radius:12px;" src="https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRwui0ExPn?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
         </div>
@@ -444,7 +464,6 @@
                 isStudentMode = true;
                 studentClassRef = doc.ref.collection("students").doc(currentUser.uid); 
 
-                // GHI DANH NGAY LẬP TỨC ĐỂ GIÁO VIÊN THẤY
                 let savedProgress = 0;
                 try {
                     const studentDoc = await studentClassRef.get();
@@ -556,10 +575,7 @@
                 data.questions.forEach(q => {
                     rawText += q.q.replace(/<br>/g, '\n') + "\n";
                     q.o.forEach(opt => rawText += opt + "\n");
-                    
-                    let ansLetters = q.a.map(idx => String.fromCharCode(65 + idx)).join(", ");
-                    rawText += ansLetters + "\n";
-
+                    rawText += q.a.map(idx => String.fromCharCode(65 + idx)).join(", ") + "\n"; // Format A, B
                     if(q.e) rawText += "Giải thích: " + q.e + "\n";
                     rawText += "\n";
                 });
@@ -571,7 +587,7 @@
             } catch (e) { alert("Lỗi mở đề!"); goToDashboard(); }
         }
 
-        // BỘ NÃO ĐỌC DỮ LIỆU ĐƯỢC PHỤC HỒI 100% NHƯ ANH KHÔI VIẾT
+        // BỘ NÃO ĐỌC DỮ LIỆU (PHỤC HỒI 100% CỦA ANH KHÔI)
         async function parseAndSaveData() {
             const title = document.getElementById('quiz-title-input').value.trim();
             const text = document.getElementById('raw-text-input').value;
@@ -634,9 +650,26 @@
                 
                 let qText = item.textBlock.length > 0 ? item.textBlock.join('<br>') : `Câu hỏi ${index + 1}`;
                 let correctIndexes = [];
+                let explanation = ""; // Reset explanation
                 
                 if (item.ansLine) {
-                    let cleanAnsLine = item.ansLine.replace(/^(?:ĐÁP ÁN|KẾT QUẢ|ANSWER)[:\s]*/i, '').trim();
+                    // Cắt phần giải thích (nếu có) nằm cùng dòng hoặc các dòng nextTextBlock
+                    let ansStr = item.ansLine;
+                    let expMatch = ansStr.match(/Giải thích:(.*)/i);
+                    if (expMatch) {
+                        explanation = expMatch[1].trim();
+                        ansStr = ansStr.replace(/Giải thích:.*/i, '').trim();
+                    }
+                    
+                    // Tìm giải thích trong các dòng còn lại của nextTextBlock
+                    item.nextTextBlock.forEach(line => {
+                        if (line.toUpperCase().startsWith('GIẢI THÍCH:')) {
+                            explanation = line.replace(/^GIẢI THÍCH:\s*/i, '').trim();
+                        }
+                    });
+
+                    // Xử lý đáp án CHÍNH XÁC
+                    let cleanAnsLine = ansStr.replace(/^(?:ĐÁP ÁN|KẾT QUẢ|ANSWER)[:\s]*/i, '').trim();
                     let letterMatch = cleanAnsLine.match(/^([A-H](?:\s*,\s*[A-H])*)/i);
                     
                     if (letterMatch) {
@@ -648,7 +681,7 @@
                     }
                     
                     if (correctIndexes.length === 0) {
-                        let ansUpper = item.ansLine.toUpperCase().trim();
+                        let ansUpper = ansStr.toUpperCase().trim();
                         item.options.forEach((opt, idx) => {
                             let optClean = opt.replace(/^[A-H][\.\)]\s*/i, '').toUpperCase().trim();
                             if (optClean.length > 0 && ansUpper.includes(optClean)) {
@@ -659,7 +692,7 @@
                 }
                 
                 if (correctIndexes.length === 0) correctIndexes = [0];
-                parsedQs.push({ q: qText, o: item.options, a: correctIndexes, e: "" });
+                parsedQs.push({ q: qText, o: item.options, a: correctIndexes, e: explanation });
             });
 
             if (parsedQs.length > 0) {
@@ -676,7 +709,7 @@
                     goToDashboard();
                 } catch (error) { alert("Lỗi: " + error.message); }
                 finally { btn.disabled = false; }
-            } else { alert("Không nhận diện được nội dung. Hãy xem lại Format nhé!"); }
+            } else { alert("Không nhận diện được nội dung. Hãy xem lại Format hướng dẫn nhé!"); }
         }
 
         async function resetQuiz(quizId, quizTitle) {
@@ -743,6 +776,7 @@
             }
         }
 
+        // CẮT SECTION CHUẨN MỰC
         function startNextSection() {
             isReviewMode = false; mistakes = []; queue = [];
             
@@ -845,8 +879,20 @@
                     if(!mistakes.includes(realIdx)) mistakes.push(realIdx);
                 }
 
+                if (qData.e) { 
+                    const expHTML = `
+                    <div id="ai-explanation-box" class="mt-5 p-4 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 rounded-xl shadow-inner fade-in">
+                        <div class="flex items-center gap-2 mb-1">
+                            <i class="fas fa-lightbulb text-indigo-500 text-sm"></i>
+                            <span class="font-bold text-indigo-700 dark:text-indigo-400 text-sm">Giải thích:</span>
+                        </div>
+                        <p class="text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed">${qData.e}</p>
+                    </div>`;
+                    document.getElementById('options-container').insertAdjacentHTML('afterend', expHTML);
+                }
+
                 elNextBtn.innerHTML = 'Câu tiếp (Enter) <i class="fas fa-arrow-right ml-2"></i>';
-                elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 active:bg-black md:hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base ml-auto";
+                elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base ml-auto";
                 elNextBtn.disabled = true; setTimeout(() => elNextBtn.disabled = false, 500);
             } else {
                 currentQIndexInQueue++;
@@ -907,7 +953,6 @@
             document.getElementById('section-text').innerText = currentSection < TOTAL_SECTIONS ? `Section ${currentSection + 1}/${TOTAL_SECTIONS}` : `Hoàn thành!`;
         }
 
-        // BỘ ĐỌC LINK SPOTIFY MƯỢT MÀ NHƯ BẢN GỐC CỦA ANH
         let isMusicMin = true;
         function toggleMusicWidget() {
             const widget = document.getElementById('music-widget'); const icon = document.getElementById('music-toggle-icon');
