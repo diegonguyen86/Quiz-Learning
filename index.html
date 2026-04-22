@@ -79,7 +79,7 @@
         <div id="dashboard-screen" class="max-w-5xl w-full fade-in hidden">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-layer-group text-indigo-500 mr-2"></i>Kho Đề Của Tôi</h2>
-                <button onclick="showScreen('import-screen')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center">
+                <button onclick="openImportScreen()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center">
                     <i class="fas fa-plus mr-2"></i> Tạo bộ đề mới
                 </button>
             </div>
@@ -88,7 +88,7 @@
 
         <div id="import-screen" class="max-w-4xl w-full bg-white rounded-2xl shadow-lg p-5 md:p-8 fade-in hidden">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl md:text-2xl font-bold text-indigo-600"><i class="fas fa-cloud-upload-alt mr-2"></i>Tạo Bộ Đề Mới</h2>
+                <h2 id="import-screen-title" class="text-xl md:text-2xl font-bold text-indigo-600"><i class="fas fa-cloud-upload-alt mr-2"></i>Tạo Bộ Đề Mới</h2>
                 <button onclick="goToDashboard()" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times text-xl"></i></button>
             </div>
             
@@ -102,7 +102,8 @@
                     C. Không biết<br>
                     D. Sai đề<br>
                     C. Không biết<br>
-                    <span class="text-indigo-500 font-bold">Nếu câu có nhiều đáp án thì chỉ cần điền theo dạng đáp án 1, đáp án 2 (ví dụ A,B)</span>
+                    <span class="text-indigo-500 font-bold">Nếu câu có nhiều đáp án thì chỉ cần điền theo dạng đáp án 1, đáp án 2 (ví dụ A,B)</span><br>
+                    <span class="text-indigo-500 font-bold">Giải thích: (Nếu có) Ghi lời giải thích ở dòng cuối cùng.</span>
                 </div>
             </div>
             
@@ -114,7 +115,7 @@
             <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 outline-none mb-4 font-mono text-xs md:text-sm" placeholder="Dán nội dung bộ đề vào đây..."></textarea>
             
             <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
-                <i class="fas fa-cogs mr-2"></i> Xử lý
+                <i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây
             </button>
         </div>
 
@@ -201,7 +202,8 @@
         const db = firebase.firestore();
         let currentUser = null;
 
-        let activeQuizId = null; 
+        let activeQuizId = null;
+        let editQuizId = null;
         const SEC_SIZE = 12;
         let ALL_QUESTIONS = [];
         let TOTAL_SECTIONS = 0;
@@ -263,18 +265,15 @@
 
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            // Nếu là màn hình nhỏ (điện thoại) hoặc Mobile Browser -> Dùng Redirect
             if (window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
                 auth.signInWithRedirect(provider);
             } else {
-                // Trên máy tính thì dùng Popup cho mượt
                 auth.signInWithPopup(provider).catch(err => alert("Lỗi đăng nhập: " + err.message));
             }
         }
 
-        // ==========================================
-        // KHỐI QUẢN LÝ KHO ĐỀ
-        // ==========================================
+        function logoutApp() { if(confirm("Bạn có chắc muốn đăng xuất?")) auth.signOut(); }
+
         async function goToDashboard() {
             activeQuizId = null;
             document.getElementById('auth-screen').innerHTML = `<div class="py-10 text-center"><i class="fas fa-spinner fa-spin text-4xl text-indigo-500 mb-4"></i><h2 class="text-xl font-bold text-gray-700">Đang nạp kho đề...</h2></div>`;
@@ -310,11 +309,14 @@
                                     <p class="text-right text-[10px] text-gray-400 font-medium mb-5">${progressPct}% hoàn thành</p>
                                 </div>
                                 
-                                <div class="flex justify-between items-center gap-2">
+                                <div class="flex justify-between items-center gap-1">
                                     <button onclick="openQuiz('${doc.id}')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-3 rounded-xl transition shadow-sm">
                                         <i class="fas fa-play mr-1 text-[10px]"></i> ${progressPct > 0 ? 'Học tiếp' : 'Bắt đầu'}
                                     </button>
-                                    <button onclick="deleteQuiz('${doc.id}', '${data.title}')" class="text-gray-300 hover:text-red-500 p-2 rounded-xl transition" title="Xóa bộ đề">
+                                    <button onclick="editQuiz('${doc.id}')" class="text-blue-400 hover:bg-blue-50 hover:text-blue-600 p-2 rounded-xl transition" title="Sửa bộ đề">
+                                        <i class="fas fa-pen"></i>
+                                    </button> 
+                                    <button onclick="deleteQuiz('${doc.id}', '${data.title}')" class="text-gray-300 hover:bg-red-50 hover:text-red-500 p-2 rounded-xl transition" title="Xóa bộ đề">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </div>
@@ -324,6 +326,45 @@
                 }
                 showScreen('dashboard-screen');
             } catch (error) { alert("Lỗi tải kho đề!"); }
+        }
+
+        function openImportScreen() {
+            editQuizId = null; 
+            document.getElementById('quiz-title-input').value = '';
+            document.getElementById('raw-text-input').value = '';
+            document.getElementById('import-screen-title').innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i>Tạo Bộ Đề Mới';
+            document.getElementById('btn-parse').innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây';
+            showScreen('import-screen');
+        }
+
+        async function editQuiz(quizId) {
+            editQuizId = quizId;
+            document.getElementById('auth-screen').innerHTML = `<div class="py-10 text-center"><i class="fas fa-spinner fa-spin text-4xl text-indigo-500 mb-4"></i><h2 class="text-xl font-bold text-gray-700">Đang nạp dữ liệu...</h2></div>`;
+            showScreen('auth-screen');
+
+            try {
+                const doc = await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).get();
+                const data = doc.data();
+
+                document.getElementById('quiz-title-input').value = data.title;
+        
+                let rawText = "";
+                data.questions.forEach(q => {
+                    rawText += q.q + "\n";
+                    q.o.forEach(opt => rawText += opt + "\n");
+                    let ansLetters = q.a.map(idx => String.fromCharCode(65 + idx)).join(", ");
+                    rawText += ansLetters + "\n";
+                    if(q.e) rawText += "Giải thích: " + q.e + "\n";
+                    rawText += "\n";
+                });
+        
+                document.getElementById('raw-text-input').value = rawText.trim();
+                
+                document.getElementById('import-screen-title').innerHTML = '<i class="fas fa-edit mr-2 text-blue-500"></i>Chỉnh Sửa Bộ Đề';
+                document.getElementById('btn-parse').innerHTML = '<i class="fas fa-save mr-2"></i> Cập Nhật Bộ Đề';
+                
+                showScreen('import-screen');
+            } catch (e) { alert("Lỗi mở đề để sửa!"); goToDashboard(); }
         }
 
         async function parseAndSaveData() {
@@ -400,14 +441,21 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang đồng bộ...';
                 btn.disabled = true;
                 try {
-                    await db.collection("users").doc(currentUser.uid).collection("my_quizzes").add({
-                        title: title, questions: parsedQs, progress: 0, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                    if (editQuizId) {
+                        await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(editQuizId).update({
+                            title: title, questions: parsedQs
+                        });
+                        editQuizId = null;
+                    } else {
+                        await db.collection("users").doc(currentUser.uid).collection("my_quizzes").add({
+                            title: title, questions: parsedQs, progress: 0, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
                     document.getElementById('quiz-title-input').value = '';
                     document.getElementById('raw-text-input').value = '';
                     goToDashboard();
                 } catch (error) { alert("Lỗi: " + error.message); }
-                finally { btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý'; btn.disabled = false; }
+                finally { btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây'; btn.disabled = false; }
             } else { alert("Không nhận diện được nội dung. Hãy xem lại Format hướng dẫn bên trên nhé!"); }
         }
 
