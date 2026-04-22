@@ -73,8 +73,6 @@ C. Không biết
 D. Sai đề
 C. Không biết
 
-Nếu câu hỏi multiple choice thì ghi đáp án theo định dạng 
-Đáp án số 1, Đáp án số 2 (Ví dụ: C,D)
 (Cứ dán thả ga, còn lại app lo nhé)"></textarea>
             
             <button onclick="parseAndSaveData()" class="w-full bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
@@ -469,6 +467,37 @@ Nếu câu hỏi multiple choice thì ghi đáp án theo định dạng
         }
 
         window.onload = initApp;
+// BỔ SUNG: Chức năng phím tắt (1, 2, 3... và Enter)
+        document.addEventListener('keydown', function(event) {
+            // 1. Bỏ qua phím tắt nếu anh đang gõ chữ vào ô nhập đề bài hoặc ô Spotify
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
+
+            // 2. Chỉ kích hoạt phím tắt khi đang làm bài (màn hình quiz hiển thị)
+            const quizScreen = document.getElementById('quiz-screen');
+            if (quizScreen.classList.contains('hidden')) return;
+
+            // 3. Xử lý khi bấm phím Enter (Chốt đáp án / Tiếp tục)
+            if (event.key === 'Enter') {
+                const nextBtn = document.getElementById('next-btn');
+                // Nếu nút đang sáng (không bị mờ/disabled) thì giả lập cú click
+                if (!nextBtn.disabled) {
+                    nextBtn.click(); 
+                }
+                return;
+            }
+
+            // 4. Xử lý khi bấm các phím số từ 1 đến 9 (Chọn đáp án)
+            const keyNum = parseInt(event.key);
+            if (keyNum >= 1 && keyNum <= 9) {
+                const options = document.getElementById('options-container').querySelectorAll('button');
+                const targetIndex = keyNum - 1; // Phím 1 ứng với option đầu tiên (index 0)
+                
+                // Kiểm tra xem phím số bấm có nằm trong số lượng đáp án của câu hỏi không và chưa chốt
+                if (targetIndex < options.length && !hasSubmitted) {
+                    options[targetIndex].click(); // Giả lập cú click vào đáp án
+                }
+            }
+        });
     </script>
 </body>
 </html>
