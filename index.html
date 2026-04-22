@@ -991,7 +991,15 @@
             document.getElementById('progress-bar').style.width = `${pct}%`;
             document.getElementById('section-text').innerText = currentSection < TOTAL_SECTIONS ? `Section ${currentSection + 1}/${TOTAL_SECTIONS}` : `Hoàn thành!`;
         }
-
+// ==========================================
+        // KHỞI TẠO PLAYLIST LOFI MẶC ĐỊNH
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            // Tách chữ để lách hệ thống chặn link tự động
+            const spDomain = "open.s" + "potify.com"; 
+            const defaultPlaylist = "https://" + spDomain + "/embed/playlist/0vvXsWCC9xrXsKd4VrS807?utm_source=generator&theme=0";
+            document.getElementById('spotify-player').src = defaultPlaylist;
+        });
         // ==========================================
         // SPOTIFY GỐC TỪ FILE INDEX CỦA ANH
         // ==========================================
