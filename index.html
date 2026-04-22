@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quiz Learning - Go Pro With Quiz</title>
+    <title>Quiz Learning - PM Master</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -21,12 +21,7 @@
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        #music-widget {
-            position: fixed; bottom: 1rem; right: 1rem; z-index: 50;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: calc(100% - 2rem);
-            max-width: 320px;
-        }
+        #music-widget { position: fixed; bottom: 1rem; right: 1rem; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: calc(100% - 2rem); max-width: 320px; }
         #music-widget.minimized { transform: translateY(calc(100% - 48px)); }
         
         .option-btn { transition: all 0.2s; border-width: 2px; }
@@ -41,6 +36,12 @@
         .dark .option-btn:hover:not(:disabled) { background-color: #374151; border-color: #818cf8; }
         .dark .option-btn.selected { background-color: #374151; border-color: #818cf8; }
 
+        /* Scrollbar cho bảng điểm */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+
         main { -webkit-overflow-scrolling: touch; }
     </style>
 </head>
@@ -53,7 +54,7 @@
                 <h1 class="text-xl font-bold">Quiz Learning</h1>
             </div>
             <button id="mobile-back-btn" onclick="goToDashboard(); event.stopPropagation();" class="hidden md:hidden text-xs text-indigo-600 dark:text-indigo-400 font-medium px-2 py-1 border border-indigo-200 dark:border-indigo-800 rounded bg-indigo-50 dark:bg-indigo-900/30">
-                <i class="fas fa-arrow-left"></i> Kho Đề
+                <i class="fas fa-arrow-left"></i> Trang Chủ
             </button>
         </div>
         
@@ -73,7 +74,7 @@
                 <i class="fas fa-sun hidden dark:block"></i>
             </button>
             <button id="desktop-back-btn" onclick="goToDashboard()" class="hidden text-sm text-indigo-600 dark:text-indigo-400 font-medium px-3 py-1 border border-indigo-200 dark:border-indigo-800 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
-                <i class="fas fa-home mr-1"></i> Về Kho Đề
+                <i class="fas fa-home mr-1"></i> Trang Chủ
             </button>
             <div id="user-profile" class="hidden items-center gap-2 border-l pl-4 border-gray-200 dark:border-gray-700">
                 <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600">
@@ -86,14 +87,15 @@
     </header>
 
     <main class="flex-1 overflow-y-auto p-3 md:p-8 flex justify-center items-start pb-24 md:pb-8 relative">
+        
         <div id="auth-screen" class="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center mt-4 md:mt-10 fade-in"></div>
 
         <div id="dashboard-screen" class="max-w-5xl w-full fade-in hidden">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <h2 class="text-2xl font-bold"><i class="fas fa-layer-group text-indigo-500 mr-2"></i>Kho Đề Của Tôi</h2>
+                <h2 class="text-2xl font-bold"><i class="fas fa-layer-group text-indigo-500 mr-2"></i>Kho Đề Quản Lý</h2>
                 <div class="flex gap-2 w-full md:w-auto">
-                    <button onclick="importByShareCode()" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center justify-center">
-                        <i class="fas fa-download mr-2"></i> Nhập mã share
+                    <button onclick="joinExamRoom()" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center justify-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i> Vào phòng thi
                     </button>
                     <button onclick="openImportScreen()" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center justify-center">
                         <i class="fas fa-plus mr-2"></i> Tạo đề mới
@@ -112,13 +114,13 @@
             <div class="bg-blue-50 dark:bg-indigo-900/20 border-l-4 border-blue-400 p-4 mb-6 rounded text-gray-700 dark:text-gray-300">
                 <p class="text-sm font-bold mb-1"><i class="fas fa-info-circle mr-1"></i> Ghi chú Format chuẩn:</p>
                 <div class="bg-white dark:bg-gray-900 p-3 rounded border border-blue-100 dark:border-gray-700 font-mono text-[10px] md:text-xs">
-                    Con gà có trước hay quả trứng có trước?<br>
-                    https://upload.wikimedia.org/wikipedia/commons/1/1a/conga.jpg<br>
-                    A. Con gà<br>
-                    B. Quả trứng<br>
-                    C. Không biết<br>
-                    B (đáp án)<br>
-                    Nếu câu có nhiều đáp án thì ghi nhiều đáp án ngăn cách nhau bởi dấu phẩy (ví dụ A,B)
+                    Máy ảnh trong hình là loại gì?<br>
+                    https://upload.wikimedia.org/wikipedia/commons/1/1a/Sony_FX6.jpg<br>
+                    A. Mirrorless<br>
+                    B. Cinema Line<br>
+                    C. DSLR<br>
+                    B<br>
+                    Giải thích: Dòng máy chuyên quay phim của Sony.
                 </div>
             </div>
             
@@ -130,15 +132,20 @@
             <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none mb-4 font-mono text-xs md:text-sm" placeholder="Dán nội dung bộ đề vào đây..."></textarea>
             
             <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
-                <i class="fas fa-cogs mr-2"></i> Xử lý
+                <i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây
             </button>
         </div>
 
         <div id="welcome-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 text-center mt-4 md:mt-10 fade-in hidden">
+            <div id="exam-mode-badge" class="hidden mx-auto bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 font-bold px-4 py-1 rounded-full text-xs w-max mb-4 border border-red-200 dark:border-red-800 animate-pulse">
+                <i class="fas fa-video mr-1"></i> CHẾ ĐỘ THI (HỆ THỐNG GHI ĐIỂM)
+            </div>
+            
             <h2 id="current-quiz-title" class="text-2xl md:text-3xl font-bold mb-4">Tên Bộ Đề</h2>
             <img src="https://cdn-icons-png.flaticon.com/512/3067/3067258.png" alt="Learn" class="w-24 h-24 md:w-32 md:h-32 mx-auto mb-4 md:mb-6 drop-shadow-md">
             <p class="text-sm md:text-base text-gray-600 dark:text-gray-400 mb-6" id="welcome-msg">Hệ thống đã sẵn sàng.</p>
-            <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-4">
+            
+            <div id="personal-actions" class="flex flex-col md:flex-row justify-center gap-3 md:gap-4">
                 <button onclick="startNextSection()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 md:px-8 rounded-full shadow-lg transition text-base md:text-lg w-full md:w-auto">
                     <i class="fas fa-play mr-2"></i> Học Tiếp
                 </button>
@@ -148,6 +155,13 @@
                 <button onclick="shuffleAndStart()" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 md:px-8 rounded-full shadow-lg transition text-base md:text-lg w-full md:w-auto">
                     <i class="fas fa-random mr-2"></i> Trộn Đề
                 </button>
+            </div>
+
+            <div id="exam-actions" class="hidden flex-col justify-center gap-3">
+                <button onclick="startNextSection()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 rounded-full shadow-lg transition text-lg w-full">
+                    BẮT ĐẦU LÀM BÀI <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+                <p class="text-xs text-gray-500 mt-2">Lưu ý: Bạn không thể làm lại câu sai. Điểm sẽ được nộp ngay sau khi kết thúc.</p>
             </div>
         </div>
 
@@ -173,19 +187,48 @@
 
         <div id="result-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 text-center fade-in hidden mt-4 md:mt-10">
             <div id="result-icon" class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl md:text-4xl"></div>
-            <h2 class="text-xl md:text-2xl font-bold mb-2" id="result-title">Kết quả Section</h2>
+            <h2 class="text-xl md:text-2xl font-bold mb-2" id="result-title">Kết quả</h2>
             <p class="text-sm md:text-lg text-gray-600 dark:text-gray-400 mb-6" id="result-desc"></p>
             <div id="result-action"></div>
         </div>
 
         <div id="finish-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 text-center fade-in hidden mt-4 md:mt-10">
             <img src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png" alt="Trophy" class="w-32 h-32 md:w-40 md:h-40 mx-auto mb-6 drop-shadow-lg">
-            <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">CHÚC MỪNG BẠN!</h2>
-            <p class="text-sm md:text-lg mb-6 text-gray-600 dark:text-gray-400">Bạn đã nhai gọn toàn bộ câu hỏi của bộ đề này.</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-4" id="finish-title">CHÚC MỪNG BẠN!</h2>
+            <p class="text-sm md:text-lg mb-6 text-gray-600 dark:text-gray-400" id="finish-desc">Bạn đã nhai gọn toàn bộ tài liệu của bộ đề này.</p>
             <button onclick="goToDashboard()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition">
-                <i class="fas fa-arrow-left mr-2"></i> Về Kho Đề
+                <i class="fas fa-home mr-2"></i> Về Màn Hình Chính
             </button>
         </div>
+
+        <div id="score-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex justify-center items-center p-4 fade-in">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+                <div class="flex justify-between items-center p-5 border-b dark:border-gray-700">
+                    <h2 class="text-xl font-bold text-purple-600 dark:text-purple-400"><i class="fas fa-chart-bar mr-2"></i>Bảng Điểm Học Sinh</h2>
+                    <button onclick="closeScoreModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                </div>
+                <div class="p-5 overflow-y-auto custom-scrollbar flex-1">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm">
+                                    <th class="p-3 rounded-tl-lg font-semibold">Tên Học Sinh</th>
+                                    <th class="p-3 font-semibold text-center">Điểm số</th>
+                                    <th class="p-3 font-semibold text-center">Câu đúng</th>
+                                    <th class="p-3 rounded-tr-lg font-semibold text-right">Thời gian nộp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="score-table-body" class="text-sm divide-y dark:divide-gray-700">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id="score-loading" class="text-center py-10 hidden">
+                        <i class="fas fa-spinner fa-spin text-3xl text-purple-500"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <div id="music-widget" class="bg-white dark:bg-gray-800 rounded-t-xl md:rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -200,7 +243,7 @@
                 <input type="text" id="spotify-input" placeholder="Dán link bài hát/playlist Spotify..." class="w-full text-xs p-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-[#1DB954] transition">
                 <button onclick="updateSpotify()" class="bg-[#1DB954] active:bg-[#19a34a] hover:bg-[#1ed760] text-black font-bold px-3 py-1 rounded text-xs transition">Phát</button>
             </div>
-            <iframe id="spotify-player" style="border-radius:12px;" src="https://open.spotify.com/playlist/37i9dQZF1DZ06evO0FDzS8?si=zkWpMO9ISYCmtruFJoA4sw" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            <iframe id="spotify-player" style="border-radius:12px;" src="https://open.spotify.com/embed/playlist/0vvXsWCC9xrXsKd4VrS8P7?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
         </div>
     </div>
 
@@ -221,6 +264,9 @@
 
         let activeQuizId = null;
         let editQuizId = null;
+        let examRef = null; // Cờ đánh dấu: Nếu khác null tức là ĐANG TRONG PHÒNG THI
+        let globalMistakesTracker = new Set(); // Theo dõi tổng số câu sai trong 1 bài thi
+
         const SEC_SIZE = 12;
         let ALL_QUESTIONS = [];
         let TOTAL_SECTIONS = 0;
@@ -260,23 +306,18 @@
             document.documentElement.classList.add('dark');
         }
 
-        auth.getRedirectResult().catch((error) => {
-            console.error(error);
-            renderLoginUI();
-        });
+        auth.getRedirectResult().catch((error) => { console.error(error); renderLoginUI(); });
 
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUser = user;
-                const profile = document.getElementById('user-profile');
-                profile.classList.remove('hidden'); profile.classList.add('flex');
+                document.getElementById('user-profile').classList.replace('hidden', 'flex');
                 document.getElementById('user-avatar').src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 document.getElementById('user-name').innerText = user.displayName || 'Học viên';
                 goToDashboard();
             } else {
                 currentUser = null;
-                const profile = document.getElementById('user-profile');
-                profile.classList.remove('flex'); profile.classList.add('hidden');
+                document.getElementById('user-profile').classList.replace('flex', 'hidden');
                 renderLoginUI();
                 showScreen('auth-screen');
             }
@@ -285,9 +326,9 @@
         function renderLoginUI() {
             document.getElementById('auth-screen').innerHTML = `
                 <img src="https://cdn-icons-png.flaticon.com/512/2950/2950691.png" alt="Login" class="w-24 h-24 mx-auto mb-6 drop-shadow-md">
-                <h2 class="text-2xl font-bold mb-3 text-gray-800 dark:text-white">Đăng nhập PM Quiz</h2>
-                <p class="text-gray-500 dark:text-gray-400 mb-8 text-sm px-2 leading-relaxed">Chào mừng bạn đã đến với Quiz Learning.<br>Mọi tiến độ của bạn được lưu đám mây.</p>
-                <button onclick="loginWithGoogle()" class="w-full bg-white border-2 border-gray-200 text-gray-700 font-bold py-3.5 px-4 rounded-xl hover:bg-gray-50 hover:border-indigo-300 transition-all flex items-center justify-center gap-3 shadow-sm">
+                <h2 class="text-2xl font-bold mb-3 text-gray-800 dark:text-white">PM Quiz Hệ Thống</h2>
+                <p class="text-gray-500 dark:text-gray-400 mb-8 text-sm px-2 leading-relaxed">Giảng dạy chuyên nghiệp - Học tập hiệu quả.</p>
+                <button onclick="loginWithGoogle()" class="w-full bg-white border-2 border-gray-200 text-gray-700 font-bold py-3.5 px-4 rounded-xl hover:bg-gray-50 hover:border-indigo-300 transition flex items-center justify-center gap-3 shadow-sm">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="Google">
                     Đăng nhập bằng Google
                 </button>
@@ -296,33 +337,21 @@
 
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            document.getElementById('auth-screen').innerHTML = `
-                <div class="py-12 text-center">
-                    <i class="fas fa-circle-notch fa-spin text-5xl text-indigo-500 mb-6"></i>
-                    <h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang kết nối Google...</h2>
-                    <p class="text-gray-500 text-sm mt-2">Vui lòng chờ trong giây lát</p>
-                </div>`;
-                
+            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-circle-notch fa-spin text-5xl text-indigo-500 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang kết nối...</h2></div>`;
             if (window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
                 auth.signInWithRedirect(provider);
             } else {
-                auth.signInWithPopup(provider).catch(err => {
-                    alert("Lỗi đăng nhập: " + err.message);
-                    renderLoginUI();
-                });
+                auth.signInWithPopup(provider).catch(err => { alert("Lỗi đăng nhập: " + err.message); renderLoginUI(); });
             }
         }
 
         function logoutApp() { if(confirm("Bạn có chắc muốn đăng xuất?")) auth.signOut(); }
 
-        // TẠO MÃ SHARE SIÊU BẢO MẬT (UUID NGẪU NHIÊN DÀI)
-        function generateShareCode() { 
-            return 'PM-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now().toString(36).substring(3).toUpperCase(); 
-        }
+        function generateShareCode() { return 'PM-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
 
         async function goToDashboard() {
-            activeQuizId = null; editQuizId = null;
-            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-spinner fa-spin text-5xl text-indigo-500 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang nạp kho đề...</h2></div>`;
+            activeQuizId = null; editQuizId = null; examRef = null; globalMistakesTracker.clear();
+            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-spinner fa-spin text-5xl text-indigo-500 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang nạp kho quản lý...</h2></div>`;
             showScreen('auth-screen');
 
             try {
@@ -331,7 +360,7 @@
                 container.innerHTML = '';
 
                 if (snapshot.empty) {
-                    container.innerHTML = `<div class="col-span-full text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700"><i class="fas fa-folder-open text-5xl text-gray-200 dark:text-gray-600 mb-4"></i><p class="text-gray-400">Bạn chưa có bộ đề nào. Hãy tạo mới nhé!</p></div>`;
+                    container.innerHTML = `<div class="col-span-full text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700"><i class="fas fa-folder-open text-5xl text-gray-200 dark:text-gray-600 mb-4"></i><p class="text-gray-400">Bạn chưa tạo bộ đề nào.</p></div>`;
                 } else {
                     snapshot.forEach(doc => {
                         const data = doc.data();
@@ -340,36 +369,38 @@
                         const sCode = data.shareCode || "Chưa có";
                         
                         container.innerHTML += `
-                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 hover:shadow-md transition flex flex-col justify-between">
-                                <div>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 hover:shadow-md transition flex flex-col justify-between relative overflow-hidden">
+                                <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500"></div>
+                                <div class="pl-2">
                                     <div class="flex justify-between items-start mb-1">
                                         <h3 class="font-bold text-lg truncate pr-2" title="${data.title}">${data.title}</h3>
-                                        <button onclick="resetQuiz('${doc.id}', '${data.title}')" class="text-orange-400 hover:text-orange-600 transition" title="Làm lại từ đầu"><i class="fas fa-sync-alt text-xs"></i></button>
+                                        <button onclick="resetQuiz('${doc.id}', '${data.title}')" class="text-orange-400 hover:text-orange-600 transition" title="Làm lại cá nhân"><i class="fas fa-sync-alt text-xs"></i></button>
                                     </div>
                                     <div class="flex items-center gap-1.5 mb-4 mt-2">
-                                        <span class="text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded truncate max-w-[120px] border border-indigo-100 dark:border-indigo-800">
-                                            Mã: <b class="font-mono">${sCode}</b>
+                                        <span class="text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded truncate border border-indigo-100 dark:border-indigo-800">
+                                            Mã thi: <b class="font-mono text-[11px]">${sCode}</b>
                                         </span>
-                                        <button onclick="copyShareCode('${sCode}')" class="text-gray-500 hover:text-indigo-600 text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded transition" title="Copy mã"><i class="fas fa-copy"></i></button>
-                                        <button onclick="refreshShareCode('${doc.id}')" class="text-gray-500 hover:text-orange-500 text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded transition" title="Đổi mã bảo mật mới"><i class="fas fa-random"></i> Đổi</button>
+                                        <button onclick="copyShareCode('${sCode}')" class="text-gray-500 hover:text-indigo-600 text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded transition"><i class="fas fa-copy"></i></button>
+                                        <button onclick="refreshShareCode('${doc.id}')" class="text-gray-500 hover:text-orange-500 text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded transition" title="Đổi mã bảo mật"><i class="fas fa-random"></i></button>
                                     </div>
                                     
                                     <div class="w-full bg-gray-100 dark:bg-gray-900 rounded-full h-1.5 mb-1">
                                         <div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${progressPct}%"></div>
                                     </div>
-                                    <p class="text-right text-[10px] text-gray-400 font-medium mb-5">${progressPct}% hoàn thành</p>
+                                    <p class="text-right text-[10px] text-gray-400 font-medium mb-5">Cá nhân: ${progressPct}% hoàn thành</p>
                                 </div>
                                 
-                                <div class="flex justify-between items-center gap-2">
-                                    <button onclick="openQuiz('${doc.id}')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2.5 px-3 rounded-xl transition shadow-sm">
-                                        <i class="fas fa-play mr-1 text-[10px]"></i> ${progressPct > 0 ? 'Học tiếp' : 'Bắt đầu'}
+                                <div class="flex justify-between items-center gap-2 pl-2">
+                                    <button onclick="openQuiz('${doc.id}')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Học nội bộ">
+                                        <i class="fas fa-play mr-1"></i> ${progressPct > 0 ? 'Học tiếp' : 'Tự Học'}
                                     </button>
-                                    <button onclick="editQuiz('${doc.id}')" class="text-blue-500 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 p-2.5 rounded-xl transition" title="Sửa bộ đề">
-                                        <i class="fas fa-pen"></i>
-                                    </button> 
-                                    <button onclick="deleteQuiz('${doc.id}', '${data.title}')" class="text-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 p-2.5 rounded-xl transition" title="Xóa bộ đề">
-                                        <i class="fas fa-trash-alt"></i>
+                                    <button onclick="viewStudentScores('${doc.id}')" class="flex-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Xem bảng điểm học sinh">
+                                        <i class="fas fa-chart-bar mr-1"></i> Điểm số
                                     </button>
+                                    <div class="flex gap-1">
+                                        <button onclick="editQuiz('${doc.id}')" class="text-blue-500 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 p-2.5 rounded-xl transition" title="Sửa đề"><i class="fas fa-pen"></i></button> 
+                                        <button onclick="deleteQuiz('${doc.id}', '${data.title}')" class="text-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 p-2.5 rounded-xl transition" title="Xóa đề"><i class="fas fa-trash-alt"></i></button>
+                                    </div>
                                 </div>
                             </div>
                         `;
@@ -383,42 +414,112 @@
         function copyShareCode(code) {
             if(code === "Chưa có") return;
             navigator.clipboard.writeText(code);
-            alert("Đã copy mã bảo mật: " + code + "\nGửi mã này cho bạn bè để họ nhập bộ đề nhé!");
+            alert("Đã copy Mã phòng thi: " + code + "\nGửi mã này cho học sinh để bắt đầu làm bài nộp điểm.");
         }
 
-        // HÀM REFRESH ĐỔI MÃ MỚI
         async function refreshShareCode(quizId) {
-            if(!confirm("Bạn có chắc muốn cấp lại Mã Share mới?\nNgười giữ mã cũ sẽ KHÔNG THỂ tải bộ đề này được nữa.")) return;
-            try {
-                await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).update({ shareCode: generateShareCode() });
-                goToDashboard();
-            } catch(e) { alert("Lỗi cập nhật mã!"); }
+            if(!confirm("Cấp lại Mã phòng thi mới?\nHọc sinh giữ mã cũ sẽ KHÔNG THỂ vào thi được nữa.")) return;
+            try { await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).update({ shareCode: generateShareCode() }); goToDashboard(); } 
+            catch(e) { alert("Lỗi cập nhật mã!"); }
         }
 
-        async function importByShareCode() {
-            const code = prompt("Vui lòng dán Mã Share bảo mật của bộ đề vào đây:");
+        // ==========================================
+        // TEACHER MODE: TÍNH NĂNG VÀO PHÒNG THI & CHẤM ĐIỂM
+        // ==========================================
+        async function joinExamRoom() {
+            const code = prompt("HỌC SINH:\nVui lòng dán Mã phòng thi giáo viên cấp vào đây:");
             if (!code) return;
             
+            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-search fa-spin text-5xl text-emerald-500 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang tìm phòng thi...</h2></div>`;
+            showScreen('auth-screen');
+
             try {
+                // Quét tìm mã trên toàn hệ thống
                 const qSnapshot = await db.collectionGroup("my_quizzes").where("shareCode", "==", code.trim()).get();
-                if (qSnapshot.empty) { alert("Không tìm thấy bộ đề! Vui lòng kiểm tra lại mã."); return; }
+                if (qSnapshot.empty) { 
+                    alert("Không tìm thấy bộ đề! Mã phòng thi đã hết hạn hoặc sai."); 
+                    goToDashboard(); return; 
+                }
                 
-                const data = qSnapshot.docs[0].data();
-                await db.collection("users").doc(currentUser.uid).collection("my_quizzes").add({
-                    title: data.title + " (Được Share)",
-                    questions: data.questions,
-                    progress: 0,
-                    shareCode: generateShareCode(),
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                alert("Đã tải bộ đề thành công vào Kho của bạn!");
-                goToDashboard();
+                const doc = qSnapshot.docs[0];
+                const data = doc.data();
+                
+                // Khởi tạo trạng thái ĐANG THI
+                examRef = doc.ref; // Lưu trữ địa chỉ gốc của giáo viên để tí nữa "bắn" điểm về
+                ALL_QUESTIONS = data.questions;
+                TOTAL_SECTIONS = Math.ceil(ALL_QUESTIONS.length / SEC_SIZE);
+                currentSection = 0; // Luôn bắt đầu từ đầu
+                globalMistakesTracker.clear();
+
+                // Setup giao diện Phòng Thi
+                document.getElementById('current-quiz-title').innerText = "Phòng Thi: " + data.title;
+                document.getElementById('welcome-msg').innerText = `Bài thi có tổng cộng ${ALL_QUESTIONS.length} câu. Chúc bạn thi tốt!`;
+                
+                document.getElementById('personal-actions').classList.add('hidden');
+                document.getElementById('exam-actions').classList.remove('hidden');
+                document.getElementById('exam-mode-badge').classList.remove('hidden');
+
+                updateHeaderProgress();
+                showScreen('welcome-screen');
             } catch (e) { 
-                console.error("Firebase Error:", e);
-                alert("Lỗi tải đề! (Nếu bạn là chủ web, hãy bấm F12 -> Mở tab Console -> Nhấn vào Link màu đỏ để tạo Index cho tính năng ShareCode nhé)"); 
+                console.error("Lỗi vào phòng thi:", e);
+                alert("Lỗi kết nối. (Hãy đảm bảo Chủ hệ thống đã tạo Index Firebase)"); 
+                goToDashboard();
             }
         }
 
+        // GIÁO VIÊN: XEM BẢNG ĐIỂM
+        async function viewStudentScores(quizId) {
+            const modal = document.getElementById('score-modal');
+            const tbody = document.getElementById('score-table-body');
+            const loading = document.getElementById('score-loading');
+            
+            modal.classList.remove('hidden');
+            tbody.innerHTML = '';
+            loading.classList.remove('hidden');
+
+            try {
+                const resultsSnap = await db.collection("users").doc(currentUser.uid)
+                    .collection("my_quizzes").doc(quizId)
+                    .collection("submissions").orderBy("timestamp", "desc").get();
+                
+                loading.classList.add('hidden');
+
+                if (resultsSnap.empty) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-400 italic">Chưa có học sinh nào nộp bài.</td></tr>`;
+                } else {
+                    resultsSnap.forEach(doc => {
+                        const d = doc.data();
+                        const timeStr = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'}) : 'Vừa xong';
+                        
+                        // Tô màu điểm
+                        let scoreColor = "text-green-600";
+                        if(d.score < 5) scoreColor = "text-red-600";
+                        else if(d.score < 8) scoreColor = "text-orange-500";
+
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                <td class="p-3 font-medium text-gray-800 dark:text-gray-200">
+                                    ${d.studentName} <br><span class="text-[10px] text-gray-400 font-normal">${d.studentEmail}</span>
+                                </td>
+                                <td class="p-3 text-center font-bold text-lg ${scoreColor}">${d.score}</td>
+                                <td class="p-3 text-center text-sm text-gray-500">${d.totalCorrect} / ${d.totalQs}</td>
+                                <td class="p-3 text-right text-xs text-gray-400">${timeStr}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch(e) {
+                alert("Lỗi tải bảng điểm!");
+                closeScoreModal();
+            }
+        }
+
+        function closeScoreModal() { document.getElementById('score-modal').classList.add('hidden'); }
+
+        // ==========================================
+        // CÁC CHỨC NĂNG CƠ BẢN QUẢN LÝ KHO
+        // ==========================================
         function openImportScreen() {
             editQuizId = null; 
             document.getElementById('quiz-title-input').value = '';
@@ -530,9 +631,7 @@
                 btn.disabled = true;
                 try {
                     if (editQuizId) {
-                        await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(editQuizId).update({
-                            title: title, questions: parsedQs
-                        });
+                        await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(editQuizId).update({ title: title, questions: parsedQs });
                     } else {
                         await db.collection("users").doc(currentUser.uid).collection("my_quizzes").add({
                             title: title, questions: parsedQs, progress: 0, shareCode: generateShareCode(), createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -545,7 +644,7 @@
         }
 
         async function resetQuiz(quizId, quizTitle) {
-            if(confirm(`Bạn muốn reset tiến độ của "${quizTitle}" về 0%?`)) {
+            if(confirm(`Bạn muốn reset tiến độ của cá nhân về 0%?`)) {
                 await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).update({ progress: 0 });
                 goToDashboard();
             }
@@ -553,20 +652,22 @@
 
         async function resetAndRestart() {
             if(confirm("Xác nhận làm lại từ đầu?")) {
-                await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: 0 });
+                if(!examRef) await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: 0 });
                 currentSection = 0; startNextSection();
             }
         }
 
         async function deleteQuiz(quizId, quizTitle) {
-            if(confirm(`Bạn có chắc muốn xóa vĩnh viễn bộ đề "${quizTitle}" không?`)) {
+            if(confirm(`Xóa vĩnh viễn bộ đề "${quizTitle}"? (Mất luôn cả bảng điểm học sinh)`)) {
                 await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).delete();
                 goToDashboard();
             }
         }
 
+        // HỌC CÁ NHÂN
         async function openQuiz(quizId) {
             activeQuizId = quizId;
+            examRef = null; // Tắt chế độ thi
             document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-spinner fa-spin text-5xl text-indigo-500 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang chuẩn bị đề...</h2></div>`;
             showScreen('auth-screen');
             try {
@@ -576,32 +677,49 @@
                 TOTAL_SECTIONS = Math.ceil(ALL_QUESTIONS.length / SEC_SIZE);
                 currentSection = data.progress || 0;
                 document.getElementById('current-quiz-title').innerText = data.title;
-                if(currentSection >= TOTAL_SECTIONS) { showScreen('finish-screen'); updateHeaderProgress(); return; }
-                document.getElementById('welcome-msg').innerText = `Bộ đề có ${ALL_QUESTIONS.length} câu. Bạn đang ở Section ${currentSection + 1}/${TOTAL_SECTIONS}.`;
+                
+                if(currentSection >= TOTAL_SECTIONS) { 
+                    document.getElementById('finish-title').innerText = "CHÚC MỪNG!";
+                    document.getElementById('finish-desc').innerText = "Bạn đã hoàn thành xong bộ đề học cá nhân.";
+                    showScreen('finish-screen'); updateHeaderProgress(); return; 
+                }
+                
+                document.getElementById('welcome-msg').innerText = `Bộ đề cá nhân: ${ALL_QUESTIONS.length} câu. Đang học Section ${currentSection + 1}/${TOTAL_SECTIONS}.`;
+                
+                document.getElementById('personal-actions').classList.remove('hidden');
+                document.getElementById('exam-actions').classList.add('hidden');
+                document.getElementById('exam-mode-badge').classList.add('hidden');
+
                 updateHeaderProgress();
                 showScreen('welcome-screen');
             } catch (e) { alert("Lỗi mở đề!"); goToDashboard(); }
         }
 
         async function shuffleAndStart() {
-            if(confirm("Hệ thống sẽ trộn ngẫu nhiên toàn bộ câu hỏi. Sẵn sàng chưa?")) {
+            if(confirm("Trộn ngẫu nhiên toàn bộ câu hỏi cá nhân?")) {
                 for (let i = ALL_QUESTIONS.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [ALL_QUESTIONS[i], ALL_QUESTIONS[j]] = [ALL_QUESTIONS[j], ALL_QUESTIONS[i]];
                 }
                 currentSection = 0;
-                try {
-                    await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ questions: ALL_QUESTIONS, progress: 0 });
-                    startNextSection();
-                } catch (e) { alert("Lỗi kết nối mây!"); }
+                if(!examRef) await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ questions: ALL_QUESTIONS, progress: 0 });
+                startNextSection();
             }
         }
 
         function startNextSection() {
             isReviewMode = false; mistakes = []; queue = [];
-            let startIdx = currentSection * SEC_SIZE;
-            let endIdx = Math.min(startIdx + SEC_SIZE, ALL_QUESTIONS.length);
-            for(let i = startIdx; i < endIdx; i++) queue.push(i);
+            
+            // Nếu là Exam: Quất 1 mạch từ đầu đến cuối, không chia section nhỏ nữa
+            if (examRef) {
+                for(let i = 0; i < ALL_QUESTIONS.length; i++) queue.push(i);
+            } else {
+                // Học cá nhân: Chia section 12 câu
+                let startIdx = currentSection * SEC_SIZE;
+                let endIdx = Math.min(startIdx + SEC_SIZE, ALL_QUESTIONS.length);
+                for(let i = startIdx; i < endIdx; i++) queue.push(i);
+            }
+            
             currentQIndexInQueue = 0; renderCurrentQuestion(); showScreen('quiz-screen');
         }
 
@@ -614,7 +732,9 @@
             const elNextBtn = document.getElementById('next-btn');
             const elPrevBtn = document.getElementById('prev-btn');
             
-            if (currentQIndexInQueue > 0 && !isReviewMode) elPrevBtn.classList.remove('hidden'); else elPrevBtn.classList.add('hidden');
+            // Trong chế độ thi không cho quay lại
+            if (currentQIndexInQueue > 0 && !isReviewMode && !examRef) elPrevBtn.classList.remove('hidden'); 
+            else elPrevBtn.classList.add('hidden');
             
             elNextBtn.disabled = true;
             elNextBtn.innerHTML = 'Kiểm tra <i class="fas fa-check ml-2"></i>';
@@ -627,7 +747,7 @@
             const urlRegex = /(https?:\/\/[^\s<]+(?:\.jpg|\.png|\.gif|\.jpeg|\.webp))/gi;
             qText = qText.replace(urlRegex, (url) => `<img src="${url}" class="max-h-64 rounded-xl mx-auto my-4 shadow-md border border-gray-200 dark:border-gray-700">`);
 
-            document.getElementById('question-text').innerHTML = `<span class="text-indigo-500 font-bold mr-2">Q${realIdx + 1}.</span> ` + qText;
+            document.getElementById('question-text').innerHTML = `<span class="text-indigo-500 font-bold mr-2">Câu ${currentQIndexInQueue + 1}.</span> ` + qText;
             
             const elOpts = document.getElementById('options-container'); 
             elOpts.innerHTML = '';
@@ -639,11 +759,11 @@
                 elOpts.appendChild(btn);
             });
 
-            document.getElementById('quiz-status').innerText = isReviewMode ? `Ôn tập câu sai: ${currentQIndexInQueue + 1}/${queue.length}` : `Câu ${currentQIndexInQueue + 1}/${queue.length}`;
+            document.getElementById('quiz-status').innerText = isReviewMode ? `Ôn câu sai: ${currentQIndexInQueue + 1}/${queue.length}` : (examRef ? `Đang Thi: ${currentQIndexInQueue + 1}/${queue.length}` : `Tiến trình: ${currentQIndexInQueue + 1}/${queue.length}`);
             if(isReviewMode) document.getElementById('retry-badge').classList.remove('hidden'); else document.getElementById('retry-badge').classList.add('hidden');
         }
 
-        function handlePrev() { if (currentQIndexInQueue > 0) { currentQIndexInQueue--; renderCurrentQuestion(); } }
+        function handlePrev() { if (currentQIndexInQueue > 0 && !examRef) { currentQIndexInQueue--; renderCurrentQuestion(); } }
 
         function selectOption(idx, btnElement) {
             if (hasSubmitted) return; 
@@ -684,7 +804,7 @@
                                 btn.style.backgroundColor = '#fef3c7'; btn.style.borderColor = '#f59e0b'; btn.style.color = '#b45309';
                                 btn.innerHTML += ' <span class="float-right text-xs font-bold mr-2 mt-1">(Thiếu)</span>';
                             } else {
-                                btn.classList.add('correct'); btn.innerHTML += ' <span class="float-right text-xs font-bold mr-2 mt-1">(Đáp án đúng)</span>';
+                                btn.classList.add('correct'); btn.innerHTML += ' <span class="float-right text-xs font-bold mr-2 mt-1">(Đáp án)</span>';
                             }
                         }
                     } else if (selectedOptions.includes(idx)) {
@@ -692,9 +812,12 @@
                     }
                 });
 
-                if (!isCorrect && !mistakes.includes(realIdx)) mistakes.push(realIdx);
+                if (!isCorrect) {
+                    if(!mistakes.includes(realIdx)) mistakes.push(realIdx);
+                    globalMistakesTracker.add(realIdx); // Lưu lại tổng số câu sai của bài
+                }
 
-                if (qData.e) {
+                if (qData.e && !examRef) { // Thi thì không cho xem giải thích
                     const expHTML = `
                     <div id="ai-explanation-box" class="mt-5 p-4 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 rounded-xl shadow-inner fade-in">
                         <div class="flex items-center gap-2 mb-1">
@@ -706,8 +829,14 @@
                     document.getElementById('options-container').insertAdjacentHTML('afterend', expHTML);
                 }
 
-                elNextBtn.innerHTML = 'Tiếp tục (Enter) <i class="fas fa-arrow-right ml-2"></i>';
-                elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base ml-auto";
+                elNextBtn.innerHTML = 'Câu tiếp (Enter) <i class="fas fa-arrow-right ml-2"></i>';
+                if(currentQIndexInQueue === queue.length - 1 && examRef) {
+                    elNextBtn.innerHTML = 'NỘP BÀI THI <i class="fas fa-paper-plane ml-2"></i>';
+                    elNextBtn.className = "w-full md:w-auto justify-center bg-red-600 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base ml-auto animate-pulse";
+                } else {
+                    elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base ml-auto";
+                }
+                
                 elNextBtn.disabled = true; setTimeout(() => elNextBtn.disabled = false, 500);
             } else {
                 currentQIndexInQueue++;
@@ -718,36 +847,82 @@
         async function finishPhase() {
             const resultIcon = document.getElementById('result-icon');
             const resultAction = document.getElementById('result-action');
+            const resultTitle = document.getElementById('result-title');
+            const resultDesc = document.getElementById('result-desc');
+
+            // XỬ LÝ NẾU ĐANG TRONG PHÒNG THI (TEACHER MODE)
+            if (examRef) {
+                const totalQs = ALL_QUESTIONS.length;
+                const totalWrong = globalMistakesTracker.size;
+                const totalRight = totalQs - totalWrong;
+                const finalScore = Math.round((totalRight / totalQs) * 10 * 10) / 10; // Chấm thang điểm 10, làm tròn 1 chữ số
+                
+                resultIcon.className = "w-24 h-24 mx-auto mb-4 text-emerald-500";
+                resultIcon.innerHTML = `<i class="fas fa-file-signature text-6xl"></i>`;
+                resultTitle.innerText = `Điểm thi: ${finalScore} / 10`;
+                resultDesc.innerHTML = `Bạn làm đúng <b>${totalRight}/${totalQs}</b> câu.<br>Hệ thống đang nộp bài cho giáo viên...`;
+                
+                resultAction.innerHTML = `<i class="fas fa-spinner fa-spin text-2xl text-indigo-500"></i>`;
+                showScreen('result-screen');
+
+                try {
+                    // Bắn dữ liệu về cho Giáo Viên
+                    await examRef.collection('submissions').add({
+                        studentName: currentUser.displayName || "Ẩn danh",
+                        studentEmail: currentUser.email || "No email",
+                        score: finalScore,
+                        totalCorrect: totalRight,
+                        totalQs: totalQs,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Hiện màn hình hoàn thành
+                    document.getElementById('finish-title').innerText = "ĐÃ NỘP BÀI THÀNH CÔNG!";
+                    document.getElementById('finish-desc').innerText = `Điểm số của bạn là ${finalScore}/10. Giáo viên đã nhận được kết quả.`;
+                    showScreen('finish-screen');
+                } catch(e) {
+                    alert("Lỗi nộp bài! Vui lòng báo cho giáo viên.");
+                    goToDashboard();
+                }
+                return; // Dừng hàm, không chạy luồng học cá nhân nữa
+            }
+
+            // XỬ LÝ HỌC CÁ NHÂN BÌNH THƯỜNG
             if (mistakes.length > 0) {
                 resultIcon.className = "w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl md:text-4xl bg-orange-100 text-orange-500";
                 resultIcon.innerHTML = '<i class="fas fa-redo"></i>';
-                document.getElementById('result-title').innerText = "Cần ôn tập lại!";
-                document.getElementById('result-desc').innerText = `Lần này bạn sai ${mistakes.length} câu. Hãy làm lại cho nhớ nhé!`;
+                resultTitle.innerText = "Cần ôn tập lại!";
+                resultDesc.innerText = `Lần này bạn sai ${mistakes.length} câu. Hãy làm lại cho nhớ nhé!`;
                 resultAction.innerHTML = `<button onclick="startRetry()" class="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition">Làm lại câu sai</button>`;
             } else {
                 resultIcon.className = "w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl md:text-4xl bg-green-100 text-green-500";
                 resultIcon.innerHTML = '<i class="fas fa-check"></i>';
-                document.getElementById('result-title').innerText = "Hoàn hảo!";
-                document.getElementById('result-desc').innerText = "Bạn đã chinh phục trọn vẹn Section này.";
+                resultTitle.innerText = "Hoàn hảo!";
+                resultDesc.innerText = "Bạn đã chinh phục trọn vẹn Section này.";
                 if(!isReviewMode) {
                     currentSection++;
                     try { await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: currentSection }); } catch(e) {}
                 }
                 updateHeaderProgress();
-                if (currentSection >= TOTAL_SECTIONS) { showScreen('finish-screen'); return; }
+                if (currentSection >= TOTAL_SECTIONS) { 
+                    document.getElementById('finish-title').innerText = "HOÀN THÀNH!";
+                    document.getElementById('finish-desc').innerText = "Bạn đã nhai gọn toàn bộ tài liệu học tập.";
+                    showScreen('finish-screen'); return; 
+                }
                 resultAction.innerHTML = `<button onclick="startNextSection()" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition">Tiếp tục Section ${currentSection + 1}</button>`;
             }
             showScreen('result-screen');
         }
 
         function updateHeaderProgress() {
-            if(TOTAL_SECTIONS === 0) return;
+            if(TOTAL_SECTIONS === 0 || examRef) return; // Thi thì không cần đếm section
             const pct = Math.min(100, Math.round((currentSection / TOTAL_SECTIONS) * 100));
             document.getElementById('progress-text').innerText = `Tiến độ: ${pct}%`;
             document.getElementById('progress-bar').style.width = `${pct}%`;
             document.getElementById('section-text').innerText = currentSection < TOTAL_SECTIONS ? `Section ${currentSection + 1}/${TOTAL_SECTIONS}` : `Hoàn thành!`;
         }
 
+        // TRẠM NHẠC SPOTIFY CHUẨN LOFI GIRL
         let isMusicMin = true;
         function toggleMusicWidget() {
             const widget = document.getElementById('music-widget'); const icon = document.getElementById('music-toggle-icon');
@@ -760,13 +935,12 @@
             let url = document.getElementById('spotify-input').value.trim();
             if(!url) return alert("Vui lòng dán link Spotify vào ô!");
             try {
-                // Tự động ép link Share bình thường (ví dụ copy từ app điện thoại) thành định dạng chuẩn Embed của web
                 if (url.includes('open.spotify.com') && !url.includes('/embed/')) {
                     const urlObj = new URL(url);
                     url = 'https://open.spotify.com/embed' + urlObj.pathname + '?utm_source=generator&theme=0';
                 }
                 document.getElementById('spotify-player').src = url;
-                document.getElementById('spotify-input').value = ''; // Xóa ô nhập sau khi phát
+                document.getElementById('spotify-input').value = '';
             } catch(e) { alert("Link không hợp lệ."); }
         }
 
