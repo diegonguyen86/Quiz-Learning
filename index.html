@@ -38,13 +38,13 @@
 <body class="text-gray-800 h-screen flex flex-col overflow-hidden">
 
     <header class="bg-white shadow-sm p-4 flex flex-col md:flex-row justify-between items-center z-10 gap-4 shrink-0">
-        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start cursor-pointer" onclick="goToDashboard()">
             <div class="flex items-center gap-3">
                 <img src="logo.png" alt="Logo" class="h-10 w-10 rounded-full border-2 border-indigo-500" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3067/3067258.png'">
                 <h1 class="text-xl font-bold text-gray-800">PM Quiz Master</h1>
             </div>
-            <button onclick="clearAllData()" class="md:hidden text-xs text-red-500 font-medium px-2 py-1 border border-red-200 rounded bg-red-50">
-                <i class="fas fa-trash-alt"></i> Xóa
+            <button id="mobile-back-btn" onclick="goToDashboard(); event.stopPropagation();" class="hidden md:hidden text-xs text-indigo-600 font-medium px-2 py-1 border border-indigo-200 rounded bg-indigo-50">
+                <i class="fas fa-arrow-left"></i> Kho Đề
             </button>
         </div>
         
@@ -59,8 +59,8 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <button onclick="clearAllData()" class="hidden md:block text-sm text-red-500 hover:text-red-700 font-medium px-3 py-1 border border-red-200 rounded hover:bg-red-50 transition">
-                <i class="fas fa-trash-alt mr-1"></i> Xóa Data
+            <button id="desktop-back-btn" onclick="goToDashboard()" class="hidden text-sm text-indigo-600 hover:text-indigo-800 font-medium px-3 py-1 border border-indigo-200 rounded hover:bg-indigo-50 transition">
+                <i class="fas fa-home mr-1"></i> Về Kho Đề
             </button>
             <div id="user-profile" class="hidden items-center gap-2 border-l pl-4 border-gray-200">
                 <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-300">
@@ -74,38 +74,49 @@
 
     <main class="flex-1 overflow-y-auto p-3 md:p-8 flex justify-center items-start pb-24 md:pb-8 relative">
         
-        <div id="auth-screen" class="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center mt-4 md:mt-10 fade-in">
+        <div id="auth-screen" class="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center mt-4 md:mt-10 fade-in"></div>
+
+        <div id="dashboard-screen" class="max-w-5xl w-full fade-in hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-layer-group text-indigo-500 mr-2"></i>Kho Đề Của Tôi</h2>
+                <button onclick="showScreen('import-screen')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Tạo bộ đề mới
+                </button>
             </div>
+            
+            <div id="quiz-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                </div>
+        </div>
 
         <div id="import-screen" class="max-w-4xl w-full bg-white rounded-2xl shadow-lg p-5 md:p-8 fade-in hidden">
-            <h2 class="text-xl md:text-2xl font-bold mb-2 text-indigo-600"><i class="fas fa-cloud-upload-alt mr-2"></i>Nạp Dữ Liệu Lên Mây</h2>
-            <p class="text-sm md:text-base text-gray-600 mb-4">Xin chào! Hiện tại kho dữ liệu đám mây của bạn đang trống. Hãy <b>copy toàn bộ câu hỏi và đáp án</b> dán vào dưới đây để hệ thống nạp đề cho bạn nhé.</p>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl md:text-2xl font-bold text-indigo-600"><i class="fas fa-cloud-upload-alt mr-2"></i>Tạo Bộ Đề Mới</h2>
+                <button onclick="goToDashboard()" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times text-xl"></i></button>
+            </div>
             
-            <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 outline-none mb-4 font-mono text-xs md:text-sm" placeholder="Dán văn bản vào đây...
-Ví dụ định dạng chuẩn:
-Con gà có trước hay quả trứng có trước?
-A. Con gà
-B. Quả trứng
-C. Không biết
-D. Sai đề
-C. Không biết
-Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đáp án 2 (Ví dụ: A, B)"></textarea>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Tên bộ đề (Môn học / Chủ đề):</label>
+                <input type="text" id="quiz-title-input" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 outline-none" placeholder="VD: Lịch sử Đảng, Kỹ năng giao tiếp...">
+            </div>
+
+            <p class="text-sm text-gray-600 mb-2"><b>Copy toàn bộ nội dung cần học</b> rồi dán vào ô bên dưới:</p>
+            <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 outline-none mb-4 font-mono text-xs md:text-sm" placeholder="A. Đáp án 1..."></textarea>
             
             <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
-                <i class="fas fa-cogs mr-2"></i> Xử lý & Đồng bộ ngay
+                <i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây
             </button>
         </div>
 
         <div id="welcome-screen" class="max-w-2xl w-full bg-white rounded-2xl shadow-lg p-5 md:p-8 text-center mt-4 md:mt-10 fade-in hidden">
+            <h2 id="current-quiz-title" class="text-2xl md:text-3xl font-bold mb-4 text-gray-800">Tên Bộ Đề</h2>
             <img src="https://cdn-icons-png.flaticon.com/512/3067/3067258.png" alt="Learn" class="w-24 h-24 md:w-32 md:h-32 mx-auto mb-4 md:mb-6">
-            <h2 class="text-xl md:text-2xl font-bold mb-2 text-green-600"><i class="fas fa-check-circle"></i> Đã đồng bộ Đám Mây</h2>
             <p class="text-sm md:text-base text-gray-600 mb-6" id="welcome-msg">Hệ thống đã sẵn sàng.</p>
             <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-4">
                 <button onclick="startNextSection()" class="bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 px-6 md:px-8 rounded-full shadow-lg transition text-base md:text-lg w-full md:w-auto">
-                    <i class="fas fa-play mr-2"></i> Học Theo Thứ Tự
+                    <i class="fas fa-play mr-2"></i> Học Tiếp
                 </button>
                 <button onclick="shuffleAndStart()" class="bg-purple-500 active:bg-purple-700 md:hover:bg-purple-600 text-white font-bold py-3 px-6 md:px-8 rounded-full shadow-lg transition text-base md:text-lg w-full md:w-auto">
-                    <i class="fas fa-random mr-2"></i> Trộn Đề
+                    <i class="fas fa-random mr-2"></i> Trộn Lại Từ Đầu
                 </button>
             </div>
         </div>
@@ -135,8 +146,8 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
             <img src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png" alt="Trophy" class="w-32 h-32 md:w-40 md:h-40 mx-auto mb-6">
             <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 mb-4">CHÚC MỪNG BẠN!</h2>
             <p class="text-sm md:text-lg text-gray-600 mb-6">Bạn đã nhai gọn toàn bộ tài liệu của bộ đề này.</p>
-            <button onclick="clearAllData()" class="bg-red-500 active:bg-red-700 md:hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition">
-                <i class="fas fa-trash-alt mr-2"></i> Xóa Đề Này & Nạp bộ mới
+            <button onclick="goToDashboard()" class="bg-indigo-500 active:bg-indigo-700 md:hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition">
+                <i class="fas fa-arrow-left mr-2"></i> Về Kho Đề
             </button>
         </div>
     </main>
@@ -159,7 +170,7 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
     </div>
 
     <script>
-        // CẤU HÌNH FIREBASE CỦA KHÔI
+        // CẤU HÌNH FIREBASE 
         const firebaseConfig = {
             apiKey: "AIzaSyBUQiXAFAp2o9C4G_YgQbGqrVoTqO0hpWI",
             authDomain: "quiz-learning-24d17.firebaseapp.com",
@@ -169,13 +180,13 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
             appId: "1:116470163667:web:c4d2b54b6fba1f68fdcc26"
         };
 
-        // Khởi tạo Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         let currentUser = null;
 
-        // Biến của Quiz
+        // BIẾN TOÀN CỤC MỚI ĐỂ QUẢN LÝ NHIỀU ĐỀ
+        let activeQuizId = null; // ID của bộ đề đang học
         const SEC_SIZE = 12;
         let ALL_QUESTIONS = [];
         let TOTAL_SECTIONS = 0;
@@ -187,11 +198,24 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
         let selectedOptions = []; 
         let hasSubmitted = false;
 
-        const screens = ['auth-screen', 'import-screen', 'welcome-screen', 'quiz-screen', 'result-screen', 'finish-screen'];
+        const screens = ['auth-screen', 'dashboard-screen', 'import-screen', 'welcome-screen', 'quiz-screen', 'result-screen', 'finish-screen'];
 
         function showScreen(screenId) {
             screens.forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(screenId).classList.remove('hidden');
+            
+            // Xử lý nút back/header
+            if(screenId === 'quiz-screen' || screenId === 'welcome-screen' || screenId === 'result-screen' || screenId === 'finish-screen') {
+                document.getElementById('header-progress').style.display = 'block';
+                document.getElementById('desktop-back-btn').classList.remove('hidden');
+                document.getElementById('mobile-back-btn').classList.remove('hidden');
+                document.getElementById('mobile-back-btn').classList.add('inline-block');
+            } else {
+                document.getElementById('header-progress').style.display = 'none';
+                document.getElementById('desktop-back-btn').classList.add('hidden');
+                document.getElementById('mobile-back-btn').classList.add('hidden');
+                document.getElementById('mobile-back-btn').classList.remove('inline-block');
+            }
         }
 
         function renderLoginUI() {
@@ -206,33 +230,19 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
             `;
         }
 
-        function renderLoadingUI(text) {
-            document.getElementById('auth-screen').innerHTML = `
-                <div class="py-10">
-                    <i class="fas fa-spinner fa-spin text-4xl text-indigo-500 mb-4"></i>
-                    <h2 class="text-xl font-bold text-gray-700">${text}</h2>
-                </div>
-            `;
-        }
-
-        // BỘ LẮNG NGHE ĐĂNG NHẬP
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUser = user;
-                // Hiện thanh user trên header
                 document.getElementById('user-profile').classList.remove('hidden');
                 document.getElementById('user-profile').classList.add('flex');
                 document.getElementById('user-avatar').src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 document.getElementById('user-name').innerText = user.displayName;
 
-                await loadUserDataFromCloud();
+                goToDashboard();
             } else {
                 currentUser = null;
-                // Ẩn thanh user
                 document.getElementById('user-profile').classList.add('hidden');
                 document.getElementById('user-profile').classList.remove('flex');
-                document.getElementById('header-progress').style.display = 'none';
-                
                 renderLoginUI();
                 showScreen('auth-screen');
             }
@@ -247,47 +257,71 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
             if(confirm("Bạn có chắc muốn đăng xuất?")) auth.signOut();
         }
 
-        // TẢI DỮ LIỆU TỪ MÂY
-        async function loadUserDataFromCloud() {
-            renderLoadingUI("Đang kết nối kho dữ liệu mây...");
+        // ==========================================
+        // KHỐI QUẢN LÝ KHO ĐỀ (DASHBOARD)
+        // ==========================================
+        async function goToDashboard() {
+            activeQuizId = null;
+            document.getElementById('auth-screen').innerHTML = `
+                <div class="py-10">
+                    <i class="fas fa-spinner fa-spin text-4xl text-indigo-500 mb-4"></i>
+                    <h2 class="text-xl font-bold text-gray-700">Đang tải kho đề...</h2>
+                </div>`;
             showScreen('auth-screen');
 
             try {
-                const docRef = db.collection("users").doc(currentUser.uid);
-                const docSnap = await docRef.get();
+                const snapshot = await db.collection("users").doc(currentUser.uid).collection("my_quizzes").orderBy("createdAt", "desc").get();
+                const container = document.getElementById('quiz-list-container');
+                container.innerHTML = '';
 
-                if (docSnap.exists) {
-                    const data = docSnap.data();
-                    if (data.quizzes && data.quizzes.length > 0) {
-                        ALL_QUESTIONS = data.quizzes;
-                        TOTAL_SECTIONS = Math.ceil(ALL_QUESTIONS.length / SEC_SIZE);
-                        currentSection = data.progress || 0;
-
-                        document.getElementById('header-progress').style.display = 'block';
-
-                        if(currentSection >= TOTAL_SECTIONS) {
-                            showScreen('finish-screen');
-                            updateHeaderProgress();
-                            return;
-                        }
-
-                        document.getElementById('welcome-msg').innerText = `Bộ đề ${ALL_QUESTIONS.length} câu đã được lấy từ đám mây. Đang ở Section ${currentSection + 1}/${TOTAL_SECTIONS}.`;
-                        updateHeaderProgress();
-                        showScreen('welcome-screen');
-                        return;
-                    }
+                if (snapshot.empty) {
+                    container.innerHTML = `<div class="col-span-full text-center py-10 bg-white rounded-xl border border-dashed border-gray-300">
+                        <i class="fas fa-folder-open text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Kho đề của bạn đang trống.</p>
+                    </div>`;
+                } else {
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const totalSec = Math.ceil(data.questions.length / SEC_SIZE);
+                        const progressPct = Math.min(100, Math.round((data.progress / totalSec) * 100)) || 0;
+                        
+                        container.innerHTML += `
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition flex flex-col justify-between">
+                                <div>
+                                    <h3 class="font-bold text-lg text-gray-800 mb-1 truncate" title="${data.title}">${data.title}</h3>
+                                    <p class="text-xs text-gray-500 mb-3"><i class="fas fa-database mr-1"></i> ${data.questions.length} câu hỏi</p>
+                                    
+                                    <div class="w-full bg-gray-200 rounded-full h-1.5 mb-1">
+                                        <div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${progressPct}%"></div>
+                                    </div>
+                                    <p class="text-right text-[10px] text-gray-500 mb-4">${progressPct}% hoàn thành</p>
+                                </div>
+                                
+                                <div class="flex justify-between items-center gap-2">
+                                    <button onclick="openQuiz('${doc.id}')" class="flex-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white text-sm font-bold py-2 px-3 rounded-lg transition">
+                                        ${progressPct > 0 ? '<i class="fas fa-play mr-1"></i> Học tiếp' : '<i class="fas fa-play mr-1"></i> Bắt đầu'}
+                                    </button>
+                                    <button onclick="deleteQuiz('${doc.id}', '${data.title}')" class="text-red-400 hover:bg-red-50 hover:text-red-600 p-2 rounded-lg transition" title="Xóa bộ đề">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
                 }
-                // Nếu chưa có data thì nạp đề
-                showScreen('import-screen');
+                showScreen('dashboard-screen');
             } catch (error) {
-                console.error("Lỗi tải data:", error);
-                alert("Không thể kết nối máy chủ Firebase. Vui lòng thử lại!");
+                console.error(error);
+                alert("Lỗi tải kho đề!");
             }
         }
 
-        // NẠP ĐỀ LÊN MÂY (HÀM PARSE THÔNG MINH CŨ)
         async function parseAndSaveData() {
+            const title = document.getElementById('quiz-title-input').value.trim();
             const text = document.getElementById('raw-text-input').value;
+            if(!title) { alert("Vui lòng đặt tên cho bộ đề!"); return; }
+            if(!text.trim()) { alert("Vui lòng dán nội dung đề!"); return; }
+
             const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
             const btn = document.getElementById('btn-parse');
             
@@ -301,40 +335,24 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
                 let optLetter = matchOpt ? matchOpt[1].toUpperCase() : null;
 
                 if (phase === 'text') {
-                    if (optLetter === 'A') {
-                        phase = 'options';
-                        currentItem.options.push(line);
-                    } else {
-                        currentItem.textBlock.push(line);
-                    }
+                    if (optLetter === 'A') { phase = 'options'; currentItem.options.push(line); } 
+                    else { currentItem.textBlock.push(line); }
                 } else if (phase === 'options') {
                     if (optLetter) {
                         let prevOpt = currentItem.options[currentItem.options.length - 1].match(/^([A-H])/i)[1].toUpperCase();
-                        if (optLetter > prevOpt) {
-                            currentItem.options.push(line);
-                        } else {
-                            currentItem.ansLine = line;
-                            phase = 'next_text';
-                        }
-                    } else {
-                        currentItem.ansLine = line;
-                        phase = 'next_text';
-                    }
+                        if (optLetter > prevOpt) currentItem.options.push(line);
+                        else { currentItem.ansLine = line; phase = 'next_text'; }
+                    } else { currentItem.ansLine = line; phase = 'next_text'; }
                 } else if (phase === 'next_text') {
                     if (optLetter === 'A') {
                         questionsData.push(currentItem);
                         currentItem = { options: [line], textBlock: currentItem.nextTextBlock, nextTextBlock: [], ansLine: "" };
                         phase = 'options';
-                    } else {
-                        currentItem.nextTextBlock.push(line);
-                    }
+                    } else { currentItem.nextTextBlock.push(line); }
                 }
             }
-            
             if (currentItem.options.length > 0) {
-                if (!currentItem.ansLine && currentItem.nextTextBlock.length > 0) {
-                    currentItem.ansLine = currentItem.nextTextBlock[0];
-                }
+                if (!currentItem.ansLine && currentItem.nextTextBlock.length > 0) currentItem.ansLine = currentItem.nextTextBlock[0];
                 questionsData.push(currentItem);
             }
 
@@ -347,7 +365,6 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
                 if (item.ansLine) {
                     let cleanAnsLine = item.ansLine.replace(/^(?:ĐÁP ÁN|KẾT QUẢ|ANSWER)[:\s]*/i, '').trim();
                     let letterMatch = cleanAnsLine.match(/^([A-H](?:\s*,\s*[A-H])*)/i);
-                    
                     if (letterMatch) {
                         let chars = letterMatch[1].toUpperCase().split(',').map(s => s.trim());
                         chars.forEach(char => {
@@ -355,46 +372,91 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
                             if (idx !== -1) correctIndexes.push(idx);
                         });
                     }
-                    
                     if (correctIndexes.length === 0) {
                         let ansUpper = item.ansLine.toUpperCase().trim();
                         item.options.forEach((opt, idx) => {
                             let optClean = opt.replace(/^[A-H][\.\)]\s*/i, '').toUpperCase().trim();
-                            if (optClean.length > 0 && ansUpper.includes(optClean)) {
-                                correctIndexes.push(idx);
-                            }
+                            if (optClean.length > 0 && ansUpper.includes(optClean)) correctIndexes.push(idx);
                         });
                     }
                 }
-                
                 if (correctIndexes.length === 0) correctIndexes = [0];
                 parsedQs.push({ q: qText, o: item.options, a: correctIndexes });
             });
 
             if (parsedQs.length > 0) {
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang đồng bộ lên mây...';
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang đồng bộ...';
                 btn.disabled = true;
                 
                 try {
-                    await db.collection("users").doc(currentUser.uid).set({
-                        quizzes: parsedQs,
-                        progress: 0
-                    }, { merge: true });
+                    // Lưu thành 1 Doc mới trong Collection my_quizzes
+                    await db.collection("users").doc(currentUser.uid).collection("my_quizzes").add({
+                        title: title,
+                        questions: parsedQs,
+                        progress: 0,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                     
-                    alert(`Thành công! Đã lưu vĩnh viễn ${parsedQs.length} câu lên đám mây.`);
-                    location.reload();
+                    document.getElementById('quiz-title-input').value = '';
+                    document.getElementById('raw-text-input').value = '';
+                    goToDashboard();
                 } catch (error) {
                     alert("Lỗi khi lưu lên mây: " + error.message);
-                    btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý & Đồng bộ ngay';
+                } finally {
+                    btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây';
                     btn.disabled = false;
                 }
             } else {
-                alert("Không nhận diện được câu nào. Kiểm tra lại cấu trúc Đề -> A. B. C. -> Đáp án nhé!");
+                alert("Không nhận diện được câu nào.");
+            }
+        }
+
+        async function deleteQuiz(quizId, quizTitle) {
+            if(confirm(`Bạn có chắc muốn xóa vĩnh viễn bộ đề "${quizTitle}" không?`)) {
+                await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).delete();
+                goToDashboard();
+            }
+        }
+
+        // ==========================================
+        // KHỐI LÀM BÀI (PLAY QUIZ)
+        // ==========================================
+        async function openQuiz(quizId) {
+            activeQuizId = quizId;
+            document.getElementById('auth-screen').innerHTML = `
+                <div class="py-10">
+                    <i class="fas fa-spinner fa-spin text-4xl text-indigo-500 mb-4"></i>
+                    <h2 class="text-xl font-bold text-gray-700">Đang chuẩn bị đề...</h2>
+                </div>`;
+            showScreen('auth-screen');
+
+            try {
+                const doc = await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).get();
+                const data = doc.data();
+                
+                ALL_QUESTIONS = data.questions;
+                TOTAL_SECTIONS = Math.ceil(ALL_QUESTIONS.length / SEC_SIZE);
+                currentSection = data.progress || 0;
+
+                document.getElementById('current-quiz-title').innerText = data.title;
+
+                if(currentSection >= TOTAL_SECTIONS) {
+                    showScreen('finish-screen');
+                    updateHeaderProgress();
+                    return;
+                }
+
+                document.getElementById('welcome-msg').innerText = `Bộ đề có ${ALL_QUESTIONS.length} câu. Bạn đang ở Section ${currentSection + 1}/${TOTAL_SECTIONS}.`;
+                updateHeaderProgress();
+                showScreen('welcome-screen');
+            } catch (e) {
+                alert("Lỗi mở đề!");
+                goToDashboard();
             }
         }
 
         async function shuffleAndStart() {
-            if(confirm("Hệ thống sẽ trộn toàn bộ câu hỏi và lưu lại. Bạn đã sẵn sàng chưa?")) {
+            if(confirm("Hệ thống sẽ trộn toàn bộ câu hỏi và bắt đầu lại từ Section 1. Sẵn sàng chưa?")) {
                 for (let i = ALL_QUESTIONS.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [ALL_QUESTIONS[i], ALL_QUESTIONS[j]] = [ALL_QUESTIONS[j], ALL_QUESTIONS[i]];
@@ -402,10 +464,10 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
                 currentSection = 0;
                 
                 try {
-                    await db.collection("users").doc(currentUser.uid).set({
-                        quizzes: ALL_QUESTIONS,
+                    await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({
+                        questions: ALL_QUESTIONS,
                         progress: 0
-                    }, { merge: true });
+                    });
                     startNextSection();
                 } catch (e) { alert("Lỗi kết nối mây!"); }
             }
@@ -504,35 +566,24 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
 
                 if (selectedOptions.length !== qData.a.length) {
                     isCorrect = false;
-                    if (selectedOptions.length > 0 && selectedOptions.every(val => qData.a.includes(val))) {
-                        isMissing = true;
-                    }
+                    if (selectedOptions.length > 0 && selectedOptions.every(val => qData.a.includes(val))) { isMissing = true; }
                 } else {
                     for (let ans of qData.a) {
-                        if (!selectedOptions.includes(ans)) {
-                            isCorrect = false;
-                            break;
-                        }
+                        if (!selectedOptions.includes(ans)) { isCorrect = false; break; }
                     }
                 }
 
                 buttons.forEach((btn, idx) => {
-                    btn.disabled = true; 
-                    btn.classList.remove('selected'); 
-
+                    btn.disabled = true; btn.classList.remove('selected'); 
                     if (qData.a.includes(idx)) {
                         if (selectedOptions.includes(idx)) {
-                            btn.classList.add('correct');
-                            btn.innerHTML += ' <i class="fas fa-check-circle float-right text-xl mt-0.5"></i>';
+                            btn.classList.add('correct'); btn.innerHTML += ' <i class="fas fa-check-circle float-right text-xl mt-0.5"></i>';
                         } else {
-                            btn.style.backgroundColor = '#fef3c7';
-                            btn.style.borderColor = '#f59e0b';
-                            btn.style.color = '#b45309';
+                            btn.style.backgroundColor = '#fef3c7'; btn.style.borderColor = '#f59e0b'; btn.style.color = '#b45309';
                             btn.innerHTML += ' <i class="fas fa-exclamation-triangle float-right text-xl mt-0.5"></i> <span class="float-right text-xs font-bold mr-2 mt-1">(Thiếu)</span>';
                         }
                     } else if (selectedOptions.includes(idx)) {
-                        btn.classList.add('wrong');
-                        btn.innerHTML += ' <i class="fas fa-times-circle float-right text-xl mt-0.5"></i>';
+                        btn.classList.add('wrong'); btn.innerHTML += ' <i class="fas fa-times-circle float-right text-xl mt-0.5"></i>';
                     }
                 });
 
@@ -546,17 +597,11 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
 
                 elNextBtn.innerHTML = 'Tiếp tục (Enter) <i class="fas fa-arrow-right ml-2"></i>';
                 elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 active:bg-black md:hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base";
-                
-                elNextBtn.disabled = true;
-                setTimeout(() => { elNextBtn.disabled = false; }, 500);
-
+                elNextBtn.disabled = true; setTimeout(() => { elNextBtn.disabled = false; }, 500);
             } else {
                 currentQIndexInQueue++;
-                if (currentQIndexInQueue < queue.length) {
-                    renderCurrentQuestion();
-                } else {
-                    finishPhase();
-                }
+                if (currentQIndexInQueue < queue.length) renderCurrentQuestion();
+                else finishPhase();
             }
         }
 
@@ -571,7 +616,6 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
                 resultIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
                 resultTitle.innerText = "Cần ôn tập lại!";
                 resultDesc.innerText = `Lần này sai ${mistakes.length} câu. Hãy làm lại cho nhớ nhé!`;
-                
                 resultAction.innerHTML = `<button onclick="startRetry()" class="w-full md:w-auto bg-orange-500 active:bg-orange-700 md:hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition"><i class="fas fa-redo mr-2"></i> Làm lại ${mistakes.length} câu sai</button>`;
             } else {
                 resultIcon.className = "w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl md:text-4xl bg-green-100 text-green-500";
@@ -581,10 +625,10 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
 
                 currentSection++;
                 
-                // LƯU TIẾN ĐỘ LÊN MÂY
+                // Cập nhật tiến độ của BỘ ĐỀ NÀY lên Firebase
                 try {
-                    await db.collection("users").doc(currentUser.uid).set({ progress: currentSection }, { merge: true });
-                } catch(e) { console.error("Lỗi lưu tiến độ", e); }
+                    await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: currentSection });
+                } catch(e) { console.error(e); }
                 
                 updateHeaderProgress();
 
@@ -605,29 +649,14 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
             document.getElementById('section-text').innerText = currentSection < TOTAL_SECTIONS ? `Section ${currentSection + 1}/${TOTAL_SECTIONS}` : `Hoàn thành!`;
         }
 
-        async function clearAllData() {
-            if(!currentUser) { alert("Vui lòng đăng nhập trước!"); return; }
-            if(confirm("XÓA VĨNH VIỄN: Bạn có chắc muốn xóa toàn bộ câu hỏi và tiến độ của bạn trên máy chủ không? Bạn bè của bạn sẽ không bị ảnh hưởng.")) {
-                try {
-                    await db.collection("users").doc(currentUser.uid).delete();
-                    location.reload();
-                } catch(e) { alert("Lỗi xóa dữ liệu!"); }
-            }
-        }
-
         // TÍNH NĂNG NHẠC VÀ PHÍM TẮT GIỮ NGUYÊN
         let isMusicMin = true;
         function toggleMusicWidget() {
             const widget = document.getElementById('music-widget');
             const icon = document.getElementById('music-toggle-icon');
             isMusicMin = !isMusicMin;
-            if (isMusicMin) {
-                widget.classList.add('minimized');
-                icon.style.transform = 'rotate(0deg)';
-            } else {
-                widget.classList.remove('minimized');
-                icon.style.transform = 'rotate(180deg)';
-            }
+            if (isMusicMin) { widget.classList.add('minimized'); icon.style.transform = 'rotate(0deg)'; } 
+            else { widget.classList.remove('minimized'); icon.style.transform = 'rotate(180deg)'; }
         }
 
         function updateSpotify() {
@@ -637,8 +666,7 @@ Lưu Ý: Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, �
             try {
                 let embedUrl = inputVal;
                 if (inputVal.includes('open.spotify.com') && !inputVal.includes('/embed/')) {
-                    const url = new URL(inputVal);
-                    embedUrl = 'https://open.spotify.com/embed' + url.pathname;
+                    const url = new URL(inputVal); embedUrl = 'https://open.spotify.com/embed' + url.pathname;
                 }
                 player.src = embedUrl + "?utm_source=generator&theme=0";
             } catch(e) { alert("Link không hợp lệ."); }
