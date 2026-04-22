@@ -151,63 +151,85 @@ Lưu Ý:Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đ
         let mistakes = []; 
         let isReviewMode = false;
         
-        // 2 BIẾN MỚI CHO MULTIPLE CHOICE
         let selectedOptions = []; 
         let hasSubmitted = false;
 
         const screens = ['import-screen', 'welcome-screen', 'quiz-screen', 'result-screen', 'finish-screen'];
 
+        // HÀM PARSE MỚI: THÔNG MINH HƠN, KHÔNG CẦN DÒNG TRỐNG
         function parseAndSaveData() {
             const text = document.getElementById('raw-text-input').value;
-            const blocks = text.trim().split(/\n\s*\n/);
+            // Xóa khoảng trắng thừa và tách theo từng dòng
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
             let parsedQs = [];
 
-            blocks.forEach(block => {
-                const lines = block.split('\n').map(l => l.trim()).filter(l => l !== '');
-                if(lines.length < 3) return;
+            let qLines = [];
+            let options = [];
+            let ansLines = [];
+            let state = 'Q'; // Trạng thái: 'Q' (Đề), 'O' (Option A,B,C,D), 'A' (Đáp án)
 
-                let options = [];
-                let qLines = [];
-                let ansLines = [];
+            function saveQ() {
+                // Trường hợp người dùng không ghi đáp án riêng, mà dòng option cuối cùng chính là đáp án
+                if (ansLines.length === 0 && options.length > 0) ansLines.push(options.pop());
                 
-                let phase = 0; 
-                lines.forEach(line => {
-                    if (/^[A-F]\./.test(line) && phase <= 1) {
-                        phase = 1;
-                        options.push(line);
-                    } else if (phase === 1 && !/^[A-F]\./.test(line)) {
-                        phase = 2;
-                        ansLines.push(line);
-                    } else if (phase === 2) {
-                        ansLines.push(line);
-                    } else if (phase === 0) {
-                        qLines.push(line);
-                    } else if (phase === 1 && /^[A-F]\./.test(line)) {
-                        options.push(line);
-                    }
-                });
-
-                if (ansLines.length === 0 && options.length > 0) {
-                    ansLines.push(options.pop());
-                }
-
-                // LOGIC MỚI: Xử lý Multiple Choice (VD: "C,D." hoặc "C, D")
-                if (options.length >= 2 && ansLines.length > 0) {
-                    let rawAns = ansLines[0].toUpperCase().replace(/\./g, ''); // Xóa dấu chấm đi, còn lại "C,D"
-                    let ansChars = rawAns.split(',').map(s => s.trim()); // Tách bằng dấu phẩy thành mảng ["C", "D"]
-                    
+                if (qLines.length > 0 && options.length >= 2 && ansLines.length > 0) {
+                    let rawAns = ansLines[0].toUpperCase().replace(/ĐÁP ÁN:?/gi, '').replace(/\./g, '');
+                    let ansChars = rawAns.split(',').map(s => s.trim());
                     let correctIndexes = [];
+                    
                     ansChars.forEach(char => {
-                        let idx = options.findIndex(o => o.startsWith(char + "."));
+                        let idx = options.findIndex(o => o.toUpperCase().startsWith(char + ".") || o.toUpperCase().startsWith(char + ")"));
                         if (idx !== -1) correctIndexes.push(idx);
                     });
                     
                     if (correctIndexes.length > 0) {
-                        // Lưu mảng các đáp án đúng vào 'a'
                         parsedQs.push({ q: qLines.join('<br>'), o: options, a: correctIndexes });
                     }
                 }
-            });
+                // Reset bộ đệm cho câu tiếp theo
+                qLines = []; options = []; ansLines = []; state = 'Q';
+            }
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                // Nhận diện dòng là A. B. C. D.
+                const isOpt = /^[A-H][\.\)]/.test(line);
+                // Nhận diện dòng có phải là format đáp án ngắn (VD: "C", "A, B", "Đáp án: A")
+                const isAnswerFormat = /^([A-H](\s*,\s*[A-H])*)[\.\s]*$/i.test(line) || /^Đáp án/i.test(line);
+
+                if (state === 'Q') {
+                    if (isOpt) { state = 'O'; options.push(line); }
+                    else { qLines.push(line); }
+                } 
+                else if (state === 'O') {
+                    if (isOpt) { options.push(line); }
+                    else { 
+                        state = 'A'; 
+                        ansLines.push(line); 
+                    }
+                } 
+                else if (state === 'A') {
+                    // Nếu đang đọc đáp án mà đột nhiên thấy A. B. C -> Rất có thể mấy dòng 'ansLines' nãy giờ chính là Đề bài của câu tiếp theo!
+                    if (isOpt) {
+                        let tempNextQ = [...ansLines];
+                        ansLines = [];
+                        saveQ(); // Chốt câu cũ
+                        qLines = tempNextQ; // Nạp lại đề cho câu mới
+                        state = 'O';
+                        options.push(line);
+                    } 
+                    // Nếu dòng này không giống format đáp án (A,B) và nó khá dài -> Chắc chắn là Câu hỏi mới
+                    else if (!isAnswerFormat && line.length > 8) {
+                        saveQ();
+                        qLines.push(line);
+                    } 
+                    // Nếu không, nó chỉ là dòng đáp án tiếp theo hoặc giải thích
+                    else {
+                        ansLines.push(line);
+                    }
+                }
+            }
+            saveQ(); // Đừng quên chốt câu cuối cùng của file
 
             if (parsedQs.length > 0) {
                 localStorage.setItem(DATA_KEY, JSON.stringify(parsedQs));
@@ -215,9 +237,13 @@ Lưu Ý:Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đ
                 alert(`Thành công rực rỡ! Đã lấy xuất sắc ${parsedQs.length} câu hỏi từ tài liệu.`);
                 location.reload();
             } else {
-                alert("Không nhận diện được câu hỏi nào. Bạn copy đúng định dạng có các câu trả lời theo hướng dẫn nhé!");
+                alert("Không nhận diện được câu hỏi nào. Đảm bảo bạn có các đáp án dạng A. B. C. nhé!");
             }
         }
+
+        // ==========================================
+        // CÁC HÀM CŨ GIỮ NGUYÊN BÊN DƯỚI
+        // ==========================================
 
         function initApp() {
             const savedData = localStorage.getItem(DATA_KEY);
@@ -303,20 +329,17 @@ Lưu Ý:Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đ
         }
 
         function selectOption(idx, btnElement) {
-            if (hasSubmitted) return; // Nếu đã chốt đáp án thì không cho bấm nữa
+            if (hasSubmitted) return;
 
             const indexInArray = selectedOptions.indexOf(idx);
             if (indexInArray > -1) {
-                // Đã chọn rồi -> Hủy chọn
                 selectedOptions.splice(indexInArray, 1);
                 btnElement.classList.remove('selected');
             } else {
-                // Chưa chọn -> Thêm vào mảng
                 selectedOptions.push(idx);
                 btnElement.classList.add('selected');
             }
 
-            // Kiểm tra bật/tắt nút Chốt đáp án
             const elNextBtn = document.getElementById('next-btn');
             if (selectedOptions.length > 0) {
                 elNextBtn.disabled = false;
@@ -336,11 +359,9 @@ Lưu Ý:Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đ
             const elNextBtn = document.getElementById('next-btn');
 
             if (!hasSubmitted) {
-                // BƯỚC 1: CHỐT ĐÁP ÁN VÀ CHẤM ĐIỂM
                 hasSubmitted = true;
                 let isCorrect = true;
 
-                // Kiểm tra xem user chọn có khớp 100% với đáp án gốc không
                 if (selectedOptions.length !== qData.a.length) {
                     isCorrect = false;
                 } else {
@@ -354,14 +375,12 @@ Lưu Ý:Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đ
 
                 buttons.forEach((btn, idx) => {
                     btn.disabled = true; 
-                    btn.classList.remove('selected'); // Bỏ trạng thái đang chọn
+                    btn.classList.remove('selected'); 
 
                     if (qData.a.includes(idx)) {
-                        // Đây là đáp án đúng (tô màu xanh)
                         btn.classList.add('correct');
                         btn.innerHTML += ' <i class="fas fa-check-circle float-right text-xl mt-0.5"></i>';
                     } else if (selectedOptions.includes(idx) && !qData.a.includes(idx)) {
-                        // User chọn sai ô này (tô màu đỏ)
                         btn.classList.add('wrong');
                         btn.innerHTML += ' <i class="fas fa-times-circle float-right text-xl mt-0.5"></i>';
                     }
@@ -371,12 +390,10 @@ Lưu Ý:Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đ
                     if(!mistakes.includes(realIdx)) mistakes.push(realIdx);
                 }
 
-                // Đổi nút thành "Tiếp tục"
-                elNextBtn.innerHTML = 'Tiếp tục <i class="fas fa-arrow-right ml-2"></i>';
+                elNextBtn.innerHTML = 'Tiếp tục (Enter) <i class="fas fa-arrow-right ml-2"></i>';
                 elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 active:bg-black md:hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base";
 
             } else {
-                // BƯỚC 2: QUA CÂU TIẾP THEO
                 currentQIndexInQueue++;
                 if (currentQIndexInQueue < queue.length) {
                     renderCurrentQuestion();
@@ -468,34 +485,29 @@ Lưu Ý:Nếu có nhiều đáp án thì ghi theo định dạng Đáp án 1, Đ
         }
 
         window.onload = initApp;
-// BỔ SUNG: Chức năng phím tắt (1, 2, 3... và Enter)
+
+        // BỔ SUNG: Chức năng phím tắt (1, 2, 3... và Enter)
         document.addEventListener('keydown', function(event) {
-            // 1. Bỏ qua phím tắt nếu anh đang gõ chữ vào ô nhập đề bài hoặc ô Spotify
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
 
-            // 2. Chỉ kích hoạt phím tắt khi đang làm bài (màn hình quiz hiển thị)
             const quizScreen = document.getElementById('quiz-screen');
             if (quizScreen.classList.contains('hidden')) return;
 
-            // 3. Xử lý khi bấm phím Enter (Chốt đáp án / Tiếp tục)
             if (event.key === 'Enter') {
                 const nextBtn = document.getElementById('next-btn');
-                // Nếu nút đang sáng (không bị mờ/disabled) thì giả lập cú click
                 if (!nextBtn.disabled) {
                     nextBtn.click(); 
                 }
                 return;
             }
 
-            // 4. Xử lý khi bấm các phím số từ 1 đến 9 (Chọn đáp án)
             const keyNum = parseInt(event.key);
             if (keyNum >= 1 && keyNum <= 9) {
                 const options = document.getElementById('options-container').querySelectorAll('button');
-                const targetIndex = keyNum - 1; // Phím 1 ứng với option đầu tiên (index 0)
+                const targetIndex = keyNum - 1; 
                 
-                // Kiểm tra xem phím số bấm có nằm trong số lượng đáp án của câu hỏi không và chưa chốt
                 if (targetIndex < options.length && !hasSubmitted) {
-                    options[targetIndex].click(); // Giả lập cú click vào đáp án
+                    options[targetIndex].click(); 
                 }
             }
         });
