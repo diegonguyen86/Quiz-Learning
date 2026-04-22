@@ -115,11 +115,13 @@
                 <p class="text-sm font-bold mb-1"><i class="fas fa-info-circle mr-1"></i> Ghi chú Format:</p>
                 <p class="text-xs italic mb-2">Để thêm ảnh, chỉ cần dán link ảnh vào câu hỏi (VD: https://anh.jpg)</p>
                 <div class="bg-white dark:bg-gray-900 p-3 rounded border border-blue-100 dark:border-gray-700 font-mono text-[10px] md:text-xs">
-                    Máy ảnh trong hình là loại gì?<br>
+                    Con gà có trước hay quả trứng có trước?<br>
                     https://example.com/fx6.jpg<br>
-                    A. Mirrorless<br>
-                    B. Cinema Line<br>
-                    B
+                    A. Con gà<br>
+                    B. Quả trứng<br>
+                    C. Không biết
+                    C. (đáp án)
+                    Nếu câu hỏi có nhiều đáp án thì ghi nhiều đáp án ngăn cách bởi dấu phẩy (ví dụ: A,B)
                 </div>
             </div>
             
@@ -131,7 +133,7 @@
             <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none mb-4 font-mono text-xs md:text-sm" placeholder="Dán nội dung..."></textarea>
             
             <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
-                <i class="fas fa-cogs mr-2"></i> Xử lý & Lưu mây
+                <i class="fas fa-cogs mr-2"></i> Xử lý
             </button>
         </div>
 
@@ -182,7 +184,7 @@
         <div id="finish-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 text-center fade-in hidden mt-4 md:mt-10">
             <img src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png" alt="Trophy" class="w-32 h-32 md:w-40 md:h-40 mx-auto mb-6">
             <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 mb-4">CHÚC MỪNG BẠN!</h2>
-            <p class="text-sm md:text-lg mb-6">Bạn đã nhai gọn toàn bộ tài liệu này.</p>
+            <p class="text-sm md:text-lg mb-6">Bạn đã nhai gọn toàn bộ tài liệu này (măm măm).</p>
             <button onclick="goToDashboard()" class="bg-indigo-500 active:bg-indigo-700 md:hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition">
                 <i class="fas fa-arrow-left mr-2"></i> Về Kho Đề
             </button>
@@ -363,7 +365,7 @@
         }
 
         async function importByShareCode() {
-            const code = prompt("Nhập mã chia sẻ bộ đề (6 ký tự):");
+            const code = prompt("Nhập mã chia sẻ bộ đề:");
             if (!code) return;
             
             try {
