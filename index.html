@@ -231,8 +231,8 @@
 
     </main>
 
-    <div id="music-widget" class="bg-white dark:bg-gray-800 rounded-t-xl md:rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="bg-[#1DB954] text-black px-4 py-2.5 md:py-3 flex justify-between items-center cursor-pointer active:bg-[#19a34a] hover:bg-[#1ed760] transition" onclick="toggleMusicWidget()">
+    <div id="music-widget" class="bg-white rounded-t-xl md:rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+        <div class="bg-[#1DB954] text-black px-4 py-2.5 md:py-3 flex justify-between items-center cursor-pointer active:bg-[#19a34a] md:hover:bg-[#1ed760] transition" onclick="toggleMusicWidget()">
             <div class="flex items-center gap-2 font-bold">
                 <i class="fab fa-spotify text-lg"></i> <span class="text-sm">Trạm Nhạc Spotify</span>
             </div>
@@ -242,9 +242,9 @@
             <div class="text-xs text-gray-400 mb-1 hidden md:block">Dán link Playlist/Bài hát Spotify vào đây:</div>
             <div class="flex gap-2">
                 <input type="text" id="spotify-input" placeholder="Dán link bài hát vào đây..." class="w-full text-xs p-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-[#1DB954] transition">
-                <button onclick="updateSpotify()" class="bg-[#1DB954] active:bg-[#19a34a] hover:bg-[#1ed760] text-black font-bold px-3 py-1 rounded text-xs transition">Phát</button>
+                <button onclick="updateSpotify()" class="bg-[#1DB954] active:bg-[#19a34a] md:hover:bg-[#1ed760] text-black font-bold px-3 py-1 rounded text-xs transition">Phát</button>
             </div>
-            <iframe id="spotify-player" style="border-radius:12px;" src="about:blank" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            <iframe id="spotify-player" style="border-radius:12px;" src="https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRwui0ExPn?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
         </div>
     </div>
 
@@ -1009,23 +1009,15 @@
             }
         }
 
-        // Tạo link mặc định an toàn cho trình duyệt
-        window.addEventListener('DOMContentLoaded', () => {
-            const defaultSp = "https://open." + "spotify.com/embed/playlist/0vvXsWCC9xrXsKd4VrS807?utm_source=generator&theme=0";
-            document.getElementById('spotify-player').src = defaultSp;
-        });
-
         function updateSpotify() {
             const inputVal = document.getElementById('spotify-input').value.trim();
             const player = document.getElementById('spotify-player');
             if(!inputVal) return alert("Vui lòng dán link Spotify vào ô!");
             try {
                 let embedUrl = inputVal;
-                // Bê nguyên đoạn ép link gốc của anh sang
-                const spDomain = "open." + "spotify.com"; // Lách trình chặn link AI
-                if (inputVal.includes(spDomain) && !inputVal.includes('/embed/')) {
+                if (inputVal.includes('open.spotify.com') && !inputVal.includes('/embed/')) {
                     const url = new URL(inputVal);
-                    embedUrl = 'https://' + spDomain + '/embed' + url.pathname;
+                    embedUrl = 'https://open.spotify.com/embed' + url.pathname;
                 }
                 player.src = embedUrl + "?utm_source=generator&theme=0";
             } catch(e) { alert("Link không hợp lệ. Vui lòng copy đúng link từ app Spotify."); }
