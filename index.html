@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quiz Learning - PM Master</title>
+    <title>Quiz Learning - Go Pro With Quiz</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -112,13 +112,13 @@
             <div class="bg-blue-50 dark:bg-indigo-900/20 border-l-4 border-blue-400 p-4 mb-6 rounded text-gray-700 dark:text-gray-300">
                 <p class="text-sm font-bold mb-1"><i class="fas fa-info-circle mr-1"></i> Ghi chú Format chuẩn:</p>
                 <div class="bg-white dark:bg-gray-900 p-3 rounded border border-blue-100 dark:border-gray-700 font-mono text-[10px] md:text-xs">
-                    Máy ảnh trong hình là loại gì?<br>
-                    https://upload.wikimedia.org/wikipedia/commons/1/1a/Sony_FX6.jpg<br>
-                    A. Mirrorless<br>
-                    B. Cinema Line<br>
-                    C. DSLR<br>
-                    B<br>
-                    Giải thích: Dòng máy chuyên quay phim của Sony.
+                    Con gà có trước hay quả trứng có trước?<br>
+                    https://upload.wikimedia.org/wikipedia/commons/1/1a/conga.jpg<br>
+                    A. Con gà<br>
+                    B. Quả trứng<br>
+                    C. Không biết<br>
+                    B (đáp án)<br>
+                    Nếu câu có nhiều đáp án thì ghi nhiều đáp án ngăn cách nhau bởi dấu phẩy (ví dụ A,B)
                 </div>
             </div>
             
@@ -130,7 +130,7 @@
             <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none mb-4 font-mono text-xs md:text-sm" placeholder="Dán nội dung bộ đề vào đây..."></textarea>
             
             <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
-                <i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây
+                <i class="fas fa-cogs mr-2"></i> Xử lý
             </button>
         </div>
 
@@ -181,7 +181,7 @@
         <div id="finish-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 text-center fade-in hidden mt-4 md:mt-10">
             <img src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png" alt="Trophy" class="w-32 h-32 md:w-40 md:h-40 mx-auto mb-6 drop-shadow-lg">
             <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">CHÚC MỪNG BẠN!</h2>
-            <p class="text-sm md:text-lg mb-6 text-gray-600 dark:text-gray-400">Bạn đã nhai gọn toàn bộ tài liệu của bộ đề này.</p>
+            <p class="text-sm md:text-lg mb-6 text-gray-600 dark:text-gray-400">Bạn đã nhai gọn toàn bộ câu hỏi của bộ đề này.</p>
             <button onclick="goToDashboard()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition">
                 <i class="fas fa-arrow-left mr-2"></i> Về Kho Đề
             </button>
@@ -200,7 +200,7 @@
                 <input type="text" id="spotify-input" placeholder="Dán link bài hát/playlist Spotify..." class="w-full text-xs p-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-[#1DB954] transition">
                 <button onclick="updateSpotify()" class="bg-[#1DB954] active:bg-[#19a34a] hover:bg-[#1ed760] text-black font-bold px-3 py-1 rounded text-xs transition">Phát</button>
             </div>
-            <iframe id="spotify-player" style="border-radius:12px;" src="https://open.spotify.com/embed/playlist/0vvXsWCC9xrXsKd4VrS883?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            <iframe id="spotify-player" style="border-radius:12px;" src="https://open.spotify.com/playlist/37i9dQZF1DZ06evO0FDzS8?si=zkWpMO9ISYCmtruFJoA4sw" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
         </div>
     </div>
 
@@ -760,11 +760,13 @@
             let url = document.getElementById('spotify-input').value.trim();
             if(!url) return alert("Vui lòng dán link Spotify vào ô!");
             try {
-                if (url.includes('spotify.com') && !url.includes('/embed/')) {
+                // Tự động ép link Share bình thường (ví dụ copy từ app điện thoại) thành định dạng chuẩn Embed của web
+                if (url.includes('open.spotify.com') && !url.includes('/embed/')) {
                     const urlObj = new URL(url);
                     url = 'https://open.spotify.com/embed' + urlObj.pathname + '?utm_source=generator&theme=0';
                 }
                 document.getElementById('spotify-player').src = url;
+                document.getElementById('spotify-input').value = ''; // Xóa ô nhập sau khi phát
             } catch(e) { alert("Link không hợp lệ."); }
         }
 
