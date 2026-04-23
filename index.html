@@ -771,8 +771,21 @@
                     }
                 } else if (phase === 'next_text') {
                     if (optLetter === 'A') {
+                        // Tách giải thích ngay lúc này để không bị dính sang câu số 2
+                        let explanation = "";
+                        let cleanNext = [];
+                        currentItem.nextTextBlock.forEach(txt => {
+                            if (txt.toLowerCase().includes('giải thích:')) {
+                                explanation = txt;
+                            } else {
+                                cleanNext.push(txt);
+                            }
+                        });
+                        currentItem.explanation = explanation;
+
                         questionsData.push(currentItem);
-                        currentItem = { options: [line], textBlock: currentItem.nextTextBlock, nextTextBlock: [], ansLine: "" };
+                        // Truyền phần text "sạch" (đã lọc giải thích) cho câu tiếp theo
+                        currentItem = { options: [line], textBlock: cleanNext, nextTextBlock: [], ansLine: "", explanation: "" };
                         phase = 'options';
                     } else {
                         currentItem.nextTextBlock.push(line);
@@ -781,6 +794,19 @@
             }
             
             if (currentItem.options.length > 0) {
+                // Lọc giải thích cho câu hỏi cuối cùng của bộ đề
+                let explanation = "";
+                let cleanNext = [];
+                currentItem.nextTextBlock.forEach(txt => {
+                    if (txt.toLowerCase().includes('giải thích:')) {
+                        explanation = txt;
+                    } else {
+                        cleanNext.push(txt);
+                    }
+                });
+                currentItem.explanation = explanation;
+                currentItem.nextTextBlock = cleanNext;
+
                 if (!currentItem.ansLine && currentItem.nextTextBlock.length > 0) {
                     currentItem.ansLine = currentItem.nextTextBlock[0];
                 }
@@ -827,22 +853,8 @@
                     errorMsg = `CẢNH BÁO THIẾU ĐÁP ÁN TẠI CÂU ${index + 1}:\n"${qText.replace(/<br>/g, ' ').substring(0, 60)}..."\n\nHệ thống không tìm thấy đáp án cuối câu. Vui lòng ghi rõ đáp án (Ví dụ: A) để tránh việc App tự động chấm sai lệch!`;
                 }
 
-                // --- TÍNH NĂNG MỚI: BÓC TÁCH LỜI GIẢI THÍCH AI ---
-                // --- BÓC TÁCH GIẢI THÍCH (NẾU CÓ) ---
-                let explanation = "";
-                let cleanNextText = [];
-                item.nextTextBlock.forEach(txt => {
-                    if (txt.toLowerCase().includes('giải thích:')) {
-                        explanation = txt;
-                    } else {
-                        cleanNextText.push(txt);
-                    }
-                });
-                item.nextTextBlock = cleanNextText;
-
+                let explanation = item.explanation || "";
                 parsedQs.push({ q: qText, o: item.options, a: correctIndexes, e: explanation });
-            });
-
             // Nếu phát hiện lỗi thì sập cầu dao, trả lại giao diện, hiện cảnh báo cho Giáo viên sửa
             if (hasError) {
                 btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý';
