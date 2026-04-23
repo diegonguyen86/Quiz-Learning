@@ -1095,9 +1095,16 @@
                             btn.classList.add('correct');
                             btn.innerHTML += ' <i class="fas fa-check-circle float-right text-xl mt-0.5"></i>';
                         } else {
-                        // Hiển thị rõ ràng đây là đáp án đúng mà người dùng đã bỏ lỡ
-                        btn.classList.add('correct');
-                        btn.innerHTML += ' <span class="float-right text-xs font-bold mr-2 mt-1 px-2 py-0.5 bg-green-200 text-green-800 rounded-full">(Đáp án đúng)</span>';
+                        // Tự động nhận diện: Câu nhiều đáp án (>1) hay Câu 1 đáp án
+                        if (qData.a.length > 1) {
+                            btn.style.backgroundColor = '#fef3c7';
+                            btn.style.borderColor = '#f59e0b';
+                            btn.style.color = '#b45309';
+                            btn.innerHTML += ' <i class="fas fa-exclamation-triangle float-right text-xl mt-0.5"></i> <span class="float-right text-xs font-bold mr-2 mt-1">(Bạn chọn thiếu)</span>';
+                        } else {
+                            btn.classList.add('correct');
+                            btn.innerHTML += ' <span class="float-right text-[10px] font-bold px-2 py-0.5 bg-green-200 text-green-800 rounded-full mt-1">(Đáp án đúng)</span>';
+                        }
                     }
                     } else if (selectedOptions.includes(idx)) {
                         btn.classList.add('wrong');
