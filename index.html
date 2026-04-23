@@ -828,18 +828,6 @@
                 }
 
                 // --- TÍNH NĂNG MỚI: BÓC TÁCH LỜI GIẢI THÍCH AI ---
-                let explanation = "";
-                let filteredNextText = [];
-                item.nextTextBlock.forEach(txt => {
-                    if (txt.toLowerCase().includes('giải thích:')) {
-                        explanation = txt;
-                    } else {
-                        filteredNextText.push(txt);
-                    }
-                });
-                item.nextTextBlock = filteredNextText; // Trả lại phần text sạch cho câu tiếp theo
-                
-                // Bơm thêm thuộc tính "e: explanation" vào cục dữ liệu
                 // --- BÓC TÁCH GIẢI THÍCH (NẾU CÓ) ---
                 let explanation = "";
                 let cleanNextText = [];
