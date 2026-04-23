@@ -286,7 +286,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
         let currentUser = null;
-        let hiddenAIText = ""; // Bộ nhớ ngầm chứa giải thích của AI
+        let hiddenAIText = ""; // Ngăn kéo chứa đề đã có giải thích của AI
         let activeQuizId = null;
         let editQuizId = null;
         let isStudentMode = false;
@@ -705,14 +705,16 @@
 
                 // Ghi đè toàn bộ kết quả siêu to khổng lồ vào lại ô Textarea
                 // Ghi kết quả vào bộ nhớ ngầm thay vì in ra ô nhập liệu
+                // Ghi vào ngăn kéo ngầm, giữ ô nhập liệu thô sạch sẽ cho anh Khôi dễ nhìn
                 hiddenAIText = finalResult.trim();
                 
-                btnAI.innerHTML = `<i class="fas fa-check mr-2"></i> Hoàn tất (100%)`;
+                btnAI.innerHTML = `<i class="fas fa-check mr-2"></i> Đã hoàn tất giải thích, hãy bấm "OK" để tiếp tục`;
+                // ... (phần code thông báo hoàn tất)
                 setTimeout(() => {
                     btnAI.innerHTML = '<i class="fas fa-brain mr-2"></i> Nhờ AI giải thích';
                 }, 3000);
                 
-                alert("Hệ thống đã cày xong bộ đề khổng lồ của bạn! Hãy check lại rồi bấm Lưu nhé.");
+                alert("Hệ thống đã sẵn sàng, hãy bấm Xử Lý để tiếp tục nhé");
 
             } catch (error) {
                 console.error(error);
@@ -838,6 +840,18 @@
                 item.nextTextBlock = filteredNextText; // Trả lại phần text sạch cho câu tiếp theo
                 
                 // Bơm thêm thuộc tính "e: explanation" vào cục dữ liệu
+                // --- BÓC TÁCH GIẢI THÍCH (NẾU CÓ) ---
+                let explanation = "";
+                let cleanNextText = [];
+                item.nextTextBlock.forEach(txt => {
+                    if (txt.toLowerCase().includes('giải thích:')) {
+                        explanation = txt;
+                    } else {
+                        cleanNextText.push(txt);
+                    }
+                });
+                item.nextTextBlock = cleanNextText;
+
                 parsedQs.push({ q: qText, o: item.options, a: correctIndexes, e: explanation });
             });
 
@@ -1081,11 +1095,10 @@
                             btn.classList.add('correct');
                             btn.innerHTML += ' <i class="fas fa-check-circle float-right text-xl mt-0.5"></i>';
                         } else {
-                            btn.style.backgroundColor = '#fef3c7';
-                            btn.style.borderColor = '#f59e0b';
-                            btn.style.color = '#b45309';
-                            btn.innerHTML += ' <i class="fas fa-exclamation-triangle float-right text-xl mt-0.5"></i> <span class="float-right text-xs font-bold mr-2 mt-1">(Bạn chọn thiếu)</span>';
-                        }
+                        // Hiển thị rõ ràng đây là đáp án đúng mà người dùng đã bỏ lỡ
+                        btn.classList.add('correct');
+                        btn.innerHTML += ' <span class="float-right text-xs font-bold mr-2 mt-1 px-2 py-0.5 bg-green-200 text-green-800 rounded-full">(Đáp án đúng)</span>';
+                    }
                     } else if (selectedOptions.includes(idx)) {
                         btn.classList.add('wrong');
                         btn.innerHTML += ' <i class="fas fa-times-circle float-right text-xl mt-0.5"></i>';
