@@ -286,7 +286,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
         let currentUser = null;
-
+        let hiddenAIText = ""; // Bộ nhớ ngầm chứa giải thích của AI
         let activeQuizId = null;
         let editQuizId = null;
         let isStudentMode = false;
@@ -704,7 +704,8 @@
                 }
 
                 // Ghi đè toàn bộ kết quả siêu to khổng lồ vào lại ô Textarea
-                document.getElementById('raw-text-input').value = finalResult.trim();
+                // Ghi kết quả vào bộ nhớ ngầm thay vì in ra ô nhập liệu
+                hiddenAIText = finalResult.trim();
                 
                 btnAI.innerHTML = `<i class="fas fa-check mr-2"></i> Hoàn tất (100%)`;
                 setTimeout(() => {
@@ -727,7 +728,8 @@
         
         async function parseAndSaveData() {
             const title = document.getElementById('quiz-title-input').value.trim();
-            const text = document.getElementById('raw-text-input').value;
+            // Ưu tiên lấy dữ liệu từ bộ nhớ ngầm (đã có AI giải thích). Nếu không có mới lấy từ ô nhập liệu gốc.
+            const text = hiddenAIText !== "" ? hiddenAIText : document.getElementById('raw-text-input').value;
             if(!title) return alert("Vui lòng đặt tên bộ đề!");
             if(!text.trim()) return alert("Vui lòng dán nội dung đề!");
 
@@ -857,6 +859,7 @@
                         });
                     }
                     goToDashboard();
+                    hiddenAIText = ""; // Reset bộ nhớ ngầm
                 } catch (error) { 
                     alert("Lỗi Lưu Firebase: " + error.message); 
                 }
