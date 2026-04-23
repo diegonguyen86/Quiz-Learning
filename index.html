@@ -624,6 +624,15 @@
             if (savedKey) document.getElementById('gemini-api-key').value = savedKey;
         });
 
+        // ==========================================
+        // TÍNH NĂNG AI: CHIA LÔ TỰ ĐỘNG ĐỂ XỬ LÝ ĐỀ KHỦNG (GIỮ NGUYÊN BẢN FREE)
+        // ==========================================
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('GEMINI_API_KEY');
+            if (savedKey) document.getElementById('gemini-api-key').value = savedKey;
+        });
+
         async function generateAIExplanations() {
             const apiKey = document.getElementById('gemini-api-key').value.trim();
             const rawText = document.getElementById('raw-text-input').value.trim();
@@ -632,60 +641,83 @@
             if (!apiKey) return alert("Vui lòng nhập Gemini API Key để sử dụng tính năng này!");
             if (!rawText) return alert("Vui lòng dán nội dung bộ đề vào ô bên dưới trước khi gọi AI!");
 
-            // Lưu Key lại để lần sau không bắt người dùng nhập nữa
             localStorage.setItem('GEMINI_API_KEY', apiKey);
-
-            btnAI.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> AI đang suy nghĩ...';
             btnAI.disabled = true;
             btnAI.classList.add('opacity-50');
 
-            const prompt = `
-            Dưới đây là một bộ đề thi trắc nghiệm. Trong mỗi câu hỏi, dòng chữ cái cuối cùng (nằm ngay dưới các lựa chọn A, B, C, D...) là ĐÁP ÁN GỐC do người soạn đề cung cấp.
+            // BƯỚC 1: Băm bộ đề ra thành từng câu/cụm (dựa vào khoảng trắng giữa các câu)
+            const blocks = rawText.split(/\n\s*\n/).filter(b => b.trim() !== '');
+            
+            // BƯỚC 2: Gom vào từng lô, mỗi lô khoảng 30 câu để không bị quá tải Token của bản Free
+            const CHUNK_SIZE = 30;
+            const chunks = [];
+            for (let i = 0; i < blocks.length; i += CHUNK_SIZE) {
+                chunks.push(blocks.slice(i, i + CHUNK_SIZE).join('\n\n'));
+            }
+
+            let finalResult = "";
+            const promptTemplate = `
+            Dưới đây là một phần của bộ đề thi trắc nghiệm. Trong mỗi câu hỏi, dòng chữ cái cuối cùng (nằm ngay dưới các lựa chọn A, B, C, D...) là ĐÁP ÁN GỐC do người soạn đề cung cấp.
 
             Nhiệm vụ của bạn là đóng vai một Trợ giảng kiểm định chất lượng (QA Reviewer):
             Bước 1: So sánh đáp án gốc với kiến thức thực tế chuẩn xác.
             Bước 2: Xử lý theo 1 trong 2 trường hợp sau và ghi kết quả vào ngay bên dưới dòng đáp án gốc:
                - TRƯỜNG HỢP 1 (Đáp án gốc đúng): Viết thêm dòng "Giải thích: [Lý do ngắn gọn 1-2 câu tại sao đáp án này đúng]".
-               - TRƯỜNG HỢP 2 (Đáp án gốc sai lệch kiến thức trầm trọng): Viết thêm dòng "Giải thích: ⚠️ [AI CẢNH BÁO] Đáp án gốc có thể bị sai. Sự thật là [giải thích sự thật ngắn gọn và chỉ ra đáp án đúng thực sự]".
+               - TRƯỜNG HỢP 2 (Đáp án gốc sai lệch kiến thức): Viết thêm dòng "Giải thích: ⚠️ [AI CẢNH BÁO] Đáp án gốc có thể bị sai. Sự thật là [giải thích sự thật ngắn gọn và chỉ ra đáp án đúng]".
 
             YÊU CẦU BẮT BUỘC:
-            1. BẢO TOÀN DỮ LIỆU GỐC: Dù phát hiện sai, tuyệt đối KHÔNG ĐƯỢC tự ý sửa hay xóa đáp án gốc của người dùng. Việc của bạn chỉ là đưa ra cảnh báo ở dòng "Giải thích:".
-            2. GIỮ NGUYÊN HIỆN TRẠNG: KHÔNG thay đổi từ ngữ, không phá vỡ định dạng A, B, C, D của bộ đề.
-            3. KẾT QUẢ SẠCH: Chỉ trả về nội dung bộ đề đã được chèn thêm dòng "Giải thích:". Không chèn thẻ markdown (như \`\`\`), không chào hỏi, không thêm ký tự thừa.
+            1. Tuyệt đối KHÔNG ĐƯỢC tự ý sửa hay xóa đáp án gốc của người dùng.
+            2. KHÔNG thay đổi từ ngữ, không phá vỡ định dạng A, B, C, D của bộ đề.
+            3. Chỉ trả về nội dung bộ đề đã được chèn thêm dòng "Giải thích:". Không chèn thẻ markdown, không chào hỏi.
 
-            Bộ đề gốc:
-            ${rawText}
+            Phần bộ đề cần xử lý:
             `;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.2 } // Ép AI trả lời chuẩn xác
-                    })
-                });
+                // BƯỚC 3: Chạy từng lô một và nối kết quả lại
+                for (let i = 0; i < chunks.length; i++) {
+                    // Cập nhật phần trăm tiến độ cực ngầu trên nút bấm
+                    const progress = Math.round((i / chunks.length) * 100);
+                    btnAI.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Đang xử lý lô ${i + 1}/${chunks.length} (${progress}%)...`;
 
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error.message);
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: promptTemplate + chunks[i] }] }],
+                            generationConfig: { temperature: 0.2 } 
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error.message);
+
+                    let aiResult = data.candidates[0].content.parts[0].text;
+                    aiResult = aiResult.replace(/^```[a-z]*\n/gm, '').replace(/```$/gm, '').trim();
+
+                    finalResult += aiResult + "\n\n";
+
+                    // ĐIỂM CHỐT HẠ: Delay nhẹ 2.5 giây giữa các lô để không bị Google mắng vì gọi quá nhanh (Rate Limit)
+                    if (i < chunks.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 2500));
+                    }
                 }
 
-                let aiResult = data.candidates[0].content.parts[0].text;
-                // Lọc bỏ markdown block nếu AI cố tình nhét vào
-                aiResult = aiResult.replace(/^```[a-z]*\n/gm, '').replace(/```$/gm, '').trim();
-
-                // Ghi đè kết quả của AI ngược lại vào ô Textarea
-                document.getElementById('raw-text-input').value = aiResult;
-                alert("AI đã giải thích xong! Hãy kiểm tra lại nội dung bên dưới trước khi bấm Lưu.");
+                // Ghi đè toàn bộ kết quả siêu to khổng lồ vào lại ô Textarea
+                document.getElementById('raw-text-input').value = finalResult.trim();
+                
+                btnAI.innerHTML = `<i class="fas fa-check mr-2"></i> Hoàn tất (100%)`;
+                setTimeout(() => {
+                    btnAI.innerHTML = '<i class="fas fa-brain mr-2"></i> Nhờ AI giải thích';
+                }, 3000);
+                
+                alert("Hệ thống đã cày xong bộ đề khổng lồ của bạn! Hãy check lại rồi bấm Lưu nhé.");
 
             } catch (error) {
                 console.error(error);
-                alert("Lỗi gọi AI: Kiểm tra lại API Key hoặc đảm bảo bạn có mạng internet.\nChi tiết: " + error.message);
-            } finally {
+                alert("Lỗi gọi AI: " + error.message);
                 btnAI.innerHTML = '<i class="fas fa-brain mr-2"></i> Nhờ AI giải thích';
+            } finally {
                 btnAI.disabled = false;
                 btnAI.classList.remove('opacity-50');
             }
