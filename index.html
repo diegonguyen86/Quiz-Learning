@@ -347,7 +347,7 @@
 
         function logoutApp() { if(confirm("Bạn có chắc muốn đăng xuất?")) auth.signOut(); }
 
-        function generateShareCode() { return 'PM-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
+        function generateShareCode() { return 'QL-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
 
         async function goToDashboard() {
             activeQuizId = null; editQuizId = null; isStudentMode = false; studentClassRef = null;
