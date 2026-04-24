@@ -855,6 +855,7 @@
 
                 let explanation = item.explanation || "";
                 parsedQs.push({ q: qText, o: item.options, a: correctIndexes, e: explanation });
+            });
             // Nếu phát hiện lỗi thì sập cầu dao, trả lại giao diện, hiện cảnh báo cho Giáo viên sửa
             if (hasError) {
                 btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý';
