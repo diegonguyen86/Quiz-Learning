@@ -163,7 +163,7 @@
             <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none mb-4 font-mono text-xs md:text-sm" placeholder="Dán nội dung bộ đề vào đây..."></textarea>
             
             <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
-                <i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây
+                <i class="fas fa-cogs mr-2"></i> Xử lý
             </button>
         </div>
 
@@ -412,7 +412,7 @@
                                     </div>
                                     <div class="flex justify-between items-center pl-2">
                                         <button onclick="openQuiz('${doc.id}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-xl transition shadow-sm">
-                                            <i class="fas fa-chalkboard-teacher mr-1"></i> ${pct > 0 ? 'Học Tiếp' : 'Vào Lớp'}
+                                            <i class="fas fa-chalkboard-teacher mr-1"></i> ${pct > 0 ? 'Học' : 'Vào Lớp'}
                                         </button>
                                     </div>
                                 </div>
@@ -427,7 +427,7 @@
                                     <div class="pl-2">
                                         <div class="flex justify-between items-start mb-1">
                                             <h3 class="font-bold text-lg truncate pr-2">${data.title}</h3>
-                                            <button onclick="resetQuiz('${doc.id}', '${data.title}')" class="text-orange-400 hover:text-orange-600 transition" title="Làm lại cá nhân"><i class="fas fa-sync-alt text-xs"></i></button>
+                                            <button onclick="resetQuiz('${doc.id}', '${data.title}')" class="text-orange-400 hover:text-orange-600 transition" title="Làm lại từ đầu"><i class="fas fa-sync-alt text-xs"></i></button>
                                         </div>
                                         <div class="flex items-center gap-1.5 mb-4 mt-2">
                                             <span class="text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded truncate border border-indigo-100 dark:border-indigo-800">
@@ -445,7 +445,7 @@
                                     
                                     <div class="flex justify-between items-center gap-1 pl-2">
                                         <button onclick="openQuiz('${doc.id}')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Học nội bộ">
-                                            <i class="fas fa-play mr-1"></i> Học Tiếp
+                                            <i class="fas fa-play mr-1"></i> Học
                                         </button>
                                         <button onclick="viewStudentProgress('${doc.id}')" class="flex-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Tiến độ học sinh">
                                             <i class="fas fa-users mr-1"></i> Tiến độ
@@ -478,7 +478,7 @@
         }
 
         async function importCopyQuiz() {
-            const code = prompt("COPY ĐỀ:\nVui lòng dán Mã Share của bộ đề vào đây:");
+            const code = prompt("LẤY ĐỀ:\nVui lòng dán Mã Share của bộ đề vào đây:");
             if (!code) return;
             
             try {
@@ -583,7 +583,7 @@
             document.getElementById('quiz-title-input').value = '';
             document.getElementById('raw-text-input').value = '';
             document.getElementById('import-screen-title').innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i>Tạo Bộ Đề Mới';
-            document.getElementById('btn-parse').innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý & Lưu lên mây';
+            document.getElementById('btn-parse').innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý';
             showScreen('import-screen');
         }
 
@@ -604,13 +604,15 @@
                     data.questions.forEach(q => {
                         rawText += q.q.replace(/<br>/g, '\n').replace(/<span.*?Hình minh họa.*?<\/span><br>/i, '') + "\n";
                         q.o.forEach(opt => rawText += opt + "\n");
-                        rawText += q.a.map(idx => String.fromCharCode(65 + idx)).join(",") + "\n\n";
+                        rawText += q.a.map(idx => String.fromCharCode(65 + idx)).join(",") + "\n";
+                        if (q.e) rawText += q.e + "\n"; 
+                        rawText += "\n";
                     });
                 }
                 
                 document.getElementById('raw-text-input').value = rawText.trim();
                 document.getElementById('import-screen-title').innerHTML = '<i class="fas fa-pen mr-2 text-blue-500"></i>Chỉnh Sửa Bộ Đề';
-                document.getElementById('btn-parse').innerHTML = '<i class="fas fa-save mr-2"></i> Cập Nhật Ghi Đè';
+                document.getElementById('btn-parse').innerHTML = '<i class="fas fa-save mr-2"></i> Cập Nhật';
                 showScreen('import-screen');
             } catch (e) { alert("Lỗi mở đề!"); goToDashboard(); }
         }
@@ -708,7 +710,7 @@
                 // Ghi vào ngăn kéo ngầm, giữ ô nhập liệu thô sạch sẽ cho anh Khôi dễ nhìn
                 hiddenAIText = finalResult.trim();
                 
-                btnAI.innerHTML = `<i class="fas fa-check mr-2"></i> Đã hoàn tất giải thích, hãy bấm "OK" để tiếp tục`;
+                btnAI.innerHTML = `<i class="fas fa-check mr-2"></i> Đã hoàn tất giải thích`;
                 // ... (phần code thông báo hoàn tất)
                 setTimeout(() => {
                     btnAI.innerHTML = '<i class="fas fa-brain mr-2"></i> Nhờ AI giải thích';
@@ -718,7 +720,7 @@
 
             } catch (error) {
                 console.error(error);
-                alert("Lỗi gọi AI: " + error.message);
+                alert("Lỗi gọi AI: " + error.message + "(Có thể server AI đang quá tải, hãy chờ 5s và bấm lại nút giải thích nhé)";
                 btnAI.innerHTML = '<i class="fas fa-brain mr-2"></i> Nhờ AI giải thích';
             } finally {
                 btnAI.disabled = false;
