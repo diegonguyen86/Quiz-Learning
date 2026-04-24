@@ -604,15 +604,13 @@
                     data.questions.forEach(q => {
                         rawText += q.q.replace(/<br>/g, '\n').replace(/<span.*?Hình minh họa.*?<\/span><br>/i, '') + "\n";
                         q.o.forEach(opt => rawText += opt + "\n");
-                        rawText += q.a.map(idx => String.fromCharCode(65 + idx)).join(",") + "\n";
-                        if (q.e) rawText += q.e + "\n"; 
-                        rawText += "\n";
+                        rawText += q.a.map(idx => String.fromCharCode(65 + idx)).join(",") + "\n\n";
                     });
                 }
                 
                 document.getElementById('raw-text-input').value = rawText.trim();
                 document.getElementById('import-screen-title').innerHTML = '<i class="fas fa-pen mr-2 text-blue-500"></i>Chỉnh Sửa Bộ Đề';
-                document.getElementById('btn-parse').innerHTML = '<i class="fas fa-save mr-2"></i> Cập Nhật';
+                document.getElementById('btn-parse').innerHTML = '<i class="fas fa-save mr-2"></i> Cập Nhật (vui lòng dùng lại nút nhờ AI giải thích để có giải thích mới nhất theo cập nhật)';
                 showScreen('import-screen');
             } catch (e) { alert("Lỗi mở đề!"); goToDashboard(); }
         }
@@ -741,7 +739,19 @@
             const btn = document.getElementById('btn-parse');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang xử lý...';
             btn.disabled = true;
+            const btn = document.getElementById('btn-parse');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang xử lý...';
+            btn.disabled = true;
             
+            // --- TÍNH NĂNG MỚI: TẢI LẠI GIẢI THÍCH CŨ ĐỂ CHỜ KẾ THỪA ---
+            let oldQuestions = [];
+            if (editQuizId && hiddenAIText === "") {
+                try {
+                    const docSnap = await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(editQuizId).get();
+                    if (docSnap.exists) oldQuestions = docSnap.data().questions || [];
+                } catch(e) {}
+            }
+            // ---------------------------------------------------------
             let questionsData = [];
             let currentItem = { options: [], textBlock: [], nextTextBlock: [], ansLine: "" };
             let phase = 'text'; 
@@ -856,6 +866,12 @@
                 }
 
                 let explanation = item.explanation || "";
+
+                // --- TỰ ĐỘNG GHÉP LẠI GIẢI THÍCH CŨ VÀO NẾU KHÔNG GỌI AI ---
+                if (editQuizId && explanation === "" && oldQuestions[index] && oldQuestions[index].e) {
+                    explanation = oldQuestions[index].e;
+                }
+
                 parsedQs.push({ q: qText, o: item.options, a: correctIndexes, e: explanation });
             });
             // Nếu phát hiện lỗi thì sập cầu dao, trả lại giao diện, hiện cảnh báo cho Giáo viên sửa
