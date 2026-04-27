@@ -1187,12 +1187,20 @@
                 elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 active:bg-black md:hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base ml-auto";
                 
             } else {
-                currentQIndexInQueue++;
-                if (currentQIndexInQueue < queue.length) {
-                    renderCurrentQuestion();
-                } else {
-                    finishPhase();
-                }
+                // KÍCH HOẠT LỚP BẢO VỆ CHỐNG SPAM CLICK / ENTER
+                elNextBtn.disabled = true;
+                elNextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                elNextBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang tải...';
+
+                // Tạm dừng 0.2s để giao diện kịp hiển thị nút quay vòng vòng cho người dùng thấy
+                setTimeout(() => {
+                    currentQIndexInQueue++;
+                    if (currentQIndexInQueue < queue.length) {
+                        renderCurrentQuestion();
+                    } else {
+                        finishPhase();
+                    }
+                }, 200);
             }
         }
 
