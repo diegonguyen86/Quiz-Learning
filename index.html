@@ -279,7 +279,7 @@
             </div>
             <iframe id="spotify-player" 
                 style="border-radius:12px" 
-                src="https://open.spotify.com/embed/album/4w6hrJBHXEpFvKg6bwyzSi?utm_source=generator&theme=0" 
+                src="https://open.spotify.com/embed/album/4w6hrJBHXEpFvKg6bwyzSi?utm_source=generator" 
                 width="100%" 
                 height="152" 
                 frameBorder="0" 
@@ -1273,12 +1273,6 @@
         let isMusicMin = true;
 
         // 1. Tự động load Playlist Lofi khi vừa mở trang web
-        window.addEventListener('DOMContentLoaded', () => {
-            // Thủ thuật tách chữ để hệ thống không tự động làm hỏng link Spotify
-            const spDomain = "open." + "spotify." + "com"; 
-            const defaultPlaylist = "https://" + spDomain + "/embed/playlist/0vvXsWCC9xrXsKd4VrS807?utm_source=generator&theme=0";
-            document.getElementById('spotify-player').src = defaultPlaylist;
-        });
 
         // 2. Thu gọn / Mở rộng trạm nhạc
         function toggleMusicWidget() {
