@@ -179,13 +179,18 @@
         <div id="preview-screen" class="max-w-5xl w-full h-[90vh] flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 fade-in hidden">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2 shrink-0">
                 <h2 id="preview-title" class="text-xl md:text-2xl font-bold text-indigo-600 dark:text-indigo-400"><i class="fas fa-eye mr-2"></i>Kiểm tra lại bộ đề</h2>
-                <span id="preview-count" class="bg-indigo-100 text-indigo-800 text-sm font-semibold px-3 py-1 rounded dark:bg-indigo-900 dark:text-indigo-300">0 câu hỏi</span>
+                <div class="flex items-center gap-3">
+                    <button onclick="scrollToNextError()" class="flex items-center gap-2 text-sm font-medium text-red-600 bg-red-50 px-3 py-1.5 rounded border border-red-200 hover:bg-red-100 transition dark:bg-red-900/30 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/50" title="Cuộn đến câu lỗi tiếp theo">
+                        <i class="fas fa-arrow-down"></i> Tìm câu lỗi
+                    </button>
+                    <span id="preview-count" class="bg-indigo-100 text-indigo-800 text-sm font-semibold px-3 py-1.5 rounded dark:bg-indigo-900 dark:text-indigo-300">0 câu hỏi</span>
+                </div>
             </div>
             <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-3 mb-4 rounded text-sm text-yellow-800 dark:text-yellow-200 shrink-0">
                 <i class="fas fa-exclamation-triangle mr-1"></i> Vui lòng lướt kiểm tra xem hệ thống bóc tách đáp án (màu xanh) đã chính xác chưa trước khi lưu.
             </div>
             
-            <div id="preview-container" class="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2 mb-4">
+            <div id="preview-container" class="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2 mb-4 relative">
                 <!-- Preview items will be injected here -->
             </div>
             
@@ -822,7 +827,7 @@
 
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
-                let isOption = /^([A-H])[\.\)]\s/i.test(line) || /^([A-H])[\.\)]$/i.test(line);
+                let isOption = /^([A-H])[\.\)](?:\s|$)/i.test(line) || (/^([A-H])[\.\)]/i.test(line) && !/^([A-H])[\.\)][a-z][\.\)]/i.test(line) && !/^e\.g\./i.test(line));
 
                 if (phase === 'text') {
                     if (isOption) {
@@ -847,7 +852,7 @@
                         for(let j = i + 1; j < lines.length; j++) {
                             let nextLine = lines[j].trim();
                             if (!nextLine) continue;
-                            let isNextOption = /^([A-H])[\.\)]\s/i.test(nextLine) || /^([A-H])[\.\)]$/i.test(nextLine);
+                            let isNextOption = /^([A-H])[\.\)](?:\s|$)/i.test(nextLine) || (/^([A-H])[\.\)]/i.test(nextLine) && !/^([A-H])[\.\)][a-z][\.\)]/i.test(nextLine) && !/^e\.g\./i.test(nextLine));
                             let isNewQ = /^câu\s*\d+:/i.test(nextLine) || /^\d+[\.\)]/i.test(nextLine);
                             let isExpl = nextLine.toLowerCase().includes('giải thích:');
                             let m1 = nextLine.match(/^([A-H](?:\s*,\s*[A-H])*)$/i);
@@ -1079,7 +1084,7 @@
                 }
 
                 html += `
-                    <div class="p-4 bg-white dark:bg-gray-900 border ${q.a.length === 0 ? 'border-red-400 dark:border-red-600 shadow-md shadow-red-100' : 'border-gray-200 dark:border-gray-700'} rounded-xl shadow-sm relative group">
+                    <div id="preview-q-${index}" class="p-4 bg-white dark:bg-gray-900 border ${q.a.length === 0 ? 'border-red-400 dark:border-red-600 shadow-md shadow-red-100 error-card' : 'border-gray-200 dark:border-gray-700'} rounded-xl shadow-sm relative group transition-all duration-300">
                         <div class="absolute -top-3 left-4 ${q.a.length === 0 ? 'bg-red-500 text-white border-red-600' : 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700'} px-2 py-0.5 rounded text-xs font-bold border">
                             Câu ${index + 1}
                         </div>
@@ -1101,6 +1106,37 @@
             container.innerHTML = html;
             // Restore scroll position after a short tick to let DOM update
             setTimeout(() => { container.scrollTop = savedScroll; }, 0);
+        }
+
+        function scrollToNextError() {
+            const container = document.getElementById('preview-container');
+            const errorElements = Array.from(container.querySelectorAll('.error-card'));
+            
+            if (errorElements.length === 0) {
+                alert("Tuyệt vời! Không còn câu nào bị lỗi.");
+                return;
+            }
+            
+            const currentScroll = container.scrollTop;
+            let target = errorElements.find(el => {
+                return el.offsetTop > currentScroll + 50; 
+            });
+            
+            if (!target) {
+                // If at the bottom or past the last error, wrap to the first one
+                target = errorElements[0];
+            }
+            
+            container.scrollTo({
+                top: target.offsetTop - 20,
+                behavior: 'smooth'
+            });
+            
+            // Highlight effect
+            target.classList.add('ring-4', 'ring-red-300', 'dark:ring-red-900/50');
+            setTimeout(() => {
+                target.classList.remove('ring-4', 'ring-red-300', 'dark:ring-red-900/50');
+            }, 1500);
         }
 
         function updatePendingQ(index, field, value) {
