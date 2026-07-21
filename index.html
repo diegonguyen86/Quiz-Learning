@@ -1102,9 +1102,18 @@
                         <div class="flex items-center p-2 mt-1 rounded border ${styleClass} text-sm transition-colors">
                             <input type="checkbox" onchange="togglePendingAns(${index}, ${optIndex}, this.checked)" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 mr-3 shrink-0 cursor-pointer">
                             <input type="text" oninput="updatePendingOpt(${index}, ${optIndex}, this.value)" value="${opt.replace(/"/g, '&quot;')}" class="flex-1 bg-transparent border-none focus:ring-0 outline-none ${textClass} w-full">
+                            <button onclick="removePendingOption(${index}, ${optIndex})" class="ml-2 text-gray-400 hover:text-red-500 transition-colors p-1" title="Xóa đáp án này"><i class="fas fa-times"></i></button>
                         </div>
                     `;
                 });
+                
+                optionsHtml += `
+                    <div class="mt-2 text-right">
+                        <button onclick="addPendingOption(${index})" class="text-xs px-2 py-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded transition-colors inline-flex items-center">
+                            <i class="fas fa-plus mr-1"></i> Thêm đáp án
+                        </button>
+                    </div>
+                `;
                 
                 let explHtml = `
                     <div class="mt-2 text-xs p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 rounded border border-blue-100 dark:border-blue-800 focus-within:ring-1 focus-within:ring-blue-500">
@@ -1199,6 +1208,40 @@
         function deletePendingQ(index) {
             if (confirm(`Xóa câu hỏi ${index + 1}?`)) {
                 pendingParsedQuestions.splice(index, 1);
+                renderPreviewScreen();
+            }
+        }
+        
+        function addPendingOption(qIndex) {
+            let nextLetter = 'A';
+            let currentOpts = pendingParsedQuestions[qIndex].o;
+            if (currentOpts.length > 0) {
+                let lastOpt = currentOpts[currentOpts.length - 1];
+                let m = lastOpt.match(/^([A-H])[\.\)]/i);
+                if (m) {
+                    let nextCharCode = m[1].toUpperCase().charCodeAt(0) + 1;
+                    if (nextCharCode <= 72) {
+                        nextLetter = String.fromCharCode(nextCharCode);
+                    } else {
+                        nextLetter = String.fromCharCode(65 + currentOpts.length);
+                    }
+                } else {
+                    nextLetter = String.fromCharCode(65 + currentOpts.length);
+                }
+            }
+            pendingParsedQuestions[qIndex].o.push(nextLetter + ". ");
+            renderPreviewScreen();
+        }
+        
+        function removePendingOption(qIndex, optIndex) {
+            if (pendingParsedQuestions[qIndex].o.length <= 2) {
+                alert("Một câu hỏi cần ít nhất 2 đáp án!");
+                return;
+            }
+            if (confirm('Xóa đáp án này?')) {
+                pendingParsedQuestions[qIndex].o.splice(optIndex, 1);
+                let currentAns = pendingParsedQuestions[qIndex].a;
+                pendingParsedQuestions[qIndex].a = currentAns.filter(a => a !== optIndex).map(a => a > optIndex ? a - 1 : a);
                 renderPreviewScreen();
             }
         }
