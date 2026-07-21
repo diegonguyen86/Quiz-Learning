@@ -707,7 +707,7 @@
                                 btnAI.innerHTML = `<i class="fas fa-exclamation-triangle text-yellow-300 mr-2"></i> Quá tải lô ${i + 1}. Đang thử lại lần ${retryCount}...`;
                             }
 
-                            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
@@ -768,7 +768,6 @@
         
         async function parseAndSaveData() {
             const title = document.getElementById('quiz-title-input').value.trim();
-            // Ưu tiên lấy dữ liệu từ bộ nhớ ngầm (đã có AI giải thích). Nếu không có mới lấy từ ô nhập liệu gốc.
             const text = hiddenAIText !== "" ? hiddenAIText : document.getElementById('raw-text-input').value;
             if(!title) return alert("Vui lòng đặt tên bộ đề!");
             if(!text.trim()) return alert("Vui lòng dán nội dung đề!");
@@ -777,7 +776,8 @@
             const btn = document.getElementById('btn-parse');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang xử lý...';
             btn.disabled = true;
-            // --- TÍNH NĂNG MỚI: TẢI LẠI GIẢI THÍCH CŨ ĐỂ CHỜ KẾ THỪA ---
+            
+            // --- TẢI LẠI GIẢI THÍCH CŨ ĐỂ CHỜ KẾ THỪA ---
             let oldQuestions = [];
             if (editQuizId && hiddenAIText === "") {
                 try {
@@ -785,79 +785,104 @@
                     if (docSnap.exists) oldQuestions = docSnap.data().questions || [];
                 } catch(e) {}
             }
-            // ---------------------------------------------------------
+            
+            // --- THUẬT TOÁN ĐỌC ĐỀ NÂNG CẤP SIÊU CHUẨN ---
             let questionsData = [];
-            let currentItem = { options: [], textBlock: [], nextTextBlock: [], ansLine: "" };
-            let phase = 'text'; 
+            let currentQ = { textBlock: [], options: [], postOptions: [] };
+            let phase = 'text'; // 'text', 'options', 'post'
 
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
-                let matchOpt = line.match(/^([A-H])[\.\)]/i);
-                let optLetter = matchOpt ? matchOpt[1].toUpperCase() : null;
+                let isOption = /^([A-H])[\.\)]\s/i.test(line) || /^([A-H])[\.\)]$/i.test(line);
 
                 if (phase === 'text') {
-                    if (optLetter === 'A') {
+                    if (isOption) {
                         phase = 'options';
-                        currentItem.options.push(line);
+                        currentQ.options.push(line);
                     } else {
-                        currentItem.textBlock.push(line);
+                        currentQ.textBlock.push(line);
                     }
                 } else if (phase === 'options') {
-                    if (optLetter) {
-                        let prevOpt = currentItem.options[currentItem.options.length - 1].match(/^([A-H])/i)[1].toUpperCase();
-                        if (optLetter > prevOpt) {
-                            currentItem.options.push(line);
+                    if (isOption) {
+                        let currentOptLetter = line.match(/^([A-H])/i)[1].toUpperCase();
+                        let prevOptLetter = currentQ.options[currentQ.options.length - 1].match(/^([A-H])/i)[1].toUpperCase();
+                        
+                        if (currentOptLetter > prevOptLetter) {
+                            currentQ.options.push(line);
                         } else {
-                            currentItem.ansLine = line;
-                            phase = 'next_text';
+                            phase = 'post';
+                            currentQ.postOptions.push(line);
                         }
                     } else {
-                        currentItem.ansLine = line;
-                        phase = 'next_text';
+                        phase = 'post';
+                        currentQ.postOptions.push(line);
                     }
-                } else if (phase === 'next_text') {
-                    if (optLetter === 'A') {
-                        // Tách giải thích ngay lúc này để không bị dính sang câu số 2
-                        let explanation = "";
-                        let cleanNext = [];
-                        currentItem.nextTextBlock.forEach(txt => {
-                            if (txt.toLowerCase().includes('giải thích:')) {
-                                explanation = txt;
+                } else if (phase === 'post') {
+                    if (isOption) {
+                        let optLetter = line.match(/^([A-H])/i)[1].toUpperCase();
+                        if (optLetter === 'A') {
+                            let isAnswerNotation = line.trim().length <= 3;
+                            let isRepeatedOption = currentQ.options.some(opt => opt.replace(/\s+/g, '').toLowerCase() === line.replace(/\s+/g, '').toLowerCase());
+                            
+                            if (isRepeatedOption || isAnswerNotation) {
+                                currentQ.postOptions.push(line);
                             } else {
-                                cleanNext.push(txt);
+                                // Sang câu mới
+                                let newQText = [];
+                                let cleanPost = [];
+                                let hitAnswerOrExpl = false;
+                                
+                                for(let k = currentQ.postOptions.length - 1; k >= 0; k--) {
+                                    let txt = currentQ.postOptions[k];
+                                    let lower = txt.toLowerCase();
+                                    
+                                    let isAnsFormat = /^([A-H](?:\s*,\s*[A-H])*)$/i.test(txt) || /^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H])/i.test(lower) || /^[A-H][\.\)]?$/i.test(txt);
+                                    let isRepeated = currentQ.options.some(opt => opt.replace(/\s+/g, '').toLowerCase() === txt.replace(/\s+/g, '').toLowerCase());
+                                    let isExpl = lower.includes('giải thích:');
+                                    
+                                    if (isAnsFormat || isRepeated || isExpl) {
+                                        hitAnswerOrExpl = true;
+                                    }
+                                    
+                                    if (!hitAnswerOrExpl) {
+                                        newQText.unshift(txt);
+                                    } else {
+                                        cleanPost.unshift(txt);
+                                    }
+                                }
+                                
+                                let hasExplInClean = cleanPost.some(t => t.toLowerCase().includes('giải thích:'));
+                                if (hasExplInClean) {
+                                    let actualNewQText = [];
+                                    let stillExpl = true;
+                                    for(let txt of newQText) {
+                                        if (stillExpl && (/^câu\s*\d+:/i.test(txt) || /^\d+[\.\)]/i.test(txt) || txt.includes('?'))) {
+                                            stillExpl = false;
+                                        }
+                                        if (stillExpl) {
+                                            cleanPost.push(txt);
+                                        } else {
+                                            actualNewQText.push(txt);
+                                        }
+                                    }
+                                    newQText = actualNewQText;
+                                }
+                                
+                                currentQ.postOptions = cleanPost;
+                                questionsData.push(currentQ);
+                                
+                                currentQ = { textBlock: newQText, options: [line], postOptions: [] };
+                                phase = 'options';
                             }
-                        });
-                        currentItem.explanation = explanation;
-
-                        questionsData.push(currentItem);
-                        // Truyền phần text "sạch" (đã lọc giải thích) cho câu tiếp theo
-                        currentItem = { options: [line], textBlock: cleanNext, nextTextBlock: [], ansLine: "", explanation: "" };
-                        phase = 'options';
+                        } else {
+                            currentQ.postOptions.push(line);
+                        }
                     } else {
-                        currentItem.nextTextBlock.push(line);
+                        currentQ.postOptions.push(line);
                     }
                 }
             }
-            
-            if (currentItem.options.length > 0) {
-                // Lọc giải thích cho câu hỏi cuối cùng của bộ đề
-                let explanation = "";
-                let cleanNext = [];
-                currentItem.nextTextBlock.forEach(txt => {
-                    if (txt.toLowerCase().includes('giải thích:')) {
-                        explanation = txt;
-                    } else {
-                        cleanNext.push(txt);
-                    }
-                });
-                currentItem.explanation = explanation;
-                currentItem.nextTextBlock = cleanNext;
-
-                if (!currentItem.ansLine && currentItem.nextTextBlock.length > 0) {
-                    currentItem.ansLine = currentItem.nextTextBlock[0];
-                }
-                questionsData.push(currentItem);
-            }
+            if (currentQ.options.length > 0) questionsData.push(currentQ);
 
             let parsedQs = [];
             let hasError = false;
@@ -866,49 +891,82 @@
             questionsData.forEach((item, index) => {
                 if (item.options.length < 2) return;
                 
+                let explanation = "";
+                let leftOverText = [];
+                let ansLetters = [];
+
+                item.postOptions.forEach(txt => {
+                    let lower = txt.toLowerCase();
+                    let m1 = txt.match(/^([A-H](?:\s*,\s*[A-H])*)$/i);
+                    let m2 = txt.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,\s*[A-H])*)/i);
+                    let m3 = txt.match(/^[A-H][\.\)]?$/i);
+                    let isAnsFormat = m1 || m2 || m3;
+                    
+                    let isRepeated = item.options.some(opt => opt.replace(/\s+/g, '').toLowerCase() === txt.replace(/\s+/g, '').toLowerCase());
+
+                    if (lower.includes('giải thích:')) {
+                        explanation = txt;
+                    } else if (isRepeated) {
+                        let letterMatch = txt.match(/^([A-H])/i);
+                        if (letterMatch) {
+                            let c = letterMatch[1].toUpperCase();
+                            if (!ansLetters.includes(c)) ansLetters.push(c);
+                        }
+                    } else if (isAnsFormat) {
+                        let matchedStr = (m1 ? m1[1] : (m2 ? m2[1] : txt));
+                        let chars = matchedStr.toUpperCase().split(',').map(s => s.trim().replace(/[\.\)]/g, ''));
+                        chars.forEach(c => {
+                            if (c.match(/^[A-H]$/) && !ansLetters.includes(c)) ansLetters.push(c);
+                        });
+                    } else {
+                        leftOverText.push(txt);
+                    }
+                });
+
+                if (item.textBlock.length === 0 && leftOverText.length > 0) {
+                    item.textBlock = leftOverText;
+                }
+
                 let qText = item.textBlock.length > 0 ? item.textBlock.join('<br>') : `Câu hỏi ${index + 1}`;
                 let correctIndexes = [];
                 
-                if (item.ansLine) {
-                    let cleanAnsLine = item.ansLine.replace(/^(?:ĐÁP ÁN|KẾT QUẢ|ANSWER)[:\s]*/i, '').trim();
-                    let letterMatch = cleanAnsLine.match(/^([A-H](?:\s*,\s*[A-H])*)/i);
-                    
-                    if (letterMatch) {
-                        let chars = letterMatch[1].toUpperCase().split(',').map(s => s.trim());
-                        chars.forEach(char => {
-                            let idx = item.options.findIndex(o => o.toUpperCase().startsWith(char + ".") || o.toUpperCase().startsWith(char + ")"));
-                            if (idx !== -1) correctIndexes.push(idx);
-                        });
-                    }
-                    
-                    if (correctIndexes.length === 0) {
-                        let ansUpper = item.ansLine.toUpperCase().trim();
-                        item.options.forEach((opt, idx) => {
-                            let optClean = opt.replace(/^[A-H][\.\)]\s*/i, '').toUpperCase().trim();
-                            if (optClean.length > 0 && ansUpper.includes(optClean)) {
+                ansLetters.forEach(letter => {
+                    let idx = item.options.findIndex(o => o.toUpperCase().startsWith(letter + ".") || o.toUpperCase().startsWith(letter + ")"));
+                    if (idx !== -1 && !correctIndexes.includes(idx)) correctIndexes.push(idx);
+                });
+                
+                // Fallback nếu người dùng gõ thiếu ký hiệu rõ ràng
+                if (correctIndexes.length === 0 && leftOverText.length > 0) {
+                    let possibleAnsLine = leftOverText.join(' ').toUpperCase();
+                    item.options.forEach((opt, idx) => {
+                        let optLetterMatch = opt.match(/^([A-H])/i);
+                        if (optLetterMatch) {
+                            let letter = optLetterMatch[1].toUpperCase();
+                            let regex = new RegExp(`\\b${letter}\\b`, 'i');
+                            if (regex.test(possibleAnsLine)) {
                                 correctIndexes.push(idx);
                             }
-                        });
-                    }
+                        }
+                    });
                 }
                 
-                // CHỐT CHẶN QUAN TRỌNG: Cấm auto chọn A. Nếu không thấy đáp án, kích hoạt báo lỗi!
-                // CHỐT CHẶN QUAN TRỌNG: Cấm auto chọn A. Nếu không thấy đáp án, kích hoạt báo lỗi!
+                // CHỐT CHẶN: Báo lỗi nếu đọc không ra đáp án
                 if (correctIndexes.length === 0) {
                     hasError = true;
-                    errorMsg = `CẢNH BÁO THIẾU ĐÁP ÁN TẠI CÂU ${index + 1}:\n"${qText.replace(/<br>/g, ' ').substring(0, 60)}..."\n\nHệ thống không tìm thấy đáp án cuối câu. Vui lòng ghi rõ đáp án (Ví dụ: A) để tránh việc App tự động chấm sai lệch!`;
+                    errorMsg = `CẢNH BÁO THIẾU ĐÁP ÁN TẠI CÂU ${index + 1}:\n"${qText.replace(/<br>/g, ' ').substring(0, 60)}..."\n\nHệ thống không tìm thấy đáp án hợp lệ. Vui lòng ghi đáp án rõ ràng (VD: Đáp án: A, B) để hệ thống nhận diện đúng!`;
                 }
 
-                let explanation = item.explanation || "";
-
-                // --- TỰ ĐỘNG GHÉP LẠI GIẢI THÍCH CŨ VÀO NẾU KHÔNG GỌI AI ---
-                if (editQuizId && explanation === "" && oldQuestions[index] && oldQuestions[index].e) {
-                    explanation = oldQuestions[index].e;
+                // TỰ ĐỘNG GHÉP LẠI GIẢI THÍCH CŨ NẾU KHÔNG DÙNG AI
+                if (editQuizId && explanation === "") {
+                    const oldMatch = oldQuestions.find(oq => oq.q.replace(/<br>/g, '').trim() === qText.replace(/<br>/g, '').trim());
+                    if (oldMatch && oldMatch.e) {
+                        explanation = oldMatch.e;
+                    }
                 }
 
                 parsedQs.push({ q: qText, o: item.options, a: correctIndexes, e: explanation });
             });
-            // Nếu phát hiện lỗi thì sập cầu dao, trả lại giao diện, hiện cảnh báo cho Giáo viên sửa
+
             if (hasError) {
                 btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý';
                 btn.disabled = false;
@@ -926,7 +984,7 @@
                         });
                     }
                     goToDashboard();
-                    hiddenAIText = ""; // Reset bộ nhớ ngầm
+                    hiddenAIText = ""; 
                 } catch (error) { 
                     alert("Lỗi Lưu Firebase: " + error.message); 
                 }
