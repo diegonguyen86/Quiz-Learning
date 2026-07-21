@@ -820,6 +820,33 @@
                 } catch(e) {}
             }
             
+            function checkIsRepeatedFuzzy(txt, options) {
+                let isRep = options.some(opt => opt.replace(/\s+/g, '').toLowerCase() === txt.replace(/\s+/g, '').toLowerCase());
+                if (isRep) return true;
+                let m = txt.match(/^([A-H])[\.\)](?:\s+|$)(.*)/i);
+                if (m) {
+                    let letter = m[1].toUpperCase();
+                    let restTxt = m[2].replace(/\s+/g, '').toLowerCase();
+                    let matchingOpt = options.find(opt => opt.toUpperCase().startsWith(letter + ".") || opt.toUpperCase().startsWith(letter + ")"));
+                    if (matchingOpt) {
+                        let optRest = matchingOpt.substring(2).replace(/\s+/g, '').toLowerCase();
+                        if (restTxt === '' || optRest.includes(restTxt) || restTxt.includes(optRest)) {
+                            return true;
+                        }
+                        let minLen = Math.min(optRest.length, restTxt.length);
+                        let matchCount = 0;
+                        for(let i=0; i<minLen; i++) {
+                            if (optRest[i] === restTxt[i]) matchCount++;
+                            else break;
+                        }
+                        if (matchCount >= 15 || (minLen > 0 && matchCount === minLen)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
             // --- THUẬT TOÁN ĐỌC ĐỀ NÂNG CẤP SIÊU CHUẨN ---
             let questionsData = [];
             let currentQ = { textBlock: [], options: [], postOptions: [] };
@@ -898,17 +925,29 @@
                                 let m3 = txt.match(/^[A-H][\.\)]?$/i);
                                 let isAnsFormat = m1 || m2 || m3;
                                 
-                                let isRepeated = currentQ.options.some(opt => opt.replace(/\s+/g, '').toLowerCase() === txt.replace(/\s+/g, '').toLowerCase());
+                                let isRepeated = checkIsRepeatedFuzzy(txt, currentQ.options);
                                 let isExpl = lower.includes('giải thích:');
+                                
+                                let isOptContinuation = false;
+                                if (txt.replace(/\s+/g, '').length > 3) {
+                                    isOptContinuation = currentQ.options.some(opt => opt.replace(/\s+/g, '').toLowerCase().includes(txt.replace(/\s+/g, '').toLowerCase()));
+                                }
                                 
                                 if (isAnsFormat || isRepeated || isExpl) { hitAnswerOrExpl = true; }
                                 
-                                if (!hitAnswerOrExpl) newQText.unshift(txt);
-                                else cleanPost.unshift(txt);
+                                if (!hitAnswerOrExpl) {
+                                    if (isOptContinuation) {
+                                        cleanPost.unshift(txt);
+                                    } else {
+                                        newQText.unshift(txt);
+                                    }
+                                } else {
+                                    cleanPost.unshift(txt);
+                                }
                             }
 
                             let isOnlyPrefix = newQText.length > 0 && newQText.every(t => /^(?:đáp án|kết quả|answer|chọn)[:\s]*$/i.test(t.trim()));
-                            let isRepeatedOptA = currentQ.options.some(opt => opt.replace(/\s+/g, '').toLowerCase() === line.replace(/\s+/g, '').toLowerCase());
+                            let isRepeatedOptA = checkIsRepeatedFuzzy(line, currentQ.options);
                             
                             let isNewQuestion = false;
                             if (newQText.length > 0 && !isOnlyPrefix) {
@@ -954,7 +993,7 @@
                     let m3 = txt.match(/^[A-H][\.\)]?$/i);
                     let isAnsFormat = m1 || m2 || m3;
                     
-                    let isRepeated = item.options.some(opt => opt.replace(/\s+/g, '').toLowerCase() === txt.replace(/\s+/g, '').toLowerCase());
+                    let isRepeated = checkIsRepeatedFuzzy(txt, item.options);
 
                     if (lower.includes('giải thích:')) {
                         inExplanation = true;
