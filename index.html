@@ -987,10 +987,9 @@
                     });
                 }
                 
-                // CHỐT CHẶN: Báo lỗi nếu đọc không ra đáp án
+                // Không block lỗi nữa vì người dùng có thể tự sửa ở màn hình Preview
                 if (correctIndexes.length === 0) {
-                    hasError = true;
-                    errorMsg = `CẢNH BÁO THIẾU ĐÁP ÁN TẠI CÂU ${index + 1}:\n"${qText.replace(/<br>/g, ' ').substring(0, 60)}..."\n\nHệ thống không tìm thấy đáp án hợp lệ. Vui lòng ghi đáp án rõ ràng (VD: Đáp án: A, B) để hệ thống nhận diện đúng!`;
+                    // Do nothing, pass it to preview
                 }
 
                 // TỰ ĐỘNG GHÉP LẠI GIẢI THÍCH CŨ NẾU KHÔNG DÙNG AI
@@ -1003,12 +1002,6 @@
 
                 parsedQs.push({ q: qText, o: item.options, a: correctIndexes, e: explanation });
             });
-
-            if (hasError) {
-                btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý';
-                btn.disabled = false;
-                return alert(errorMsg); 
-            }
 
             if (parsedQs.length > 0) {
                 // Thay vì lưu ngay, ta đẩy vào mảng chờ và gọi Preview
@@ -1058,15 +1051,25 @@
                         <textarea oninput="updatePendingQ(${index}, 'e', this.value)" class="w-full bg-transparent border-none resize-none focus:ring-0 outline-none mt-1" rows="${(q.e.match(/<br>/g) || []).length + 1}" placeholder="(Thêm giải thích nếu cần...)">${q.e.replace(/<br>/g, '\n')}</textarea>
                     </div>
                 `;
+                
+                let warningHtml = '';
+                if (q.a.length === 0) {
+                    warningHtml = `
+                        <div class="mb-2 text-xs p-2 bg-red-100 text-red-800 rounded border border-red-300 dark:bg-red-900/40 dark:text-red-300 dark:border-red-800">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> <strong>Cảnh báo:</strong> Hệ thống chưa tìm thấy đáp án đúng cho câu này. Hãy tick thủ công ở bên dưới!
+                        </div>
+                    `;
+                }
 
                 html += `
-                    <div class="p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm relative group">
-                        <div class="absolute -top-3 left-4 bg-indigo-100 dark:bg-indigo-900 px-2 py-0.5 rounded text-xs font-bold text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700">
+                    <div class="p-4 bg-white dark:bg-gray-900 border ${q.a.length === 0 ? 'border-red-400 dark:border-red-600 shadow-md shadow-red-100' : 'border-gray-200 dark:border-gray-700'} rounded-xl shadow-sm relative group">
+                        <div class="absolute -top-3 left-4 ${q.a.length === 0 ? 'bg-red-500 text-white border-red-600' : 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700'} px-2 py-0.5 rounded text-xs font-bold border">
                             Câu ${index + 1}
                         </div>
                         <button onclick="deletePendingQ(${index})" class="absolute top-2 right-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 p-1.5 rounded transition opacity-50 hover:opacity-100" title="Xóa câu hỏi này">
                             <i class="fas fa-trash-alt"></i>
                         </button>
+                        ${warningHtml}
                         <div class="font-medium text-base mb-3 mt-1 leading-relaxed border-b border-dashed border-gray-300 dark:border-gray-600 focus-within:border-indigo-500 pb-1 mr-6">
                             <textarea oninput="updatePendingQ(${index}, 'q', this.value)" class="w-full bg-transparent border-none resize-none focus:ring-0 outline-none" rows="${(q.q.match(/<br>/g) || []).length + 2}">${q.q.replace(/<br>/g, '\n')}</textarea>
                         </div>
