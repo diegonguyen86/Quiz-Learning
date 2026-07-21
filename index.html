@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
+<head>\n    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quiz Learning - Go Pro With Quiz</title>
@@ -32,7 +32,7 @@
         .option-btn { transition: all 0.2s; border-width: 2px; }
         .option-btn:hover:not(:disabled) { border-color: #6366f1; background-color: #e0e7ff; }
         .option-btn:active:not(:disabled) { transform: scale(0.98); }
-        .option-btn.selected { border-color: #6366f1; background-color: #e0e7ff; font-weight: 600; }
+        .option-btn.selected { border-color: #1d4ed8; background-color: #eff6ff; font-weight: 600; }
         .option-btn.correct { border-color: #10b981; background-color: #d1fae5; color: #065f46; font-weight: 600; }
         .option-btn.wrong { border-color: #ef4444; background-color: #fee2e2; color: #991b1b; }
         
@@ -57,7 +57,7 @@
                 <img src="logo.png" alt="Logo" class="h-10 w-10 rounded-full border-2 border-indigo-500" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3067/3067258.png'">
                 <h1 class="text-xl font-bold">QUIZ LEARNING</h1>
             </div>
-            <button id="mobile-back-btn" onclick="goToDashboard(); event.stopPropagation();" class="hidden md:hidden text-xs text-indigo-600 dark:text-indigo-400 font-medium px-2 py-1 border border-indigo-200 dark:border-indigo-800 rounded bg-indigo-50 dark:bg-indigo-900/30">
+            <button id="mobile-back-btn" onclick="goToDashboard(); event.stopPropagation();" class="hidden md:hidden text-xs text-blue-700 dark:text-blue-500 font-medium px-2 py-1 border border-indigo-200 dark:border-indigo-800 rounded bg-blue-50 dark:bg-indigo-900/30">
                 <i class="fas fa-arrow-left"></i> Trang Chủ
             </button>
         </div>
@@ -68,7 +68,7 @@
                 <span id="section-text">Section 1</span>
             </div>
             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 md:h-2.5">
-                <div id="progress-bar" class="bg-indigo-600 h-2 md:h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                <div id="progress-bar" class="bg-blue-700 h-2 md:h-2.5 rounded-lg transition-all duration-500" style="width: 0%"></div>
             </div>
         </div>
 
@@ -77,7 +77,7 @@
                 <i class="fas fa-moon dark:hidden"></i>
                 <i class="fas fa-sun hidden dark:block"></i>
             </button>
-            <button id="desktop-back-btn" onclick="goToDashboard()" class="hidden text-sm text-indigo-600 dark:text-indigo-400 font-medium px-3 py-1 border border-indigo-200 dark:border-indigo-800 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+            <button id="desktop-back-btn" onclick="goToDashboard()" class="hidden text-sm text-blue-700 dark:text-blue-500 font-medium px-3 py-1 border border-indigo-200 dark:border-indigo-800 rounded hover:bg-blue-50 dark:hover:bg-indigo-900/30 transition">
                 <i class="fas fa-home mr-1"></i> Trang Chủ
             </button>
             <div id="user-profile" class="hidden items-center gap-2 border-l pl-4 border-gray-200 dark:border-gray-700">
@@ -95,7 +95,7 @@
 
         <div id="dashboard-screen" class="max-w-6xl w-full fade-in hidden">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <h2 class="text-2xl font-bold"><i class="fas fa-layer-group text-indigo-500 mr-2"></i>Kho Đề Của Bạn</h2>
+                <h2 class="text-2xl font-bold"><i class="fas fa-layer-group text-blue-600 mr-2"></i>Kho Đề Của Bạn</h2>
                 
                 <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
                     <button onclick="importCopyQuiz()" class="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center">
@@ -104,7 +104,7 @@
                     <button onclick="joinClassroom()" class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center">
                         <i class="fas fa-chalkboard-teacher mr-2"></i> Vào Lớp Học
                     </button>
-                    <button onclick="openImportScreen()" class="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center">
+                    <button onclick="openImportScreen()" class="shrink-0 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center">
                         <i class="fas fa-plus mr-2"></i> Tạo Đề
                     </button>
                 </div>
@@ -114,7 +114,7 @@
 
         <div id="import-screen" class="max-w-4xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 fade-in hidden">
             <div class="flex justify-between items-center mb-4">
-                <h2 id="import-screen-title" class="text-xl md:text-2xl font-bold text-indigo-600 dark:text-indigo-400"><i class="fas fa-cloud-upload-alt mr-2"></i>Nhập dữ liệu đề</h2>
+                <h2 id="import-screen-title" class="text-xl md:text-2xl font-bold text-blue-700 dark:text-blue-500"><i class="fas fa-cloud-upload-alt mr-2"></i>Nhập dữ liệu đề</h2>
                 <button onclick="goToDashboard()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
             
@@ -126,7 +126,7 @@
                     B. Cinema Line<br>
                     C. DSLR<br>
                     B<br>
-                    <span class="text-indigo-500 font-bold">* Nếu có nhiều đáp án, ghi theo định dạng (Ví dụ: A,B).</span><br>
+                    <span class="text-blue-600 font-bold">* Nếu có nhiều đáp án, ghi theo định dạng (Ví dụ: A,B).</span><br>
                     <span class="text-yellow-600 font-bold">* Chèn ảnh dạng [Hình minh họa: link_anh_vao_day]</span>
                 </div>
             </div>
@@ -137,7 +137,7 @@
             </div>
 
             <div class="mb-6">
-                <label class="block text-base font-bold mb-2 text-indigo-600 dark:text-indigo-400">BƯỚC 1: Dán nội dung bộ đề vào đây</label>
+                <label class="block text-base font-bold mb-2 text-blue-700 dark:text-blue-500">BƯỚC 1: Dán nội dung bộ đề vào đây</label>
                 <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none font-mono text-xs md:text-sm" placeholder="Dán nội dung bộ đề vào đây..."></textarea>
             </div>
 
@@ -170,7 +170,7 @@
             
             <div>
                 <label class="block text-base font-bold mb-2 text-green-600 dark:text-green-400">BƯỚC 3: Hoàn tất</label>
-                <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
+                <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
                     <i class="fas fa-cogs mr-2"></i> Xử lý & Kiểm tra lại
                 </button>
             </div>
@@ -178,7 +178,7 @@
 
         <div id="preview-screen" class="max-w-5xl w-full h-[90vh] flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 fade-in hidden">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2 shrink-0">
-                <h2 id="preview-title" class="text-xl md:text-2xl font-bold text-indigo-600 dark:text-indigo-400"><i class="fas fa-eye mr-2"></i>Kiểm tra lại bộ đề</h2>
+                <h2 id="preview-title" class="text-xl md:text-2xl font-bold text-blue-700 dark:text-blue-500"><i class="fas fa-eye mr-2"></i>Kiểm tra lại bộ đề</h2>
                 <div class="flex items-center gap-3">
                     <button onclick="scrollToNextError()" class="flex items-center gap-2 text-sm font-medium text-red-600 bg-red-50 px-3 py-1.5 rounded border border-red-200 hover:bg-red-100 transition dark:bg-red-900/30 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/50" title="Cuộn đến câu lỗi tiếp theo">
                         <i class="fas fa-arrow-down"></i> Tìm câu lỗi
@@ -205,7 +205,7 @@
         </div>
 
         <div id="welcome-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 text-center mt-4 md:mt-10 fade-in hidden">
-            <div id="student-badge" class="hidden mx-auto bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold px-4 py-1.5 rounded-full text-xs w-max mb-4 border border-blue-200 dark:border-blue-800">
+            <div id="student-badge" class="hidden mx-auto bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold px-4 py-1.5 rounded-lg text-xs w-max mb-4 border border-blue-200 dark:border-blue-800">
                 <i class="fas fa-chalkboard-teacher mr-1"></i> ĐANG TRONG LỚP HỌC (GIÁO VIÊN CỦA BẠN CÓ THỂ XEM TÌNH TRẠNG HỌC)
             </div>
 
@@ -214,13 +214,13 @@
             <p class="text-sm md:text-base text-gray-600 dark:text-gray-400 mb-6" id="welcome-msg">Hệ thống đã sẵn sàng.</p>
             
             <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-4">
-                <button onclick="startNextSection()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 md:px-8 rounded-full shadow-lg transition text-base md:text-lg w-full md:w-auto">
+                <button onclick="startNextSection()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 md:px-8 rounded-lg shadow-lg transition text-base md:text-lg w-full md:w-auto">
                     <i class="fas fa-play mr-2"></i> Học
                 </button>
-                <button id="btn-restart" onclick="resetAndRestart()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 md:px-8 rounded-full shadow-lg transition text-base md:text-lg w-full md:w-auto">
+                <button id="btn-restart" onclick="resetAndRestart()" class="bg-amber-600 hover:bg-orange-600 text-white font-bold py-3 px-6 md:px-8 rounded-lg shadow-lg transition text-base md:text-lg w-full md:w-auto">
                     <i class="fas fa-sync-alt mr-2"></i> Làm lại
                 </button>
-                <button id="btn-shuffle" onclick="shuffleAndStart()" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 md:px-8 rounded-full shadow-lg transition text-base md:text-lg w-full md:w-auto">
+                <button id="btn-shuffle" onclick="shuffleAndStart()" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 md:px-8 rounded-lg shadow-lg transition text-base md:text-lg w-full md:w-auto">
                     <i class="fas fa-random mr-2"></i> Trộn Đề
                 </button>
             </div>
@@ -228,8 +228,8 @@
 
         <div id="quiz-screen" class="max-w-3xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 md:p-8 fade-in hidden">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 pb-4 border-b border-gray-100 dark:border-gray-700 gap-2 md:gap-0">
-                <span class="text-xs md:text-sm font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider" id="quiz-status">Câu 1/12</span>
-                <span class="text-xs md:text-sm font-bold text-orange-500 bg-orange-100 dark:bg-orange-900/30 px-3 py-1 rounded-full hidden self-start md:self-auto" id="retry-badge"><i class="fas fa-redo mr-1"></i> Làm lại câu sai</span>
+                <span class="text-xs md:text-sm font-bold text-blue-700 dark:text-blue-500 uppercase tracking-wider" id="quiz-status">Câu 1/12</span>
+                <span class="text-xs md:text-sm font-bold text-amber-600 bg-amber-100 dark:bg-orange-900/30 px-3 py-1 rounded-lg hidden self-start md:self-auto" id="retry-badge"><i class="fas fa-redo mr-1"></i> Làm lại câu sai</span>
             </div>
             <div id="question-area" class="mb-5 md:mb-6">
                 <h3 class="text-lg md:text-2xl font-medium leading-relaxed" id="question-text"></h3>
@@ -240,7 +240,7 @@
                 <button id="prev-btn" onclick="handlePrev()" class="hidden w-full md:w-auto justify-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold py-3 px-6 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center text-base">
                     <i class="fas fa-arrow-left mr-2"></i> Câu trước
                 </button>
-                <button id="next-btn" onclick="handleNext()" disabled class="w-full md:w-auto justify-center bg-indigo-600 text-white cursor-not-allowed opacity-50 font-bold py-3 px-8 rounded-xl transition flex items-center text-base ml-auto">
+                <button id="next-btn" onclick="handleNext()" disabled class="w-full md:w-auto justify-center bg-blue-700 text-white cursor-not-allowed opacity-50 font-bold py-3 px-8 rounded-xl transition flex items-center text-base ml-auto">
                     Kiểm tra <i class="fas fa-check ml-2"></i>
                 </button>
             </div>
@@ -255,9 +255,9 @@
 
         <div id="finish-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 text-center fade-in hidden mt-4 md:mt-10">
             <img src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png" alt="Trophy" class="w-32 h-32 md:w-40 md:h-40 mx-auto mb-6 drop-shadow-lg">
-            <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-4" id="finish-title">CHÚC MỪNG BẠN!</h2>
+            <h2 class="text-2xl md:text-3xl font-bold text-blue-700 dark:text-blue-500 mb-4" id="finish-title">CHÚC MỪNG BẠN!</h2>
             <p class="text-sm md:text-lg mb-6 text-gray-600 dark:text-gray-400" id="finish-desc">Bạn đã nhai gọn toàn bộ tài liệu của bộ đề này.</p>
-            <button onclick="goToDashboard()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition">
+            <button onclick="goToDashboard()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition">
                 <i class="fas fa-arrow-left mr-2"></i> Về Kho Đề
             </button>
         </div>
@@ -318,7 +318,67 @@
         </div>
     </div>
 
+    <!-- Custom Notification & Modal Containers -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2"></div>
+    <div id="custom-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[100] hidden flex items-center justify-center p-4 fade-in">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm p-6 relative">
+            <h3 id="confirm-title" class="text-lg font-bold text-gray-900 dark:text-white mb-2">Xác nhận</h3>
+            <p id="confirm-msg" class="text-gray-600 dark:text-gray-300 text-sm mb-6">Bạn có chắc chắn không?</p>
+            <div class="flex justify-end gap-3">
+                <button id="confirm-cancel-btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md text-sm font-medium transition">Hủy</button>
+                <button id="confirm-ok-btn" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-md text-sm font-medium transition">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Custom UI System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // Màu sắc theo type
+            let bgColor = 'bg-blue-600';
+            let icon = 'fa-info-circle';
+            if (type === 'success') { bgColor = 'bg-green-600'; icon = 'fa-check-circle'; }
+            else if (type === 'error') { bgColor = 'bg-red-600'; icon = 'fa-exclamation-circle'; }
+            else if (type === 'warning') { bgColor = 'bg-amber-600'; icon = 'fa-exclamation-triangle'; }
+            
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium fade-in ${bgColor}`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                toast.style.transition = 'all 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function showConfirm(title, message, onConfirm) {
+            const modal = document.getElementById('custom-confirm-modal');
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-msg').innerText = message;
+            
+            const okBtn = document.getElementById('confirm-ok-btn');
+            const cancelBtn = document.getElementById('confirm-cancel-btn');
+            
+            // Clear old event listeners
+            const newOkBtn = okBtn.cloneNode(true);
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+            
+            newCancelBtn.onclick = () => modal.classList.add('hidden');
+            newOkBtn.onclick = () => {
+                modal.classList.add('hidden');
+                if (onConfirm) onConfirm();
+            };
+            
+            modal.classList.remove('hidden');
+        }
+
         const firebaseConfig = {
             apiKey: "AIzaSyBUQiXAFAp2o9C4G_YgQbGqrVoTqO0hpWI",
             authDomain: "quiz-learning-24d17.firebaseapp.com",
@@ -412,22 +472,29 @@
 
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-circle-notch fa-spin text-5xl text-indigo-500 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang kết nối...</h2></div>`;
+            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-circle-notch fa-spin text-5xl text-blue-600 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang kết nối...</h2></div>`;
             
             // Ép dùng chế độ Popup cho cả Mobile và PC để tránh lỗi kẹt màn hình của trình duyệt di động
             auth.signInWithPopup(provider).catch(err => { 
-                alert("Lỗi đăng nhập: " + err.message); 
+                showToast("Lỗi đăng nhập: " + err.message, 'error'); 
                 renderLoginUI(); 
             });
         }
 
-        function logoutApp() { if(confirm("Bạn có chắc muốn đăng xuất?")) auth.signOut(); }
+        function logoutApp() { showConfirm("Đăng xuất", "Bạn có chắc muốn đăng xuất?", () => auth.signOut()); }
 
         function generateShareCode() { return 'QL-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
 
-        async function goToDashboard() {
+        async function goToDashboard(force = false) {
+            const quizScreen = document.getElementById('quiz-screen');
+            if (!force && !quizScreen.classList.contains('hidden')) {
+                showConfirm('Thoát bài học', 'Tiến trình của Section này sẽ không được lưu. Bạn chắc chắn muốn thoát?', () => {
+                    goToDashboard(true);
+                });
+                return;
+            }
             activeQuizId = null; editQuizId = null; isStudentMode = false; studentClassRef = null;
-            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-spinner fa-spin text-5xl text-indigo-500 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang nạp kho quản lý...</h2></div>`;
+            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-spinner fa-spin text-5xl text-blue-600 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang nạp kho quản lý...</h2></div>`;
             showScreen('auth-screen');
 
             try {
@@ -458,7 +525,7 @@
                                             </span>
                                         </div>
                                         <div class="w-full bg-blue-200 dark:bg-blue-900/50 rounded-full h-1.5 mb-1">
-                                            <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${pct}%"></div>
+                                            <div class="bg-blue-500 h-1.5 rounded-lg" style="width: ${pct}%"></div>
                                         </div>
                                         <p class="text-right text-[10px] text-blue-500 font-medium mb-5">Đã học: ${pct}%</p>
                                     </div>
@@ -475,28 +542,28 @@
                             
                             container.innerHTML += `
                                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 hover:shadow-md transition flex flex-col justify-between relative overflow-hidden">
-                                    <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500"></div>
+                                    <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
                                     <div class="pl-2">
                                         <div class="flex justify-between items-start mb-1">
                                             <h3 class="font-bold text-lg truncate pr-2">${data.title}</h3>
                                             <button onclick="resetQuiz('${doc.id}', '${data.title}')" class="text-orange-400 hover:text-orange-600 transition" title="Làm lại từ đầu"><i class="fas fa-sync-alt text-xs"></i></button>
                                         </div>
                                         <div class="flex items-center gap-1.5 mb-4 mt-2">
-                                            <span class="text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded truncate border border-indigo-100 dark:border-indigo-800">
+                                            <span class="text-[10px] bg-blue-50 dark:bg-indigo-900/30 text-blue-700 dark:text-blue-500 px-2 py-1 rounded truncate border border-indigo-100 dark:border-indigo-800">
                                                 Mã: <b class="font-mono text-[11px]">${sCode}</b>
                                             </span>
-                                            <button onclick="copyShareCode('${sCode}')" class="text-gray-500 hover:text-indigo-600 text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded transition" title="Copy mã"><i class="fas fa-copy"></i></button>
-                                            <button onclick="refreshShareCode('${doc.id}')" class="text-gray-500 hover:text-orange-500 text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded transition" title="Đổi mã bảo mật"><i class="fas fa-random"></i></button>
+                                            <button onclick="copyShareCode('${sCode}')" class="text-gray-500 hover:text-blue-700 text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded transition" title="Copy mã"><i class="fas fa-copy"></i></button>
+                                            <button onclick="refreshShareCode('${doc.id}')" class="text-gray-500 hover:text-amber-600 text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded transition" title="Đổi mã bảo mật"><i class="fas fa-random"></i></button>
                                         </div>
                                         
                                         <div class="w-full bg-gray-100 dark:bg-gray-900 rounded-full h-1.5 mb-1">
-                                            <div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${progressPct}%"></div>
+                                            <div class="bg-blue-500 h-1.5 rounded-lg" style="width: ${progressPct}%"></div>
                                         </div>
                                         <p class="text-right text-[10px] text-gray-400 font-medium mb-5">Cá nhân: ${progressPct}% hoàn thành</p>
                                     </div>
                                     
                                     <div class="flex justify-between items-center gap-1 pl-2">
-                                        <button onclick="openQuiz('${doc.id}')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Học nội bộ">
+                                        <button onclick="openQuiz('${doc.id}')" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Học nội bộ">
                                             <i class="fas fa-play mr-1"></i> Học
                                         </button>
                                         <button onclick="viewStudentProgress('${doc.id}')" class="flex-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Tiến độ học sinh">
@@ -514,19 +581,19 @@
                     });
                 }
                 showScreen('dashboard-screen');
-            } catch (error) { alert("Lỗi tải kho đề!"); }
+            } catch (error) { showToast("Lỗi tải kho đề!", 'error'); }
         }
 
         function copyShareCode(code) {
             if(code === "Chưa có") return;
             navigator.clipboard.writeText(code);
-            alert("Đã copy Mã: " + code + "\nGửi mã này cho bạn bè (Copy) hoặc Học sinh (Vào lớp)!");
+            showToast("Đã copy Mã: " + code + "\nGửi mã này cho bạn bè (Copy, 'error') hoặc Học sinh (Vào lớp)!");
         }
 
         async function refreshShareCode(quizId) {
             if(!confirm("Đổi mã bảo mật mới?\nNhững ai giữ mã cũ sẽ KHÔNG THỂ vào copy hay học được nữa.")) return;
             try { await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).update({ shareCode: generateShareCode() }); goToDashboard(); } 
-            catch(e) { alert("Lỗi cập nhật mã!"); }
+            catch(e) { showToast("Lỗi cập nhật mã!", 'error'); }
         }
 
         async function importCopyQuiz() {
@@ -535,7 +602,7 @@
             
             try {
                 const qSnapshot = await db.collectionGroup("my_quizzes").where("shareCode", "==", code.trim()).get();
-                if (qSnapshot.empty) { alert("Không tìm thấy bộ đề! Mã đã hết hạn hoặc sai."); return; }
+                if (qSnapshot.empty) { showToast("Không tìm thấy bộ đề! Mã đã hết hạn hoặc sai.", 'error'); return; }
                 
                 const data = qSnapshot.docs[0].data();
                 await db.collection("users").doc(currentUser.uid).collection("my_quizzes").add({
@@ -545,9 +612,9 @@
                     shareCode: generateShareCode(),
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                alert("Đã copy bộ đề thành công vào Kho cá nhân!");
+                showToast("Đã copy bộ đề thành công vào Kho cá nhân!", 'error');
                 goToDashboard();
-            } catch (e) { alert("Lỗi tải đề!"); }
+            } catch (e) { showToast("Lỗi tải đề!", 'error'); }
         }
 
         async function joinClassroom() {
@@ -559,7 +626,7 @@
 
             try {
                 const qSnapshot = await db.collectionGroup("my_quizzes").where("shareCode", "==", code.trim()).get();
-                if (qSnapshot.empty) { alert("Mã lớp học không tồn tại hoặc đã bị đổi!"); goToDashboard(); return; }
+                if (qSnapshot.empty) { showToast("Mã lớp học không tồn tại hoặc đã bị đổi!", 'error'); goToDashboard(); return; }
                 
                 const teacherDoc = qSnapshot.docs[0];
                 const teacherData = teacherDoc.data();
@@ -575,7 +642,7 @@
                         name: currentUser.displayName || "Học sinh", email: currentUser.email || "", progress: savedProgress, totalSections: totalSec, lastActive: firebase.firestore.FieldValue.serverTimestamp()
                     }, {merge: true});
                 } catch(e) {
-                    alert("Lỗi quyền truy cập! Giáo viên cần sửa Security Rules trên Firebase.");
+                    showToast("Lỗi quyền truy cập! Giáo viên cần sửa Security Rules trên Firebase.", 'error');
                     goToDashboard(); return;
                 }
 
@@ -588,9 +655,9 @@
                     await localCheck.docs[0].ref.update({ progress: savedProgress });
                 }
 
-                alert("Đã tham gia lớp học thành công!");
+                showToast("Đã tham gia lớp học thành công!", 'error');
                 goToDashboard();
-            } catch (e) { alert("Lỗi kết nối lớp học!"); goToDashboard(); }
+            } catch (e) { showToast("Lỗi kết nối lớp học!", 'error'); goToDashboard(); }
         }
 
         async function viewStudentProgress(quizId) {
@@ -618,7 +685,7 @@
                                 <td class="p-3 font-medium text-gray-800 dark:text-gray-200">${d.name} <br><span class="text-[10px] text-gray-400 font-normal">${d.email || ''}</span></td>
                                 <td class="p-3 text-center font-bold ${color}">${d.progress} / ${d.totalSections}</td>
                                 <td class="p-3 text-center text-sm text-gray-500">
-                                    <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5 mt-1"><div class="bg-blue-500 h-1.5 rounded-full" style="width: ${pct}%"></div></div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5 mt-1"><div class="bg-blue-500 h-1.5 rounded-lg" style="width: ${pct}%"></div></div>
                                     <span class="text-[10px]">${pct}%</span>
                                 </td>
                                 <td class="p-3 text-right text-xs text-gray-400">${timeStr}</td>
@@ -626,7 +693,7 @@
                         `;
                     });
                 }
-            } catch(e) { alert("Lỗi tải bảng tiến độ!"); closeScoreModal(); }
+            } catch(e) { showToast("Lỗi tải bảng tiến độ!", 'error'); closeScoreModal(); }
         }
         function closeScoreModal() { document.getElementById('score-modal').classList.add('hidden'); }
 
@@ -641,7 +708,7 @@
 
         async function editQuiz(quizId) {
             editQuizId = quizId;
-            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-spinner fa-spin text-5xl text-indigo-500 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang nạp dữ liệu...</h2></div>`;
+            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-spinner fa-spin text-5xl text-blue-600 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang nạp dữ liệu...</h2></div>`;
             showScreen('auth-screen');
 
             try {
@@ -664,7 +731,7 @@
                 document.getElementById('import-screen-title').innerHTML = '<i class="fas fa-pen mr-2 text-blue-500"></i>Chỉnh Sửa Bộ Đề';
                 document.getElementById('btn-parse').innerHTML = '<i class="fas fa-save mr-2"></i> Cập Nhật (vui lòng dùng lại nút nhờ AI giải thích để có giải thích mới nhất theo cập nhật)';
                 showScreen('import-screen');
-            } catch (e) { alert("Lỗi mở đề!"); goToDashboard(); }
+            } catch (e) { showToast("Lỗi mở đề!", 'error'); goToDashboard(); }
         }
         // ==========================================
         // TÍNH NĂNG AI: TỰ ĐỘNG GIẢI THÍCH ĐÁP ÁN (MÔ HÌNH BYOK)
@@ -690,8 +757,8 @@
             const rawText = document.getElementById('raw-text-input').value.trim();
             const btnAI = document.getElementById('btn-ai-explain');
 
-            if (!apiKey) return alert("Vui lòng nhập Gemini API Key để sử dụng tính năng này!");
-            if (!rawText) return alert("Vui lòng dán nội dung bộ đề vào ô bên dưới trước khi gọi AI!");
+            if (!apiKey) return showToast("Vui lòng nhập Gemini API Key để sử dụng tính năng này!", 'error');
+            if (!rawText) return showToast("Vui lòng dán nội dung bộ đề vào ô bên dưới trước khi gọi AI!", 'error');
 
             localStorage.setItem('GEMINI_API_KEY', apiKey);
             btnAI.disabled = true;
@@ -786,11 +853,11 @@
                     btnAI.innerHTML = '<i class="fas fa-brain mr-2"></i> Nhờ AI giải thích';
                 }, 3000);
                 
-                alert("Hệ thống đã sẵn sàng, hãy bấm Xử Lý để tiếp tục nhé");
+                showToast("Hệ thống đã sẵn sàng, hãy bấm Xử Lý để tiếp tục nhé", 'error');
 
             } catch (error) {
                 console.error(error);
-                alert("Lỗi gọi AI: " + error.message + " (Có thể server AI đang quá tải, hãy chờ 5s và bấm lại nút giải thích nhé)");
+                showToast("Lỗi gọi AI: " + error.message + " (Có thể server AI đang quá tải, hãy chờ 5s và bấm lại nút giải thích nhé, 'error')");
                 btnAI.innerHTML = '<i class="fas fa-brain mr-2"></i> Nhờ AI giải thích';
             } finally {
                 btnAI.disabled = false;
@@ -803,8 +870,8 @@
         async function parseAndSaveData() {
             const title = document.getElementById('quiz-title-input').value.trim();
             const text = hiddenAIText !== "" ? hiddenAIText : document.getElementById('raw-text-input').value;
-            if(!title) return alert("Vui lòng đặt tên bộ đề!");
-            if(!text.trim()) return alert("Vui lòng dán nội dung đề!");
+            if(!title) return showToast("Vui lòng đặt tên bộ đề!", 'error');
+            if(!text.trim()) return showToast("Vui lòng dán nội dung đề!", 'error');
 
             const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
             const btn = document.getElementById('btn-parse');
@@ -1078,7 +1145,7 @@
             } else { 
                 btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý & Kiểm tra lại';
                 btn.disabled = false;
-                alert("Không nhận diện được nội dung. Hãy xem lại Format hướng dẫn nhé!"); 
+                showToast("Không nhận diện được nội dung. Hãy xem lại Format hướng dẫn nhé!", 'error'); 
             }
         }
 
@@ -1100,7 +1167,7 @@
                     
                     optionsHtml += `
                         <div class="flex items-center p-2 mt-1 rounded border ${styleClass} text-sm transition-colors">
-                            <input type="checkbox" onchange="togglePendingAns(${index}, ${optIndex}, this.checked)" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 mr-3 shrink-0 cursor-pointer">
+                            <input type="checkbox" onchange="togglePendingAns(${index}, ${optIndex}, this.checked)" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-blue-700 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 mr-3 shrink-0 cursor-pointer">
                             <input type="text" oninput="updatePendingOpt(${index}, ${optIndex}, this.value)" value="${opt.replace(/"/g, '&quot;')}" class="flex-1 bg-transparent border-none focus:ring-0 outline-none ${textClass} w-full">
                             <button onclick="removePendingOption(${index}, ${optIndex})" class="ml-2 text-gray-400 hover:text-red-500 transition-colors p-1" title="Xóa đáp án này"><i class="fas fa-times"></i></button>
                         </div>
@@ -1109,7 +1176,7 @@
                 
                 optionsHtml += `
                     <div class="mt-2 text-right">
-                        <button onclick="addPendingOption(${index})" class="text-xs px-2 py-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded transition-colors inline-flex items-center">
+                        <button onclick="addPendingOption(${index})" class="text-xs px-2 py-1 bg-blue-50 text-blue-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-blue-500 dark:hover:bg-indigo-900/50 rounded transition-colors inline-flex items-center">
                             <i class="fas fa-plus mr-1"></i> Thêm đáp án
                         </button>
                     </div>
@@ -1161,7 +1228,7 @@
             const errorElements = Array.from(container.querySelectorAll('.error-card'));
             
             if (errorElements.length === 0) {
-                alert("Tuyệt vời! Không còn câu nào bị lỗi.");
+                showToast("Tuyệt vời! Không còn câu nào bị lỗi.", 'error');
                 return;
             }
             
@@ -1206,7 +1273,7 @@
         }
         
         function deletePendingQ(index) {
-            if (confirm(`Xóa câu hỏi ${index + 1}?`)) {
+            showConfirm("Xóa câu hỏi", `Bạn có chắc muốn xóa câu ${index + 1}?`, () => {
                 pendingParsedQuestions.splice(index, 1);
                 renderPreviewScreen();
             }
@@ -1235,10 +1302,10 @@
         
         function removePendingOption(qIndex, optIndex) {
             if (pendingParsedQuestions[qIndex].o.length <= 2) {
-                alert("Một câu hỏi cần ít nhất 2 đáp án!");
+                showToast("Một câu hỏi cần ít nhất 2 đáp án!", 'error');
                 return;
             }
-            if (confirm('Xóa đáp án này?')) {
+            showConfirm('Xóa đáp án', 'Bạn chắc chắn muốn xóa đáp án này?', () => {
                 pendingParsedQuestions[qIndex].o.splice(optIndex, 1);
                 let currentAns = pendingParsedQuestions[qIndex].a;
                 pendingParsedQuestions[qIndex].a = currentAns.filter(a => a !== optIndex).map(a => a > optIndex ? a - 1 : a);
@@ -1271,14 +1338,14 @@
                 
                 goToDashboard();
             } catch (error) { 
-                alert("Lỗi Lưu Firebase: " + error.message); 
+                showToast("Lỗi Lưu Firebase: " + error.message, 'error'); 
             } finally { 
                 btn.innerHTML = '<i class="fas fa-save mr-2"></i> Lưu vào Kho Đề';
                 btn.disabled = false; 
             }
         }
         async function resetQuiz(quizId, quizTitle) {
-            if(confirm(`Bạn muốn reset tiến độ của "${quizTitle}" về 0%?`)) {
+            showConfirm("Reset", `Bạn muốn reset tiến độ của "${quizTitle}" về 0%?`, async () => {
                 await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).update({ progress: 0 });
                 goToDashboard();
             }
@@ -1286,14 +1353,14 @@
 
         async function deleteQuiz(quizId, quizTitle) {
             let msg = isStudentMode ? `Bạn muốn rời khỏi lớp học "${quizTitle}"?` : `Xóa vĩnh viễn bộ đề "${quizTitle}"? (Mất luôn cả tiến trình của học sinh)`;
-            if(confirm(msg)) {
+            showConfirm("Cảnh báo", msg, async () => {
                 await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).delete();
                 goToDashboard();
             }
         }
 
         async function resetAndRestart() {
-            if(confirm("Xác nhận làm lại từ đầu?")) {
+            showConfirm("Làm lại", "Xác nhận làm lại từ đầu?", async () => {
                 if(!isStudentMode) await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: 0 });
                 currentSection = 0; startNextSection();
             }
@@ -1301,7 +1368,7 @@
 
         async function openQuiz(quizId) {
             activeQuizId = quizId;
-            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-spinner fa-spin text-5xl text-indigo-500 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang chuẩn bị đề...</h2></div>`;
+            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-spinner fa-spin text-5xl text-blue-600 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang chuẩn bị đề...</h2></div>`;
             showScreen('auth-screen');
             try {
                 const doc = await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).get();
@@ -1311,7 +1378,7 @@
                     isStudentMode = true;
                     const teacherDoc = await db.doc(data.refPath).get();
                     if (!teacherDoc.exists) {
-                        alert("Giáo viên đã xóa lớp học này!");
+                        showToast("Giáo viên đã xóa lớp học này!", 'error');
                         await doc.ref.delete(); goToDashboard(); return;
                     }
                     ALL_QUESTIONS = teacherDoc.data().questions || [];
@@ -1334,31 +1401,17 @@
 
                 // CHỐT CHẶN BÁO LỖI NẾU ĐỀ RỖNG
                 if (!ALL_QUESTIONS || ALL_QUESTIONS.length === 0) {
-                    alert("Bộ đề này bị rỗng hoặc lỗi dữ liệu. Vui lòng quay lại trang chủ và xóa bộ đề này đi để tạo lại!");
+                    showToast("Bộ đề này bị rỗng hoặc lỗi dữ liệu. Vui lòng quay lại trang chủ và xóa bộ đề này đi để tạo lại!", 'error');
                     goToDashboard(); return;
                 }
 
-                document.getElementById('current-quiz-title').innerText = data.title;
-                
-                if(currentSection >= TOTAL_SECTIONS) { 
-                    document.getElementById('finish-title').innerText = "HOÀN THÀNH!";
-                    document.getElementById('finish-desc').innerText = isStudentMode ? "Bạn đã theo kịp 100% tiến độ của lớp học." : "Bạn đã hoàn thành xong bộ đề cá nhân.";
-                    showScreen('finish-screen'); updateHeaderProgress(); return; 
-                }
-                
-                document.getElementById('welcome-msg').innerText = `Bộ đề có ${ALL_QUESTIONS.length} câu. Bạn đang ở Section ${currentSection + 1}/${TOTAL_SECTIONS}.`;
-                
-                updateHeaderProgress();
-                showScreen('welcome-screen');
-            } catch (e) { 
-                console.error(e);
-                alert("Lỗi mở đề. Chi tiết hệ thống: " + e.message); 
+                showToast("Lỗi mở đề. Chi tiết hệ thống: " + e.message, 'error'); 
                 goToDashboard(); 
             }
         }
 
         async function shuffleAndStart() {
-            if(confirm("Trộn ngẫu nhiên toàn bộ câu hỏi?")) {
+            showConfirm("Trộn đề", "Trộn ngẫu nhiên toàn bộ câu hỏi?", () => {
                 for (let i = ALL_QUESTIONS.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [ALL_QUESTIONS[i], ALL_QUESTIONS[j]] = [ALL_QUESTIONS[j], ALL_QUESTIONS[i]];
@@ -1397,7 +1450,7 @@
             
             elNextBtn.disabled = true;
             elNextBtn.innerHTML = 'Enter <i class="fas fa-check ml-2"></i>';
-            elNextBtn.className = "w-full md:w-auto justify-center bg-indigo-600 text-white font-bold py-3 px-8 rounded-xl opacity-50 cursor-not-allowed transition flex items-center text-base ml-auto";
+            elNextBtn.className = "w-full md:w-auto justify-center bg-blue-700 text-white font-bold py-3 px-8 rounded-xl opacity-50 cursor-not-allowed transition flex items-center text-base ml-auto";
 
             const realIdx = queue[currentQIndexInQueue];
             const qData = ALL_QUESTIONS[realIdx];
@@ -1406,7 +1459,7 @@
             let qText = qData.q.replace(/\[Hình minh họa:?.*?\]/gi, '<br><span class="inline-block mt-2 px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-semibold rounded border border-yellow-300"><i class="fas fa-image mr-1"></i> Hình minh họa</span><br>');
             
             // BẢN GỐC CỦA ANH CHỈ CÓ CÁI NÀY:
-            document.getElementById('question-text').innerHTML = `<span class="text-indigo-500 font-bold mr-2">Câu ${realIdx + 1}.</span> ` + qText;
+            document.getElementById('question-text').innerHTML = `<span class="text-blue-600 font-bold mr-2">Câu ${realIdx + 1}.</span> ` + qText;
             
             const elOpts = document.getElementById('options-container');
             elOpts.innerHTML = '';
@@ -1427,7 +1480,7 @@
             }
         }
 
-        function handlePrev() { if (currentQIndexInQueue > 0) { currentQIndexInQueue--; renderCurrentQuestion(); } }
+        function handleSkip() { if(!hasSubmitted) { selectedOptions = []; handleNext(); } } }
 
         function selectOption(idx, btnElement) {
             if (hasSubmitted) return; 
@@ -1445,11 +1498,11 @@
             if (selectedOptions.length > 0) {
                 elNextBtn.disabled = false;
                 elNextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                elNextBtn.classList.add('active:bg-indigo-800', 'md:hover:bg-indigo-700', 'shadow-md');
+                elNextBtn.classList.add('active:bg-indigo-800', 'md:hover:bg-blue-800', 'shadow-md');
             } else {
                 elNextBtn.disabled = true;
                 elNextBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                elNextBtn.classList.remove('active:bg-indigo-800', 'md:hover:bg-indigo-700', 'shadow-md');
+                elNextBtn.classList.remove('active:bg-indigo-800', 'md:hover:bg-blue-800', 'shadow-md');
             }
         }
 
@@ -1462,6 +1515,7 @@
             if (!hasSubmitted) {
                 // CHỐT ĐÁP ÁN THEO ĐÚNG GỐC CỦA ANH
                 hasSubmitted = true;
+                document.getElementById('skip-btn').classList.add('hidden');
                 let isCorrect = true;
                 let isMissing = false;
 
@@ -1508,7 +1562,7 @@
                 const statusEl = document.getElementById('quiz-status');
                 if (!isCorrect) {
                     if(!mistakes.includes(realIdx)) mistakes.push(realIdx);
-                    statusEl.innerHTML += isMissing ? ' <span class="text-orange-500 ml-2 font-bold animate-pulse">- THIẾU ĐÁP ÁN!</span>' : ' <span class="text-red-500 ml-2 font-bold animate-pulse">- SAI RỒI!</span>';
+                    statusEl.innerHTML += isMissing ? ' <span class="text-amber-600 ml-2 font-bold animate-pulse">- THIẾU ĐÁP ÁN!</span>' : ' <span class="text-red-500 ml-2 font-bold animate-pulse">- SAI RỒI!</span>';
                 } else {
                     statusEl.innerHTML += ' <span class="text-green-500 ml-2 font-bold animate-pulse">- CHÍNH XÁC!</span>';
                     
@@ -1560,12 +1614,12 @@
             const resultAction = document.getElementById('result-action');
 
             if (mistakes.length > 0) {
-                resultIcon.className = "w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl md:text-4xl bg-orange-100 text-orange-500";
+                resultIcon.className = "w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl md:text-4xl bg-amber-100 text-amber-600";
                 resultIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
                 resultTitle.innerText = "Cần ôn tập lại!";
                 resultDesc.innerText = `Lần này sai ${mistakes.length} câu. Hãy làm lại cho nhớ nhé!`;
                 
-                resultAction.innerHTML = `<button onclick="startRetry()" class="w-full md:w-auto bg-orange-500 active:bg-orange-700 md:hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition"><i class="fas fa-redo mr-2"></i> Làm lại ${mistakes.length} câu sai</button>`;
+                resultAction.innerHTML = `<button onclick="startRetry()" class="w-full md:w-auto bg-amber-600 active:bg-orange-700 md:hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition"><i class="fas fa-redo mr-2"></i> Làm lại ${mistakes.length} câu sai</button>`;
             } else {
                 resultIcon.className = "w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl md:text-4xl bg-green-100 text-green-500";
                 resultIcon.innerHTML = '<i class="fas fa-check"></i>';
@@ -1588,7 +1642,7 @@
                 if (currentSection >= TOTAL_SECTIONS) { 
                     showScreen('finish-screen'); return; 
                 }
-                resultAction.innerHTML = `<button onclick="startNextSection()" class="w-full md:w-auto bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition">Tiếp tục Section ${currentSection + 1} <i class="fas fa-arrow-right ml-2"></i></button>`;
+                resultAction.innerHTML = `<button onclick="startNextSection()" class="w-full md:w-auto bg-blue-700 active:bg-indigo-800 md:hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition">Tiếp tục Section ${currentSection + 1} <i class="fas fa-arrow-right ml-2"></i></button>`;
             }
             showScreen('result-screen');
         }
@@ -1632,7 +1686,7 @@
         function updateSpotify() {
             const inputVal = document.getElementById('spotify-input').value.trim();
             const player = document.getElementById('spotify-player');
-            if(!inputVal) return alert("Vui lòng dán link Spotify vào ô!");
+            if(!inputVal) return showToast("Vui lòng dán link Spotify vào ô!", 'error');
             try {
                 let embedUrl = inputVal;
                 const spDomain = "open." + "spotify." + "com";
@@ -1643,7 +1697,7 @@
                     embedUrl = 'https://' + spDomain + '/embed' + url.pathname;
                 }
                 player.src = embedUrl + "?utm_source=generator&theme=0";
-            } catch(e) { alert("Link không hợp lệ. Vui lòng copy đúng link từ app Spotify."); }
+            } catch(e) { showToast("Link không hợp lệ. Vui lòng copy đúng link từ app Spotify.", 'error'); }
         }
         // PHÍM TẮT GỐC CỦA ANH
         document.addEventListener('keydown', function(event) {
