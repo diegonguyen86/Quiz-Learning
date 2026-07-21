@@ -882,8 +882,8 @@
                             let isNextOption = /^([A-H])[\.\)](?:\s|$)/i.test(nextLine) || (/^([A-H])[\.\)]/i.test(nextLine) && !/^([A-H])[\.\)][a-z][\.\)]/i.test(nextLine) && !/^e\.g\./i.test(nextLine));
                             let isNewQ = /^câu\s*\d+:/i.test(nextLine) || /^\d+[\.\)]/i.test(nextLine);
                             let isExpl = nextLine.toLowerCase().includes('giải thích:');
-                            let m1 = nextLine.match(/^([A-H](?:\s*,\s*[A-H])*)$/i);
-                            let m2 = nextLine.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,\s*[A-H])*)/i);
+                            let m1 = nextLine.match(/^([A-H](?:\s*,?\s*[A-H])*)$/i);
+                            let m2 = nextLine.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,?\s*[A-H])*)/i);
                             
                             if (isNewQ || isExpl || m1 || m2) break;
                             if (isNextOption) {
@@ -894,8 +894,8 @@
                         }
                         
                         let lower = line.toLowerCase();
-                        let m1 = line.match(/^([A-H](?:\s*,\s*[A-H])*)$/i);
-                        let m2 = line.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,\s*[A-H])*)/i);
+                        let m1 = line.match(/^([A-H](?:\s*,?\s*[A-H])*)$/i);
+                        let m2 = line.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,?\s*[A-H])*)/i);
                         let m3 = line.match(/^[A-H][\.\)]?$/i);
                         let isAnsFormat = m1 || m2 || m3;
                         let isExpl = lower.includes('giải thích:');
@@ -920,8 +920,8 @@
                             for(let k = currentQ.postOptions.length - 1; k >= 0; k--) {
                                 let txt = currentQ.postOptions[k];
                                 let lower = txt.toLowerCase();
-                                let m1 = txt.match(/^([A-H](?:\s*,\s*[A-H])*)$/i);
-                                let m2 = txt.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,\s*[A-H])*)/i);
+                                let m1 = txt.match(/^([A-H](?:\s*,?\s*[A-H])*)$/i);
+                                let m2 = txt.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,?\s*[A-H])*)/i);
                                 let m3 = txt.match(/^[A-H][\.\)]?$/i);
                                 let isAnsFormat = m1 || m2 || m3;
                                 
@@ -988,8 +988,8 @@
 
                 item.postOptions.forEach(txt => {
                     let lower = txt.toLowerCase();
-                    let m1 = txt.match(/^([A-H](?:\s*,\s*[A-H])*)$/i);
-                    let m2 = txt.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,\s*[A-H])*)/i);
+                    let m1 = txt.match(/^([A-H](?:\s*,?\s*[A-H])*)$/i);
+                    let m2 = txt.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,?\s*[A-H])*)/i);
                     let m3 = txt.match(/^[A-H][\.\)]?$/i);
                     let isAnsFormat = m1 || m2 || m3;
                     
