@@ -171,7 +171,30 @@
             <div>
                 <label class="block text-base font-bold mb-2 text-green-600 dark:text-green-400">BƯỚC 3: Hoàn tất</label>
                 <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
-                    <i class="fas fa-cogs mr-2"></i> Xử lý & Lưu Bộ Đề
+                    <i class="fas fa-cogs mr-2"></i> Xử lý & Kiểm tra lại
+                </button>
+            </div>
+        </div>
+
+        <div id="preview-screen" class="max-w-4xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 fade-in hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
+                <h2 id="preview-title" class="text-xl md:text-2xl font-bold text-indigo-600 dark:text-indigo-400"><i class="fas fa-eye mr-2"></i>Kiểm tra lại bộ đề</h2>
+                <span id="preview-count" class="bg-indigo-100 text-indigo-800 text-sm font-semibold px-3 py-1 rounded dark:bg-indigo-900 dark:text-indigo-300">0 câu hỏi</span>
+            </div>
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-3 mb-4 rounded text-sm text-yellow-800 dark:text-yellow-200">
+                <i class="fas fa-exclamation-triangle mr-1"></i> Vui lòng lướt kiểm tra xem hệ thống bóc tách đáp án (màu xanh) đã chính xác chưa trước khi lưu.
+            </div>
+            
+            <div id="preview-container" class="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2 mb-6">
+                <!-- Preview items will be injected here -->
+            </div>
+            
+            <div class="flex flex-col md:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button onclick="cancelPreview()" class="w-full md:w-auto bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg shadow transition">
+                    <i class="fas fa-arrow-left mr-2"></i> Quay lại sửa văn bản
+                </button>
+                <button id="btn-save-preview" onclick="saveFromPreview()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg shadow transition">
+                    <i class="fas fa-save mr-2"></i> Lưu vào Kho Đề
                 </button>
             </div>
         </div>
@@ -318,10 +341,16 @@
         let currentQIndexInQueue = 0; 
         let mistakes = []; 
         let isReviewMode = false;
+        let aiProcessInterval;
+        let isAIProcessing = false;
+        
+        // Variables for Preview flow
+        let pendingParsedQuestions = [];
+        let pendingQuizTitle = "";
         let selectedOptions = []; 
         let hasSubmitted = false;
 
-        const screens = ['auth-screen', 'dashboard-screen', 'import-screen', 'welcome-screen', 'quiz-screen', 'result-screen', 'finish-screen'];
+        const screens = ['auth-screen', 'dashboard-screen', 'import-screen', 'preview-screen', 'welcome-screen', 'quiz-screen', 'result-screen', 'finish-screen'];
 
         function showScreen(screenId) {
             screens.forEach(id => document.getElementById(id).classList.add('hidden'));
@@ -891,7 +920,8 @@
             questionsData.forEach((item, index) => {
                 if (item.options.length < 2) return;
                 
-                let explanation = "";
+                let explanationLines = [];
+                let inExplanation = false;
                 let leftOverText = [];
                 let ansLetters = [];
 
@@ -905,7 +935,8 @@
                     let isRepeated = item.options.some(opt => opt.replace(/\s+/g, '').toLowerCase() === txt.replace(/\s+/g, '').toLowerCase());
 
                     if (lower.includes('giải thích:')) {
-                        explanation = txt;
+                        inExplanation = true;
+                        explanationLines.push(txt);
                     } else if (isRepeated) {
                         let letterMatch = txt.match(/^([A-H])/i);
                         if (letterMatch) {
@@ -919,9 +950,15 @@
                             if (c.match(/^[A-H]$/) && !ansLetters.includes(c)) ansLetters.push(c);
                         });
                     } else {
-                        leftOverText.push(txt);
+                        if (inExplanation) {
+                            explanationLines.push(txt);
+                        } else {
+                            leftOverText.push(txt);
+                        }
                     }
                 });
+
+                let explanation = explanationLines.join('<br>');
 
                 if (item.textBlock.length === 0 && leftOverText.length > 0) {
                     item.textBlock = leftOverText;
@@ -974,25 +1011,132 @@
             }
 
             if (parsedQs.length > 0) {
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang đồng bộ...';
-                try {
-                    if (editQuizId) {
-                        await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(editQuizId).update({ title: title, questions: parsedQs });
-                    } else {
-                        await db.collection("users").doc(currentUser.uid).collection("my_quizzes").add({
-                            title: title, questions: parsedQs, progress: 0, shareCode: generateShareCode(), createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-                    goToDashboard();
-                    hiddenAIText = ""; 
-                } catch (error) { 
-                    alert("Lỗi Lưu Firebase: " + error.message); 
-                }
-                finally { btn.disabled = false; }
+                // Thay vì lưu ngay, ta đẩy vào mảng chờ và gọi Preview
+                pendingParsedQuestions = parsedQs;
+                pendingQuizTitle = title;
+                
+                // Khôi phục nút
+                btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý & Kiểm tra lại';
+                btn.disabled = false;
+                
+                renderPreviewScreen();
+                showScreen('preview-screen');
             } else { 
-                btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý';
+                btn.innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý & Kiểm tra lại';
                 btn.disabled = false;
                 alert("Không nhận diện được nội dung. Hãy xem lại Format hướng dẫn nhé!"); 
+            }
+        }
+
+        // --- HÀM CHO TÍNH NĂNG PREVIEW ---
+        function renderPreviewScreen() {
+            document.getElementById('preview-title').innerHTML = `<i class="fas fa-eye mr-2"></i>Kiểm tra lại: ${pendingQuizTitle}`;
+            document.getElementById('preview-count').innerText = `${pendingParsedQuestions.length} câu hỏi`;
+            
+            const container = document.getElementById('preview-container');
+            const savedScroll = container.scrollTop;
+            let html = '';
+            
+            pendingParsedQuestions.forEach((q, index) => {
+                let optionsHtml = '';
+                q.o.forEach((opt, optIndex) => {
+                    const isCorrect = q.a.includes(optIndex);
+                    const styleClass = isCorrect ? 'bg-green-100 border-green-300 dark:bg-green-900/30 dark:border-green-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700';
+                    const textClass = isCorrect ? 'text-green-800 font-bold dark:text-green-300' : 'text-gray-700 dark:text-gray-300';
+                    
+                    optionsHtml += `
+                        <div class="flex items-center p-2 mt-1 rounded border ${styleClass} text-sm transition-colors">
+                            <input type="checkbox" onchange="togglePendingAns(${index}, ${optIndex}, this.checked)" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 mr-3 shrink-0 cursor-pointer">
+                            <input type="text" oninput="updatePendingOpt(${index}, ${optIndex}, this.value)" value="${opt.replace(/"/g, '&quot;')}" class="flex-1 bg-transparent border-none focus:ring-0 outline-none ${textClass} w-full">
+                        </div>
+                    `;
+                });
+                
+                let explHtml = `
+                    <div class="mt-2 text-xs p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 rounded border border-blue-100 dark:border-blue-800 focus-within:ring-1 focus-within:ring-blue-500">
+                        <strong><i class="fas fa-lightbulb mr-1"></i>Giải thích:</strong>
+                        <textarea oninput="updatePendingQ(${index}, 'e', this.value)" class="w-full bg-transparent border-none resize-none focus:ring-0 outline-none mt-1" rows="${(q.e.match(/<br>/g) || []).length + 1}" placeholder="(Thêm giải thích nếu cần...)">${q.e.replace(/<br>/g, '\n')}</textarea>
+                    </div>
+                `;
+
+                html += `
+                    <div class="p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm relative group">
+                        <div class="absolute -top-3 left-4 bg-indigo-100 dark:bg-indigo-900 px-2 py-0.5 rounded text-xs font-bold text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700">
+                            Câu ${index + 1}
+                        </div>
+                        <button onclick="deletePendingQ(${index})" class="absolute top-2 right-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 p-1.5 rounded transition opacity-50 hover:opacity-100" title="Xóa câu hỏi này">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        <div class="font-medium text-base mb-3 mt-1 leading-relaxed border-b border-dashed border-gray-300 dark:border-gray-600 focus-within:border-indigo-500 pb-1 mr-6">
+                            <textarea oninput="updatePendingQ(${index}, 'q', this.value)" class="w-full bg-transparent border-none resize-none focus:ring-0 outline-none" rows="${(q.q.match(/<br>/g) || []).length + 2}">${q.q.replace(/<br>/g, '\n')}</textarea>
+                        </div>
+                        <div class="space-y-1">
+                            ${optionsHtml}
+                        </div>
+                        ${explHtml}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            // Restore scroll position after a short tick to let DOM update
+            setTimeout(() => { container.scrollTop = savedScroll; }, 0);
+        }
+
+        function updatePendingQ(index, field, value) {
+            pendingParsedQuestions[index][field] = value.replace(/\n/g, '<br>');
+        }
+        
+        function updatePendingOpt(qIndex, optIndex, value) {
+            pendingParsedQuestions[qIndex].o[optIndex] = value;
+        }
+        
+        function togglePendingAns(qIndex, optIndex, isChecked) {
+            const q = pendingParsedQuestions[qIndex];
+            if (isChecked) {
+                if (!q.a.includes(optIndex)) q.a.push(optIndex);
+            } else {
+                q.a = q.a.filter(i => i !== optIndex);
+            }
+            renderPreviewScreen();
+        }
+        
+        function deletePendingQ(index) {
+            if (confirm(`Xóa câu hỏi ${index + 1}?`)) {
+                pendingParsedQuestions.splice(index, 1);
+                renderPreviewScreen();
+            }
+        }
+        
+        function cancelPreview() {
+            showScreen('import-screen');
+        }
+
+        async function saveFromPreview() {
+            const btn = document.getElementById("btn-save-preview");
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang lưu...';
+            btn.disabled = true;
+
+            try {
+                if (editQuizId) {
+                    await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(editQuizId).update({ title: pendingQuizTitle, questions: pendingParsedQuestions });
+                } else {
+                    await db.collection("users").doc(currentUser.uid).collection("my_quizzes").add({
+                        title: pendingQuizTitle, questions: pendingParsedQuestions, progress: 0, shareCode: generateShareCode(), createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+                
+                // Clear pending
+                pendingParsedQuestions = [];
+                pendingQuizTitle = "";
+                hiddenAIText = ""; 
+                
+                goToDashboard();
+            } catch (error) { 
+                alert("Lỗi Lưu Firebase: " + error.message); 
+            } finally { 
+                btn.innerHTML = '<i class="fas fa-save mr-2"></i> Lưu vào Kho Đề';
+                btn.disabled = false; 
             }
         }
         async function resetQuiz(quizId, quizTitle) {
