@@ -689,7 +689,7 @@
                                         <p class="text-right text-[10px] text-blue-500 font-medium mb-5">Đã học: ${pct}%</p>
                                     </div>
                                     <div class="flex justify-between items-center pl-2">
-                                        <button onclick="showLearnOptions('${doc.id}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-xl transition shadow-sm">
+                                        <button onclick="showLearnOptions('${doc.id}', '${data.learnMode || ''}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-xl transition shadow-sm">
                                             <i class="fas fa-chalkboard-teacher mr-1"></i> ${pct > 0 ? 'Học' : 'Vào Lớp'}
                                         </button>
                                     </div>
@@ -722,7 +722,7 @@
                                     </div>
                                     
                                     <div class="flex justify-between items-center gap-1 pl-2">
-                                        <button onclick="showLearnOptions('${doc.id}')" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Học nội bộ">
+                                        <button onclick="showLearnOptions('${doc.id}', '${data.learnMode || ''}')" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Học nội bộ">
                                             <i class="fas fa-play mr-1"></i> Học
                                         </button>
                                         <button onclick="viewStudentProgress('${doc.id}')" class="flex-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-xs font-bold py-2.5 px-2 rounded-xl transition shadow-sm" title="Tiến độ học sinh">
@@ -1671,7 +1671,10 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
 
         async function resetQuiz(quizId, quizTitle) {
             showConfirm("Reset", `Bạn muốn reset tiến độ của "${quizTitle}" về 0%?`, async () => {
-                await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).update({ progress: 0 });
+                await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).update({ 
+                    progress: 0,
+                    learnMode: firebase.firestore.FieldValue.delete()
+                });
                 goToDashboard();
             });
         }
@@ -1694,9 +1697,13 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
 
         let currentLearnQuizId = null;
         
-        function showLearnOptions(quizId) {
+        function showLearnOptions(quizId, savedMode = '') {
             currentLearnQuizId = quizId;
-            document.getElementById('learn-options-modal').classList.remove('hidden');
+            if (savedMode) {
+                openQuiz(quizId, savedMode);
+            } else {
+                document.getElementById('learn-options-modal').classList.remove('hidden');
+            }
         }
         
         function closeLearnOptions() {
@@ -1704,10 +1711,15 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
             currentLearnQuizId = null;
         }
         
-        function selectLearnMode(mode) {
+        async function selectLearnMode(mode) {
             const quizId = currentLearnQuizId;
             closeLearnOptions();
             if (quizId) {
+                if(currentUser) {
+                    try {
+                        await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).update({ learnMode: mode });
+                    } catch (e) { console.error(e); }
+                }
                 openQuiz(quizId, mode);
             }
         }
