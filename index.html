@@ -560,9 +560,22 @@
 
         const screens = ['auth-screen', 'dashboard-screen', 'import-screen', 'preview-screen', 'welcome-screen', 'quiz-screen', 'result-screen', 'finish-screen'];
 
-        function showScreen(screenId) {
+
+        window.addEventListener('popstate', function(event) {
+            if (event.state && event.state.screen) {
+                showScreen(event.state.screen, false);
+            } else {
+                if (currentUser) goToDashboard(true);
+            }
+        });
+
+        function showScreen(screenId, pushState = true) {
             screens.forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(screenId).classList.remove('hidden');
+            
+            if (pushState && window.history) {
+                window.history.pushState({ screen: screenId }, "", "#" + screenId);
+            }
             
             const isPlaying = ['quiz-screen', 'welcome-screen', 'result-screen', 'finish-screen'].includes(screenId);
             document.getElementById('header-progress').style.display = isPlaying ? 'block' : 'none';
@@ -842,8 +855,15 @@
 
         function openImportScreen() {
             editQuizId = null; 
+            hiddenAIText = ''; // FIX: Reset hidden AI text
             document.getElementById('quiz-title-input').value = '';
             document.getElementById('raw-text-input').value = '';
+            
+            // Show raw text area and hide AI result div if it was shown
+            document.getElementById('raw-text-input').classList.remove('hidden');
+            const aiSuccess = document.getElementById('ai-success-msg');
+            if(aiSuccess) aiSuccess.remove();
+
             document.getElementById('import-screen-title').innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i>Tạo Bộ Đề Mới';
             document.getElementById('btn-parse').innerHTML = '<i class="fas fa-cogs mr-2"></i> Xử lý';
             showScreen('import-screen');
@@ -1519,6 +1539,10 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
         }
         
         function cancelPreview() {
+            hiddenAIText = '';
+            document.getElementById('raw-text-input').classList.remove('hidden');
+            const aiSuccess = document.getElementById('ai-success-msg');
+            if(aiSuccess) aiSuccess.remove();
             showScreen('import-screen');
         }
 
@@ -1678,9 +1702,10 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
         }
         
         function selectLearnMode(mode) {
+            const quizId = currentLearnQuizId;
             closeLearnOptions();
-            if (currentLearnQuizId) {
-                openQuiz(currentLearnQuizId, mode);
+            if (quizId) {
+                openQuiz(quizId, mode);
             }
         }
 
