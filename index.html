@@ -1276,7 +1276,7 @@
             showConfirm("Xóa câu hỏi", `Bạn có chắc muốn xóa câu ${index + 1}?`, () => {
                 pendingParsedQuestions.splice(index, 1);
                 renderPreviewScreen();
-            }
+            });
         }
         
         function addPendingOption(qIndex) {
@@ -1310,7 +1310,7 @@
                 let currentAns = pendingParsedQuestions[qIndex].a;
                 pendingParsedQuestions[qIndex].a = currentAns.filter(a => a !== optIndex).map(a => a > optIndex ? a - 1 : a);
                 renderPreviewScreen();
-            }
+            });
         }
         
         function cancelPreview() {
@@ -1348,7 +1348,7 @@
             showConfirm("Reset", `Bạn muốn reset tiến độ của "${quizTitle}" về 0%?`, async () => {
                 await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).update({ progress: 0 });
                 goToDashboard();
-            }
+            });
         }
 
         async function deleteQuiz(quizId, quizTitle) {
@@ -1356,21 +1356,30 @@
             showConfirm("Cảnh báo", msg, async () => {
                 await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).delete();
                 goToDashboard();
-            }
+            });
         }
 
         async function resetAndRestart() {
             showConfirm("Làm lại", "Xác nhận làm lại từ đầu?", async () => {
                 if(!isStudentMode) await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ progress: 0 });
                 currentSection = 0; startNextSection();
-            }
+            });
         }
 
         async function openQuiz(quizId) {
-            activeQuizId = quizId;
-            document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-spinner fa-spin text-5xl text-blue-600 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang chuẩn bị đề...</h2></div>`;
-            showScreen('auth-screen');
             try {
+                document.getElementById('welcome-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.add('hidden');
+                document.getElementById('finish-screen').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.add('hidden');
+                
+                // Show loading
+                document.getElementById('auth-screen').innerHTML = `<div class="py-12 text-center"><i class="fas fa-spinner fa-spin text-5xl text-blue-600 mb-6"></i><h2 class="text-xl font-bold text-gray-700 dark:text-white">Đang tải đề...</h2></div>`;
+                showScreen('auth-screen');
+
+                activeQuizId = quizId;
+                
                 const doc = await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(quizId).get();
                 const data = doc.data();
                 
@@ -1405,13 +1414,27 @@
                     goToDashboard(); return;
                 }
 
+                document.getElementById('current-quiz-title').innerText = data.title;
+                
+                if(currentSection >= TOTAL_SECTIONS) { 
+                    document.getElementById('finish-title').innerText = "HOÀN THÀNH!";
+                    document.getElementById('finish-desc').innerText = isStudentMode ? "Bạn đã theo kịp 100% tiến độ của lớp học." : "Bạn đã hoàn thành xong bộ đề cá nhân.";
+                    showScreen('finish-screen'); updateHeaderProgress(); return; 
+                }
+                
+                document.getElementById('welcome-msg').innerText = `Bộ đề có ${ALL_QUESTIONS.length} câu. Bạn đang ở Section ${currentSection + 1}/${TOTAL_SECTIONS}.`;
+                
+                updateHeaderProgress();
+                showScreen('welcome-screen');
+            } catch (e) { 
+                console.error(e);
                 showToast("Lỗi mở đề. Chi tiết hệ thống: " + e.message, 'error'); 
                 goToDashboard(); 
             }
         }
 
         async function shuffleAndStart() {
-            showConfirm("Trộn đề", "Trộn ngẫu nhiên toàn bộ câu hỏi?", () => {
+            showConfirm("Trộn đề", "Trộn ngẫu nhiên toàn bộ câu hỏi?", async () => {
                 for (let i = ALL_QUESTIONS.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [ALL_QUESTIONS[i], ALL_QUESTIONS[j]] = [ALL_QUESTIONS[j], ALL_QUESTIONS[i]];
@@ -1419,7 +1442,7 @@
                 currentSection = 0;
                 if(!isStudentMode) await db.collection("users").doc(currentUser.uid).collection("my_quizzes").doc(activeQuizId).update({ questions: ALL_QUESTIONS, progress: 0 });
                 startNextSection();
-            }
+            });
         }
 
         // CẮT SECTION VÀ ĐẾM CÂU
@@ -1480,7 +1503,7 @@
             }
         }
 
-        function handleSkip() { if(!hasSubmitted) { selectedOptions = []; handleNext(); } } }
+        function handleSkip() { if(!hasSubmitted) { selectedOptions = []; handleNext(); } }
 
         function selectOption(idx, btnElement) {
             if (hasSubmitted) return; 
