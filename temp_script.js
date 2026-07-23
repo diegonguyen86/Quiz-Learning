@@ -1,396 +1,4 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
-    <title>Quiz Learning - Go Pro With Quiz</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-    <script>
-        tailwind.config = { darkMode: 'class' }
-    </script>
-
-    <style>
-        body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; transition: background-color 0.3s; -webkit-tap-highlight-color: transparent; }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        #music-widget {
-            position: fixed; bottom: 1rem; right: 1rem; z-index: 50;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: calc(100% - 2rem);
-            max-width: 320px;
-        }
-        #music-widget.minimized { transform: translateY(calc(100% - 48px)); }
-        
-        .option-btn { transition: all 0.2s; border-width: 2px; }
-        .option-btn:hover:not(:disabled) { border-color: #6366f1; background-color: #e0e7ff; }
-        .option-btn:active:not(:disabled) { transform: scale(0.98); }
-        .option-btn.selected { border-color: #1d4ed8; background-color: #eff6ff; font-weight: 600; }
-        .option-btn.correct { border-color: #10b981; background-color: #d1fae5; color: #065f46; font-weight: 600; }
-        .option-btn.wrong { border-color: #ef4444; background-color: #fee2e2; color: #991b1b; }
-        
-        /* Dark mode overrides */
-        .dark .option-btn { background-color: #1f2937; border-color: #374151; color: #e5e7eb; }
-        .dark .option-btn:hover:not(:disabled) { background-color: #374151; border-color: #818cf8; }
-        .dark .option-btn.selected { background-color: #374151; border-color: #818cf8; }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
-
-        main { -webkit-overflow-scrolling: touch; }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-900 h-[100dvh] flex flex-col overflow-hidden">
-
-    <header class="bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col md:flex-row justify-between items-center z-10 gap-4 shrink-0">
-        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start cursor-pointer" onclick="goToDashboard()">
-            <div class="flex items-center gap-3">
-                <img src="logo.png" alt="Logo" class="h-10 w-10 rounded-full border-2 border-indigo-500" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3067/3067258.png'">
-                <h1 class="text-xl font-bold">QUIZ LEARNING</h1>
-            </div>
-            <button id="mobile-back-btn" onclick="goToDashboard(); event.stopPropagation();" class="hidden md:hidden text-xs text-blue-700 dark:text-blue-500 font-medium px-2 py-1 border border-indigo-200 dark:border-indigo-800 rounded bg-blue-50 dark:bg-indigo-900/30">
-                <i class="fas fa-arrow-left"></i> Trang Chủ
-            </button>
-        </div>
-        
-        <div class="w-full md:w-1/3" id="header-progress" style="display:none;">
-            <div class="flex justify-between text-xs md:text-sm mb-1 font-medium text-gray-600 dark:text-gray-400">
-                <span id="progress-text">Tiến độ: 0%</span>
-                <span id="section-text">Section 1</span>
-            </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 md:h-2.5">
-                <div id="progress-bar" class="bg-blue-700 h-2 md:h-2.5 rounded-lg transition-all duration-500" style="width: 0%"></div>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-4">
-            <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-                <i class="fas fa-moon dark:hidden"></i>
-                <i class="fas fa-sun hidden dark:block"></i>
-            </button>
-            <button id="desktop-back-btn" onclick="goToDashboard()" class="hidden text-sm text-blue-700 dark:text-blue-500 font-medium px-3 py-1 border border-indigo-200 dark:border-indigo-800 rounded hover:bg-blue-50 dark:hover:bg-indigo-900/30 transition">
-                <i class="fas fa-home mr-1"></i> Trang Chủ
-            </button>
-            <div id="user-profile" class="hidden items-center gap-2 border-l pl-4 border-gray-200 dark:border-gray-700">
-                <img id="user-avatar" src="" class="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600">
-                <div class="flex flex-col">
-                    <span id="user-name" class="text-xs font-bold max-w-[100px] truncate">Người dùng</span>
-                    <button onclick="logoutApp()" class="text-[10px] text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 text-left underline">Đăng xuất</button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <main class="flex-1 overflow-y-auto p-3 md:p-8 flex justify-center items-start pb-24 md:pb-8 relative">
-        <div id="auth-screen" class="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center mt-4 md:mt-10 fade-in"></div>
-
-        <div id="dashboard-screen" class="max-w-6xl w-full fade-in hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <h2 class="text-2xl font-bold"><i class="fas fa-layer-group text-blue-600 mr-2"></i>Kho Đề Của Bạn</h2>
-                
-                <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
-                    <button onclick="importCopyQuiz()" class="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center">
-                        <i class="fas fa-copy mr-2"></i> Nhập code đề
-                    </button>
-                    <button onclick="joinClassroom()" class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center">
-                        <i class="fas fa-chalkboard-teacher mr-2"></i> Vào Lớp Học
-                    </button>
-                    <button onclick="openImportScreen()" class="shrink-0 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center">
-                        <i class="fas fa-plus mr-2"></i> Tạo Đề
-                    </button>
-                </div>
-            </div>
-            <div id="quiz-list-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
-        </div>
-
-        <div id="import-screen" class="max-w-4xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 fade-in hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h2 id="import-screen-title" class="text-xl md:text-2xl font-bold text-blue-700 dark:text-blue-500"><i class="fas fa-cloud-upload-alt mr-2"></i>Nhập dữ liệu đề</h2>
-                <button onclick="goToDashboard()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="fas fa-times text-xl"></i></button>
-            </div>
-            
-            <div class="bg-blue-50 dark:bg-indigo-900/20 border-l-4 border-blue-400 p-4 mb-6 rounded text-gray-700 dark:text-gray-300">
-                <p class="text-sm font-bold mb-1"><i class="fas fa-info-circle mr-1"></i> Ghi chú Format chuẩn:</p>
-                <div class="bg-white dark:bg-gray-900 p-3 rounded border border-blue-100 dark:border-gray-700 font-mono text-[10px] md:text-xs">
-                    Máy ảnh trong hình là loại gì?<br>
-                    A. Mirrorless<br>
-                    B. Cinema Line<br>
-                    C. DSLR<br>
-                    B<br>
-                    <span class="text-blue-600 font-bold">* Nếu có nhiều đáp án, ghi theo định dạng (Ví dụ: A,B).</span><br>
-                    <span class="text-yellow-600 font-bold">* Chèn ảnh dạng [Hình minh họa: link_anh_vao_day]</span>
-                </div>
-            </div>
-            
-            <div class="mb-6">
-                <label class="block text-sm font-bold mb-2">Tên bộ đề (Môn học / Chủ đề):</label>
-                <input type="text" id="quiz-title-input" class="w-full p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none" placeholder="VD: Multimedia Production...">
-            </div>
-
-            <div class="mb-6">
-                <label class="block text-base font-bold mb-2 text-blue-700 dark:text-blue-500">BƯỚC 1: Dán nội dung bộ đề vào đây</label>
-                <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none font-mono text-xs md:text-sm" placeholder="Dán nội dung bộ đề vào đây..."></textarea>
-            </div>
-
-            <div class="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg relative">
-                <div class="absolute -top-3 left-4 bg-purple-100 dark:bg-purple-800 px-2 py-1 rounded text-xs font-bold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700">
-                    BƯỚC 2: TÙY CHỌN
-                </div>
-                <div class="flex items-center justify-between mb-2 mt-2">
-                    <label class="text-sm font-bold text-purple-700 dark:text-purple-400"><i class="fas fa-magic mr-1"></i> Trợ lý AI Giải Thích Đáp Án</label>
-                    <button onclick="document.getElementById('api-guide').classList.toggle('hidden')" class="text-[10px] md:text-xs text-blue-500 hover:underline">
-                        <i class="fas fa-question-circle"></i> Lấy API Key ở đâu?
-                    </button>
-                </div>
-                
-                <div id="api-guide" class="hidden mb-3 p-3 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-800 rounded text-xs text-gray-600 dark:text-gray-300">
-                    <b>Cách lấy API Key (1 phút):</b><br>
-                    1. Truy cập <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-500 underline font-bold">Google AI Studio</a> và đăng nhập bằng Gmail.<br>
-                    2. Bấm nút <b>"Get API key"</b> (hoặc "Create API Key").<br>
-                    3. Bấm <b>"Create API key in new project"</b>.<br>
-                    4. Copy chuỗi ký tự vừa tạo và dán vào ô bên dưới!
-                </div>
-
-                <div class="flex flex-col md:flex-row gap-2">
-                <div class="flex flex-col gap-2">
-                    <input type="password" id="gemini-api-key" class="w-full p-2 text-sm bg-white dark:bg-gray-800 border border-purple-200 dark:border-gray-700 rounded-lg focus:border-purple-500 outline-none" placeholder="Dán mã API Key (Bắt đầu bằng AIza...) vào đây">
-                    <div class="flex gap-2">
-                        <button id="btn-ai-explain" onclick="generateAIExplanations()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-2 rounded-lg transition shadow-sm text-sm" title="Giữ nguyên chữ bên trên để AI giải thích">
-                            <i class="fas fa-comment-dots mr-1"></i> Giải text
-                        </button>
-                        <input type="file" id="ai-image-input" accept="image/*" class="hidden" onchange="handleAIImageUpload(event)">
-                        <button id="btn-ai-image" onclick="document.getElementById('ai-image-input').click()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-2 rounded-lg transition shadow-sm text-sm" title="Tải ảnh chứa đề thi để AI đọc">
-                            <i class="fas fa-camera mr-1"></i> Quét Ảnh
-                        </button>
-                    </div>
-                </div>
-            
-            </div>
-        </div>
-
-        <div>
-            <label class="block text-base font-bold mb-2 text-green-600 dark:text-green-400">BƯỚC 3: Hoàn tất</label>
-            <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
-                <i class="fas fa-cogs mr-2"></i> Xử lý & Kiểm tra lại
-            </button>
-        </div>
-    </div> <!-- Close import-screen -->
-
-    <div id="preview-screen" class="max-w-5xl w-full h-[90vh] flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 fade-in hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2 shrink-0">
-                <h2 id="preview-title" class="text-xl md:text-2xl font-bold text-blue-700 dark:text-blue-500"><i class="fas fa-eye mr-2"></i>Kiểm tra lại bộ đề</h2>
-                <div class="flex items-center gap-3">
-                    <button onclick="scrollToNextError()" class="flex items-center gap-2 text-sm font-medium text-red-600 bg-red-50 px-3 py-1.5 rounded border border-red-200 hover:bg-red-100 transition dark:bg-red-900/30 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/50" title="Cuộn đến câu lỗi tiếp theo">
-                        <i class="fas fa-arrow-down"></i> Tìm câu lỗi
-                    </button>
-                    <span id="preview-count" class="bg-indigo-100 text-indigo-800 text-sm font-semibold px-3 py-1.5 rounded dark:bg-indigo-900 dark:text-indigo-300">0 câu hỏi</span>
-                </div>
-            </div>
-            <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-3 mb-4 rounded text-sm text-yellow-800 dark:text-yellow-200 shrink-0">
-                <i class="fas fa-exclamation-triangle mr-1"></i> Vui lòng lướt kiểm tra xem hệ thống bóc tách đáp án (màu xanh) đã chính xác chưa trước khi lưu.
-            </div>
-            
-            <div id="preview-container" class="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2 mb-4 relative">
-                <!-- Preview items will be injected here -->
-            </div>
-            
-            <div class="flex flex-col md:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 shrink-0">
-                <button onclick="cancelPreview()" class="w-full md:w-auto bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg shadow transition">
-                    <i class="fas fa-arrow-left mr-2"></i> Quay lại sửa văn bản
-                </button>
-                <button id="btn-save-preview" onclick="saveFromPreview()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg shadow transition">
-                    <i class="fas fa-save mr-2"></i> Lưu vào Kho Đề
-                </button>
-            </div>
-        </div>
-
-        <div id="welcome-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 text-center mt-4 md:mt-10 fade-in hidden">
-            <div id="student-badge" class="hidden mx-auto bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold px-4 py-1.5 rounded-lg text-xs w-max mb-4 border border-blue-200 dark:border-blue-800">
-                <i class="fas fa-chalkboard-teacher mr-1"></i> ĐANG TRONG LỚP HỌC (GIÁO VIÊN CỦA BẠN CÓ THỂ XEM TÌNH TRẠNG HỌC)
-            </div>
-
-            <h2 id="current-quiz-title" class="text-2xl md:text-3xl font-bold mb-4">Tên Bộ Đề</h2>
-            <img src="https://cdn-icons-png.flaticon.com/512/3067/3067258.png" alt="Learn" class="w-24 h-24 md:w-32 md:h-32 mx-auto mb-4 md:mb-6 drop-shadow-md">
-            <p class="text-sm md:text-base text-gray-600 dark:text-gray-400 mb-6" id="welcome-msg">Hệ thống đã sẵn sàng.</p>
-            
-            <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-4">
-                <button onclick="startNextSection()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 md:px-8 rounded-lg shadow-lg transition text-base md:text-lg w-full md:w-auto">
-                    <i class="fas fa-play mr-2"></i> Học
-                </button>
-                <button id="btn-restart" onclick="resetAndRestart()" class="bg-amber-600 hover:bg-orange-600 text-white font-bold py-3 px-6 md:px-8 rounded-lg shadow-lg transition text-base md:text-lg w-full md:w-auto">
-                    <i class="fas fa-sync-alt mr-2"></i> Làm lại
-                </button>
-                <button id="btn-shuffle" onclick="shuffleAndStart()" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 md:px-8 rounded-lg shadow-lg transition text-base md:text-lg w-full md:w-auto">
-                    <i class="fas fa-random mr-2"></i> Trộn Đề
-                </button>
-            </div>
-        </div>
-
-        <div id="quiz-screen" class="max-w-3xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 md:p-8 fade-in hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 pb-4 border-b border-gray-100 dark:border-gray-700 gap-2 md:gap-0">
-                <span class="text-xs md:text-sm font-bold text-blue-700 dark:text-blue-500 uppercase tracking-wider" id="quiz-status">Câu 1/12</span>
-                
-                <div class="flex flex-wrap gap-2 items-center">
-                    <span class="text-xs md:text-sm font-bold text-amber-600 bg-amber-100 dark:bg-orange-900/30 px-3 py-1 rounded-lg hidden self-start md:self-auto" id="retry-badge"><i class="fas fa-redo mr-1"></i> Làm lại câu sai</span>
-                    
-                    <button id="btn-shuffle" onclick="shuffleAndStart()" class="hidden md:block bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-bold py-1.5 px-3 rounded-lg transition shadow-sm">
-                        <i class="fas fa-random mr-1"></i> Trộn đề
-                    </button>
-                    <button id="btn-srs" onclick="startSRS()" class="hidden md:block bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-bold py-1.5 px-3 rounded-lg transition shadow-sm">
-                        <i class="fas fa-brain mr-1"></i> Ôn tập (SRS)
-                    </button>
-                    <button id="btn-pdf" onclick="exportPDF()" class="hidden md:block bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold py-1.5 px-3 rounded-lg transition shadow-sm">
-                        <i class="fas fa-file-pdf mr-1"></i> Tải PDF
-                    </button>
-                </div>
-            </div>
-            <div id="question-area" class="mb-5 md:mb-6">
-                <h3 class="text-lg md:text-2xl font-medium leading-relaxed" id="question-text"></h3>
-            </div>
-            <div class="space-y-3 md:space-y-4" id="options-container"></div>
-            
-            <div class="mt-6 md:mt-8 flex justify-between gap-4">
-                <button id="prev-btn" onclick="handlePrev()" class="hidden w-full md:w-auto justify-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold py-3 px-6 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center text-base">
-                    <i class="fas fa-arrow-left mr-2"></i> Câu trước
-                </button>
-                <button id="next-btn" onclick="handleNext()" disabled class="w-full md:w-auto justify-center bg-blue-700 text-white cursor-not-allowed opacity-50 font-bold py-3 px-8 rounded-xl transition flex items-center text-base ml-auto">
-                    Kiểm tra <i class="fas fa-check ml-2"></i>
-                </button>
-            </div>
-        </div>
-
-        <div id="result-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 text-center fade-in hidden mt-4 md:mt-10">
-            <div id="result-icon" class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl md:text-4xl"></div>
-            <h2 class="text-xl md:text-2xl font-bold mb-2" id="result-title">Kết quả Section</h2>
-            <p class="text-sm md:text-lg text-gray-600 dark:text-gray-400 mb-6" id="result-desc"></p>
-            <div id="result-action"></div>
-        </div>
-
-        <div id="finish-screen" class="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 text-center fade-in hidden mt-4 md:mt-10">
-            <img src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png" alt="Trophy" class="w-32 h-32 md:w-40 md:h-40 mx-auto mb-6 drop-shadow-lg">
-            <h2 class="text-2xl md:text-3xl font-bold text-blue-700 dark:text-blue-500 mb-4" id="finish-title">CHÚC MỪNG BẠN!</h2>
-            <p class="text-sm md:text-lg mb-6 text-gray-600 dark:text-gray-400" id="finish-desc">Bạn đã nhai gọn toàn bộ tài liệu của bộ đề này.</p>
-            <button onclick="goToDashboard()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition">
-                <i class="fas fa-arrow-left mr-2"></i> Về Kho Đề
-            </button>
-        </div>
-
-        <div id="score-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex justify-center items-center p-4 fade-in">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-                <div class="flex justify-between items-center p-5 border-b dark:border-gray-700">
-                    <h2 class="text-xl font-bold text-blue-600 dark:text-blue-400"><i class="fas fa-users mr-2"></i>Giám Sát Tiến Độ Học Sinh</h2>
-                    <button onclick="closeScoreModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="fas fa-times text-xl"></i></button>
-                </div>
-                <div class="p-5 overflow-y-auto custom-scrollbar flex-1">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm">
-                                    <th class="p-3 rounded-tl-lg font-semibold">Tên Học Sinh</th>
-                                    <th class="p-3 font-semibold text-center">Section đã học</th>
-                                    <th class="p-3 font-semibold text-center">Tiến độ tổng</th>
-                                    <th class="p-3 rounded-tr-lg font-semibold text-right">Cập nhật lần cuối</th>
-                                </tr>
-                            </thead>
-                            <tbody id="score-table-body" class="text-sm divide-y dark:divide-gray-700">
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="score-loading" class="text-center py-10 hidden">
-                        <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <div id="music-widget" class="bg-white dark:bg-gray-800 rounded-t-xl md:rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="bg-[#1DB954] text-black px-4 py-2.5 md:py-3 flex justify-between items-center cursor-pointer active:bg-[#19a34a] md:hover:bg-[#1ed760] transition" onclick="toggleMusicWidget()">
-            <div class="flex items-center gap-2 font-bold">
-                <i class="fab fa-spotify text-lg"></i> <span class="text-sm">Trạm Nhạc Spotify</span>
-            </div>
-            <i class="fas fa-chevron-down transition-transform" id="music-toggle-icon"></i>
-        </div>
-        <div class="p-3 bg-[#121212] flex flex-col gap-2.5">
-            <div class="text-xs text-gray-400 mb-1 hidden md:block">Dán link Playlist/Bài hát Spotify vào đây:</div>
-            <div class="flex gap-2">
-                <input type="text" id="spotify-input" placeholder="Dán link bài hát vào đây..." class="w-full text-xs p-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-[#1DB954] transition">
-                <button onclick="updateSpotify()" class="bg-[#1DB954] active:bg-[#19a34a] md:hover:bg-[#1ed760] text-black font-bold px-3 py-1 rounded text-xs transition">Phát</button>
-            </div>
-            <iframe id="spotify-player" 
-                style="border-radius:12px" 
-                src="https://open.spotify.com/embed/album/4w6hrJBHXEpFvKg6bwyzSi?utm_source=generator" 
-                width="100%" 
-                height="152" 
-                frameBorder="0" 
-                allowfullscreen="" 
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                loading="lazy">
-            </iframe>
-        </div>
-    </div>
-
-    <!-- Custom Notification & Modal Containers -->
-    <div id="toast-container" class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2"></div>
-    <div id="custom-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[100] hidden flex items-center justify-center p-4 fade-in">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm p-6 relative">
-            <h3 id="confirm-title" class="text-lg font-bold text-gray-900 dark:text-white mb-2">Xác nhận</h3>
-            <p id="confirm-msg" class="text-gray-600 dark:text-gray-300 text-sm mb-6">Bạn có chắc chắn không?</p>
-            <div class="flex justify-end gap-3">
-                <button id="confirm-cancel-btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md text-sm font-medium transition">Hủy</button>
-                <button id="confirm-ok-btn" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-md text-sm font-medium transition">Đồng ý</button>
-            </div>
-        </div>
-    </div>
-
-
-    <div id="learn-options-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[100] hidden flex items-center justify-center p-4 fade-in">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6 relative overflow-hidden">
-            <button onclick="closeLearnOptions()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl transition">
-                <i class="fas fa-times"></i>
-            </button>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 text-center">Chọn Chế Độ Học</h3>
-            <p class="text-gray-600 dark:text-gray-400 text-sm text-center mb-6">Hãy chọn phương pháp học phù hợp với mục tiêu của bạn lúc này.</p>
-            
-            <div class="space-y-4">
-                <!-- Option 1: Quick Learn -->
-                <button onclick="selectLearnMode('quick')" class="w-full flex items-start p-4 border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition text-left group">
-                    <div class="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 p-3 rounded-lg mr-4 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-bolt text-xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-blue-800 dark:text-blue-300 mb-1">Học Nhanh (Trí nhớ ngắn hạn)</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Học toàn bộ hoặc ngẫu nhiên các câu hỏi. Phù hợp để ôn thi gấp hoặc lướt qua toàn bộ nội dung.</p>
-                    </div>
-                </button>
-                
-                <!-- Option 2: SRS -->
-                <button onclick="selectLearnMode('srs')" class="w-full flex items-start p-4 border-2 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition text-left group">
-                    <div class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 p-3 rounded-lg mr-4 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-brain text-xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-indigo-800 dark:text-indigo-300 mb-1">Học Nhớ Lâu (Ôn tập ngắt quãng)</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Chỉ ôn tập những câu đã đến hạn (SRS). Giúp ghi nhớ dài hạn, phù hợp với các bộ đề ngắn và học hàng ngày.</p>
-                    </div>
-                </button>
-            </div>
-        </div>
-    </div>
-    <script>
         // Custom UI System
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -1798,7 +1406,53 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
                 printWindow.document.write('</div>');
             });
             
-            printWindow.document.write('</body></html>');
+            printWindow.document.write('
+    <div id="analytics-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[100] hidden flex items-center justify-center p-4 fade-in">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button onclick="document.getElementById('analytics-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2"><i class="fas fa-chart-line text-blue-600 mr-2"></i>Thống kê Học tập</h3>
+            <p id="analytics-title" class="text-gray-600 dark:text-gray-300 text-sm mb-6">Bộ đề: ...</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="stat-total">0</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Lượt ôn tập</div>
+                </div>
+                <div class="bg-green-50 dark:bg-gray-700 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="stat-correct">0%</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tỉ lệ đúng TB</div>
+                </div>
+                <div class="bg-amber-50 dark:bg-gray-700 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-amber-600 dark:text-amber-400" id="stat-streak">0</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Chuỗi ngày (Streak)</div>
+                </div>
+                <div class="bg-purple-50 dark:bg-gray-700 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="stat-mastery">0%</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Mức độ Thành thạo</div>
+                </div>
+            </div>
+
+            <div class="w-full h-72">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-prompt-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[100] hidden flex items-center justify-center p-4 fade-in">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 relative">
+            <h3 id="prompt-title" class="text-lg font-bold text-gray-900 dark:text-white mb-2">Nhập liệu</h3>
+            <p id="prompt-msg" class="text-gray-600 dark:text-gray-300 text-sm mb-4">Vui lòng nhập thông tin:</p>
+            <input type="text" id="prompt-input" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-white mb-6 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" autocomplete="off">
+            <div class="flex justify-end gap-3">
+                <button id="prompt-cancel-btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md text-sm font-medium transition">Hủy</button>
+                <button id="prompt-ok-btn" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-md text-sm font-medium transition">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+</body></html>');
             printWindow.document.close();
             setTimeout(() => {
                 printWindow.print();
@@ -2151,53 +1805,4 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
                 }
             }
         });
-    </script>
-
-    <div id="analytics-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[100] hidden flex items-center justify-center p-4 fade-in">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <button onclick="document.getElementById('analytics-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">
-                <i class="fas fa-times"></i>
-            </button>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2"><i class="fas fa-chart-line text-blue-600 mr-2"></i>Thống kê Học tập</h3>
-            <p id="analytics-title" class="text-gray-600 dark:text-gray-300 text-sm mb-6">Bộ đề: ...</p>
-            
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="stat-total">0</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Lượt ôn tập</div>
-                </div>
-                <div class="bg-green-50 dark:bg-gray-700 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-green-600 dark:text-green-400" id="stat-correct">0%</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tỉ lệ đúng TB</div>
-                </div>
-                <div class="bg-amber-50 dark:bg-gray-700 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-amber-600 dark:text-amber-400" id="stat-streak">0</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Chuỗi ngày (Streak)</div>
-                </div>
-                <div class="bg-purple-50 dark:bg-gray-700 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="stat-mastery">0%</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Mức độ Thành thạo</div>
-                </div>
-            </div>
-
-            <div class="w-full h-72">
-                <canvas id="progressChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div id="custom-prompt-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[100] hidden flex items-center justify-center p-4 fade-in">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 relative">
-            <h3 id="prompt-title" class="text-lg font-bold text-gray-900 dark:text-white mb-2">Nhập liệu</h3>
-            <p id="prompt-msg" class="text-gray-600 dark:text-gray-300 text-sm mb-4">Vui lòng nhập thông tin:</p>
-            <input type="text" id="prompt-input" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-white mb-6 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" autocomplete="off">
-            <div class="flex justify-end gap-3">
-                <button id="prompt-cancel-btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md text-sm font-medium transition">Hủy</button>
-                <button id="prompt-ok-btn" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-md text-sm font-medium transition">Xác nhận</button>
-            </div>
-        </div>
-    </div>
-
-
-</body>
-</html>
+    
