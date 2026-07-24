@@ -1951,7 +1951,7 @@
                 // ----------------------------------------------
 
                 elNextBtn.innerHTML = 'Tiếp tục (Enter) <i class="fas fa-arrow-right ml-2"></i>';
-                elNextBtn.className = "w-full md:w-auto justify-center bg-gray-800 active:bg-black md:hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base ml-auto";
+                elNextBtn.className = "w-full md:w-auto justify-center bg-indigo-600 active:bg-indigo-800 md:hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center text-base ml-auto";
                 
             } else {
                 // KÍCH HOẠT LỚP BẢO VỆ CHỐNG SPAM CLICK / ENTER
@@ -2197,6 +2197,12 @@
             const container = document.getElementById('ai-explanation-container');
             
             if (!container || !ALL_QUESTIONS || ALL_QUESTIONS.length === 0) return;
+            
+            if (!hasSubmitted) {
+                showToast("Vui lòng chốt đáp án trước khi xem giải thích để tránh lộ kết quả nhé!", "warning");
+                return;
+            }
+            
             const realIdx = queue[currentQIndexInQueue];
             if (realIdx === undefined) return;
             const currentQ = ALL_QUESTIONS[realIdx];
