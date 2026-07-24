@@ -51,6 +51,12 @@
         main { -webkit-overflow-scrolling: touch; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Libraries for parsing files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body class="text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-900 h-[100dvh] flex flex-col overflow-hidden">
 
@@ -140,8 +146,17 @@
             </div>
 
             <div class="mb-6">
-                <label class="block text-base font-bold mb-2 text-blue-700 dark:text-blue-500">BƯỚC 1: Dán nội dung bộ đề vào đây</label>
-                <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none font-mono text-xs md:text-sm" placeholder="Dán nội dung bộ đề vào đây..."></textarea>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-2">
+                    <label class="block text-base font-bold text-blue-700 dark:text-blue-500">BƯỚC 1: Nội dung bộ đề</label>
+                    <input type="file" id="document-upload" accept=".pdf,.docx,image/*" class="hidden" onchange="handleFileUpload(event)">
+                    <button onclick="document.getElementById('document-upload').click()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-bold py-1.5 px-3 rounded-lg transition flex items-center border border-blue-300 shadow-sm">
+                        <i class="fas fa-file-upload mr-1.5"></i> Tải file (Word, PDF, Ảnh)
+                    </button>
+                </div>
+                <div id="upload-status" class="hidden mb-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center">
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Đang đọc file...
+                </div>
+                <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none font-mono text-xs md:text-sm" placeholder="Dán nội dung bộ đề vào đây, hoặc tải file lên..."></textarea>
             </div>
 
             <div class="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg relative">
@@ -167,12 +182,8 @@
                 <div class="flex flex-col gap-2">
                     <input type="password" id="gemini-api-key" class="w-full p-2 text-sm bg-white dark:bg-gray-800 border border-purple-200 dark:border-gray-700 rounded-lg focus:border-purple-500 outline-none" placeholder="Dán mã API Key (Bắt đầu bằng AIza...) vào đây">
                     <div class="flex gap-2">
-                        <button id="btn-ai-explain" onclick="generateAIExplanations()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-2 rounded-lg transition shadow-sm text-sm" title="Giữ nguyên chữ bên trên để AI giải thích">
-                            <i class="fas fa-comment-dots mr-1"></i> Giải text
-                        </button>
-                        <input type="file" id="ai-image-input" accept="image/*" class="hidden" onchange="handleAIImageUpload(event)">
-                        <button id="btn-ai-image" onclick="document.getElementById('ai-image-input').click()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-2 rounded-lg transition shadow-sm text-sm" title="Tải ảnh chứa đề thi để AI đọc">
-                            <i class="fas fa-camera mr-1"></i> Quét Ảnh
+                        <button id="btn-ai-explain" onclick="generateExplanationsAI()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-2 rounded-lg transition shadow-sm text-sm" title="Tự động thêm giải thích cho các câu hỏi ở BƯỚC 1">
+                            <i class="fas fa-magic mr-1"></i> Tự động tạo Giải Thích bằng AI
                         </button>
                     </div>
                 </div>
@@ -874,68 +885,53 @@
         });
 
 
-        async function handleAIImageUpload(e) {
+        async function handleFileUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
             
-            const apiKey = document.getElementById('gemini-api-key').value.trim();
-            if (!apiKey) return showToast("Vui lòng nhập Gemini API Key để quét ảnh!", 'error');
-            
-            const btnImage = document.getElementById('btn-ai-image');
-            const originalHtml = btnImage.innerHTML;
-            btnImage.disabled = true;
-            btnImage.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> Đang đọc chữ...`;
+            const status = document.getElementById('upload-status');
+            status.classList.remove('hidden');
             
             try {
-                localStorage.setItem('GEMINI_API_KEY', apiKey);
-                
-                // Convert file to Base64
-                const base64Data = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.onerror = error => reject(error);
-                    reader.readAsDataURL(file);
-                });
+                const type = file.name.split('.').pop().toLowerCase();
+                let extractedText = '';
 
-                const prompt = `Hãy đọc toàn bộ văn bản trong bức ảnh này, đây là một đề thi trắc nghiệm. Nhiệm vụ của bạn là trích xuất nguyên văn toàn bộ câu hỏi và đáp án ra dạng Text.
-Không được thay đổi bất kỳ từ ngữ nào, giữ nguyên các lựa chọn A, B, C, D...
-Chỉ trả về nội dung đề thi, không thêm lời chào, không định dạng markdown. Không tự giải.`;
-
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ 
-                            parts: [
-                                { text: prompt },
-                                { inlineData: { mimeType: file.type, data: base64Data } }
-                            ] 
-                        }],
-                        generationConfig: { temperature: 0.1 }
-                    })
-                });
-
-                const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
-
-                let aiResult = data.candidates[0].content.parts[0].text;
-                aiResult = aiResult.replace(/^```[a-z]*\n/gm, '').replace(/```$/gm, '').trim();
+                if (type === 'pdf') {
+                    status.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Đang đọc file PDF...`;
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        const pageText = textContent.items.map(item => item.str).join(' ');
+                        extractedText += pageText + '\n\n';
+                    }
+                } else if (type === 'docx') {
+                    status.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Đang đọc file Word...`;
+                    const arrayBuffer = await file.arrayBuffer();
+                    const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+                    extractedText = result.value;
+                } else if (file.type.startsWith('image/')) {
+                    status.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Đang đọc chữ từ ảnh (10-20s)...`;
+                    const result = await Tesseract.recognize(file, 'vie');
+                    extractedText = result.data.text;
+                } else {
+                    throw new Error("Định dạng file không hỗ trợ! Vui lòng chọn PDF, DOCX hoặc Ảnh.");
+                }
 
                 const textArea = document.getElementById('raw-text-input');
-                textArea.value = (textArea.value + "\n\n" + aiResult).trim();
-                showToast("Đã trích xuất đề thi từ ảnh thành công!", 'success');
-                
+                textArea.value = (textArea.value + '\n\n' + extractedText).trim();
+                showToast("Đã trích xuất chữ thành công!", 'success');
             } catch (err) {
                 console.error(err);
-                showToast("Lỗi AI: " + err.message, 'error');
+                showToast("Lỗi khi đọc file: " + err.message, 'error');
             } finally {
-                btnImage.disabled = false;
-                btnImage.innerHTML = originalHtml;
-                e.target.value = ''; // Reset file input
+                status.classList.add('hidden');
+                e.target.value = '';
             }
         }
 
-        async function generateAIExplanations() {
+        async function generateExplanationsAI() {
             const apiKey = document.getElementById('gemini-api-key').value.trim();
             const rawText = document.getElementById('raw-text-input').value.trim();
             const btnAI = document.getElementById('btn-ai-explain');
@@ -946,12 +942,10 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
             localStorage.setItem('GEMINI_API_KEY', apiKey);
             btnAI.disabled = true;
             btnAI.classList.add('opacity-50');
+            btnAI.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> Đang xử lý...`;
 
-            // BƯỚC 1: Băm bộ đề ra thành từng câu/cụm (dựa vào khoảng trắng giữa các câu)
             const blocks = rawText.split(/\n\s*\n/).filter(b => b.trim() !== '');
-            
-            // BƯỚC 2: Gom vào từng lô, mỗi lô khoảng 30 câu để không bị quá tải Token của bản Free
-            const CHUNK_SIZE = 20;
+            const CHUNK_SIZE = 15;
             const chunks = [];
             for (let i = 0; i < blocks.length; i += CHUNK_SIZE) {
                 chunks.push(blocks.slice(i, i + CHUNK_SIZE).join('\n\n'));
@@ -959,91 +953,50 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
 
             let finalResult = "";
             const promptTemplate = `
-            Dưới đây là một phần của bộ đề thi trắc nghiệm. Trong mỗi câu hỏi, dòng chữ cái cuối cùng (nằm ngay dưới các lựa chọn A, B, C, D...) là ĐÁP ÁN GỐC do người soạn đề cung cấp.
+Dưới đây là một phần của bộ đề thi trắc nghiệm. Nhiệm vụ của bạn là đóng vai một Trợ giảng:
+Bước 1: Đọc và tìm hiểu mỗi câu hỏi.
+Bước 2: Viết một câu giải thích ngắn gọn (1-2 câu) cho câu hỏi đó, chỉ ra đáp án đúng theo kiến thức thực tế, và để dưới dạng "Giải thích: [Nội dung giải thích]".
 
-            Nhiệm vụ của bạn là đóng vai một Trợ giảng kiểm định chất lượng (QA Reviewer):
-            Bước 1: So sánh đáp án gốc với kiến thức thực tế chuẩn xác.
-            Bước 2: Xử lý theo 1 trong 2 trường hợp sau và ghi kết quả vào ngay bên dưới dòng đáp án gốc:
-               - TRƯỜNG HỢP 1 (Đáp án gốc đúng): Viết thêm dòng "Giải thích: [Lý do ngắn gọn 1-2 câu tại sao đáp án này đúng]".
-               - TRƯỜNG HỢP 2 (Đáp án gốc sai lệch kiến thức): Viết thêm dòng "Giải thích: ⚠️ [AI CẢNH BÁO] Đáp án gốc có thể bị sai. Sự thật là [giải thích sự thật ngắn gọn và chỉ ra đáp án đúng]. Tôi chỉ đề xuất vì đề có thể sai nhưng tôi không thể thay đổi đáp án gốc, để vượt qua câu này vui lòng chọn đáp án gốc".
+YÊU CẦU BẮT BUỘC:
+1. Tuyệt đối KHÔNG ĐƯỢC tự ý sửa hay xóa nội dung gốc.
+2. KHÔNG thay đổi từ ngữ, không phá vỡ định dạng A, B, C, D của bộ đề.
+3. Chỉ trả về nội dung bộ đề gốc đã được chèn thêm dòng "Giải thích: [Nội dung giải thích]" ở cuối mỗi câu hỏi. Không chèn thẻ markdown.
 
-            YÊU CẦU BẮT BUỘC:
-            1. Tuyệt đối KHÔNG ĐƯỢC tự ý sửa hay xóa đáp án gốc của người dùng.
-            2. KHÔNG thay đổi từ ngữ, không phá vỡ định dạng A, B, C, D của bộ đề.
-            3. Chỉ trả về nội dung bộ đề đã được chèn thêm dòng "Giải thích:". Không chèn thẻ markdown, không chào hỏi.
-
-            Phần bộ đề cần xử lý:
-            `;
+Phần bộ đề cần xử lý:
+`;
 
             try {
-                // BƯỚC 3: Chạy từng lô một và nối kết quả lại
-                // BƯỚC 3: Chạy từng lô một và nối kết quả lại (ĐÃ NÂNG CẤP AUTO-RETRY)
                 for (let i = 0; i < chunks.length; i++) {
-                    let chunkSuccess = false;
-                    let retryCount = 0;
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: promptTemplate + chunks[i] }] }],
+                            generationConfig: { temperature: 0.1 }
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error.message);
+
+                    let aiResult = data.candidates[0].content.parts[0].text;
+                    aiResult = aiResult.replace(/^\`\`\`[a-z]*\n/gm, '').replace(/\`\`\`$/gm, '').trim();
+                    finalResult += aiResult + "\n\n";
                     
-                    while (!chunkSuccess && retryCount < 4) { // Thử lại tối đa 3 lần nếu kẹt xe
-                        try {
-                            const progress = Math.round((i / chunks.length) * 100);
-                            if (retryCount === 0) {
-                                btnAI.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Đang xử lý ${i + 1}/${chunks.length} (${progress}%)...`;
-                            } else {
-                                btnAI.innerHTML = `<i class="fas fa-exclamation-triangle text-yellow-300 mr-2"></i> Quá tải lô ${i + 1}. Đang thử lại lần ${retryCount}...`;
-                            }
-
-                            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    contents: [{ parts: [{ text: promptTemplate + chunks[i] }] }],
-                                    generationConfig: { temperature: 0.2 } 
-                                })
-                            });
-
-                            const data = await response.json();
-                            if (data.error) throw new Error(data.error.message);
-
-                            let aiResult = data.candidates[0].content.parts[0].text;
-                            aiResult = aiResult.replace(/^```[a-z]*\n/gm, '').replace(/```$/gm, '').trim();
-
-                            finalResult += aiResult + "\n\n";
-                            chunkSuccess = true; // Xong lô này, chốt hạ để đi tiếp
-
-                            // Nghỉ ngơi 5 giây trước khi gọi lô tiếp theo
-                            if (i < chunks.length - 1) {
-                                await new Promise(resolve => setTimeout(resolve, 5000));
-                            }
-                            
-                        } catch (err) {
-                            retryCount++;
-                            if (retryCount >= 4) {
-                                throw err; // Cố quá 3 lần vẫn lỗi thì mới chịu thua sập cầu dao
-                            }
-                            // Bị Google chặn do quá tải -> Đứng im tại chỗ nghỉ 10 giây rồi chạy lại đúng lô đó
-                            await new Promise(resolve => setTimeout(resolve, 10000));
-                        }
+                    if(i < chunks.length - 1) {
+                        btnAI.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> Đang xử lý ${i + 1}/${chunks.length}...`;
                     }
                 }
 
-                // Ghi đè toàn bộ kết quả siêu to khổng lồ vào lại ô Textarea
-                // Ghi kết quả vào bộ nhớ ngầm thay vì in ra ô nhập liệu
-                // Ghi vào ngăn kéo ngầm, giữ ô nhập liệu thô sạch sẽ cho anh Khôi dễ nhìn
-                hiddenAIText = finalResult.trim();
-                
-                btnAI.innerHTML = `<i class="fas fa-check mr-2"></i> Đã hoàn tất giải thích`;
-                // ... (phần code thông báo hoàn tất)
-                setTimeout(() => {
-                    btnAI.innerHTML = '<i class="fas fa-brain mr-2"></i> Nhờ AI giải thích';
-                }, 3000);
-                
-                showToast("Hệ thống đã sẵn sàng, hãy bấm Xử Lý để tiếp tục nhé", 'error');
-
-            } catch (error) {
-                console.error(error);
-                showToast("Lỗi gọi AI: " + error.message + " (Có thể server AI đang quá tải, hãy chờ 5s và bấm lại nút giải thích nhé, 'error')");
-                btnAI.innerHTML = '<i class="fas fa-brain mr-2"></i> Nhờ AI giải thích';
+                document.getElementById('raw-text-input').value = finalResult.trim();
+                hiddenAIText = finalResult.trim(); // Compatibility with old code
+                showToast("Đã chèn giải thích AI thành công!", 'success');
+            } catch (err) {
+                console.error(err);
+                showToast("Lỗi AI: " + err.message, 'error');
             } finally {
                 btnAI.disabled = false;
+                btnAI.innerHTML = `<i class="fas fa-magic mr-1"></i> Tự động tạo Giải Thích bằng AI`;
                 btnAI.classList.remove('opacity-50');
             }
         }
@@ -1333,6 +1286,26 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
         }
 
         // --- HÀM CHO TÍNH NĂNG PREVIEW ---
+        function movePendingOption(qIndex, oldIndex, newIndex) {
+            const question = pendingParsedQuestions[qIndex];
+            
+            // Generate a boolean array representing correctness before moving
+            const correctStates = question.o.map((_, i) => question.a.includes(i));
+            
+            // Move option text
+            const opt = question.o.splice(oldIndex, 1)[0];
+            question.o.splice(newIndex, 0, opt);
+            
+            // Move correctness state
+            const state = correctStates.splice(oldIndex, 1)[0];
+            correctStates.splice(newIndex, 0, state);
+            
+            // Rebuild correct answer array
+            question.a = correctStates.map((isCorrect, i) => isCorrect ? i : -1).filter(i => i !== -1);
+            
+            renderPreviewScreen();
+        }
+
         function renderPreviewScreen() {
             document.getElementById('preview-title').innerHTML = `<i class="fas fa-eye mr-2"></i>Kiểm tra lại: ${pendingQuizTitle}`;
             document.getElementById('preview-count').innerText = `${pendingParsedQuestions.length} câu hỏi`;
@@ -1342,20 +1315,22 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
             let html = '';
             
             pendingParsedQuestions.forEach((q, index) => {
-                let optionsHtml = '';
+                let optionsHtml = `<div class="sortable-options" data-qindex="${index}">`;
                 q.o.forEach((opt, optIndex) => {
                     const isCorrect = q.a.includes(optIndex);
                     const styleClass = isCorrect ? 'bg-green-100 border-green-300 dark:bg-green-900/30 dark:border-green-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700';
                     const textClass = isCorrect ? 'text-green-800 font-bold dark:text-green-300' : 'text-gray-700 dark:text-gray-300';
                     
                     optionsHtml += `
-                        <div class="flex items-center p-2 mt-1 rounded border ${styleClass} text-sm transition-colors">
+                        <div class="flex items-center p-2 mt-1 rounded border ${styleClass} text-sm transition-colors group">
+                            <i class="fas fa-grip-vertical text-gray-400 hover:text-gray-600 cursor-grab mr-2 px-1"></i>
                             <input type="checkbox" onchange="togglePendingAns(${index}, ${optIndex}, this.checked)" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-blue-700 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 mr-3 shrink-0 cursor-pointer">
                             <input type="text" oninput="updatePendingOpt(${index}, ${optIndex}, this.value)" value="${opt.replace(/"/g, '&quot;')}" class="flex-1 bg-transparent border-none focus:ring-0 outline-none ${textClass} w-full">
                             <button onclick="removePendingOption(${index}, ${optIndex})" class="ml-2 text-gray-400 hover:text-red-500 transition-colors p-1" title="Xóa đáp án này"><i class="fas fa-times"></i></button>
                         </div>
                     `;
                 });
+                optionsHtml += `</div>`;
                 
                 optionsHtml += `
                     <div class="mt-2 text-right">
@@ -1403,6 +1378,21 @@ Chỉ trả về nội dung đề thi, không thêm lời chào, không định 
             
             container.innerHTML = html;
             // Restore scroll position after a short tick to let DOM update
+            
+            document.querySelectorAll('.sortable-options').forEach(el => {
+                new Sortable(el, {
+                    animation: 150,
+                    handle: '.fa-grip-vertical',
+                    ghostClass: 'opacity-50',
+                    onEnd: function (evt) {
+                        if (evt.oldIndex !== evt.newIndex) {
+                            const qIndex = parseInt(evt.from.dataset.qindex);
+                            movePendingOption(qIndex, evt.oldIndex, evt.newIndex);
+                        }
+                    }
+                });
+            });
+
             setTimeout(() => { container.scrollTop = savedScroll; }, 0);
         }
 
