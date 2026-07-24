@@ -49,6 +49,27 @@
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
 
         main { -webkit-overflow-scrolling: touch; }
+        
+        /* Cấu hình Google Translate Widget */
+        .skiptranslate iframe { display: none !important; }
+        body { top: 0 !important; }
+        .goog-te-gadget { font-family: 'Inter', sans-serif !important; color: transparent !important; font-size: 0; }
+        .goog-te-gadget .goog-te-combo {
+            padding: 4px 8px; border-radius: 6px;
+            border: 1px solid #e2e8f0; background-color: #f8fafc;
+            color: #475569; font-size: 13px; outline: none;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+        .dark .goog-te-gadget .goog-te-combo {
+            background-color: #374151; border-color: #4b5563; color: #f3f4f6;
+        }
+        .goog-te-combo option { color: #000; }
+        #google_translate_element { display: flex; align-items: center; }
+        
+        /* Ẩn text "Powered by Google" */
+        .goog-logo-link { display: none !important; }
+        .goog-te-gadget > span > a { display: none !important; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -82,6 +103,7 @@
         </div>
 
         <div class="flex items-center gap-4">
+            <div id="google_translate_element" class="hidden md:block" title="Dịch trang"></div>
             <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                 <i class="fas fa-moon dark:hidden"></i>
                 <i class="fas fa-sun hidden dark:block"></i>
@@ -571,6 +593,19 @@
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUser = user;
+                
+                // Lưu/Cập nhật thông tin user vào Firestore để dễ quản lý
+                try {
+                    await db.collection('users').doc(user.uid).set({
+                        displayName: user.displayName || 'Người dùng',
+                        email: user.email || '',
+                        photoURL: user.photoURL || '',
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                } catch(e) {
+                    console.error("Lỗi lưu thông tin user:", e);
+                }
+
                 document.getElementById('user-profile').classList.replace('hidden', 'flex');
                 document.getElementById('user-avatar').src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 document.getElementById('user-name').innerText = user.displayName || 'Người dùng';
@@ -2209,6 +2244,17 @@ Phần bộ đề cần xử lý:
         </div>
     </div>
 
-
+    <!-- Google Translate Script -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'vi', /* Set default to Vietnamese so it translates from English to Vietnamese usually */
+                includedLanguages: 'vi,en,ja,ko,zh-CN,fr,de,ru',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
