@@ -226,7 +226,7 @@
             </div>
         </div>
 
-        <div id="quiz-screen" class="max-w-3xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 md:p-8 fade-in hidden">
+        <div id="quiz-screen" class="max-w-3xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 md:p-8 fade-in hidden transition-all duration-300">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 pb-4 border-b border-gray-100 dark:border-gray-700 gap-2 md:gap-0">
                 <span class="text-xs md:text-sm font-bold text-blue-700 dark:text-blue-500 uppercase tracking-wider" id="quiz-status">Câu 1/12</span>
                 
@@ -242,7 +242,7 @@
                     <button id="btn-pdf" onclick="exportPDF()" class="hidden md:block bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold py-1.5 px-3 rounded-lg transition shadow-sm">
                         <i class="fas fa-file-pdf mr-1"></i> Tải PDF
                     </button>
-                    <button id="btn-translate" onclick="openTranslationModal()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-bold py-1.5 px-3 rounded-lg transition shadow-sm flex items-center">
+                    <button id="btn-translate" onclick="toggleInlineTranslation()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-bold py-1.5 px-3 rounded-lg transition shadow-sm flex items-center">
                         <i class="fas fa-language mr-1"></i> <span>Dịch</span>
                     </button>
                     <button id="btn-ask-ai" onclick="askAIForExplanation()" class="bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-bold py-1.5 px-3 rounded-lg transition shadow-sm flex items-center">
@@ -250,11 +250,36 @@
                     </button>
                 </div>
             </div>
-            <div id="question-area" class="mb-5 md:mb-6">
-                <h3 class="text-lg md:text-2xl font-medium leading-relaxed" id="question-text"></h3>
+            
+            <div id="quiz-content-grid" class="grid grid-cols-1 gap-6 transition-all duration-300">
+                <!-- Original Column -->
+                <div>
+                    <div id="question-area" class="mb-5 md:mb-6">
+                        <h3 class="text-lg md:text-2xl font-medium leading-relaxed" id="question-text"></h3>
+                    </div>
+                    <div class="space-y-3 md:space-y-4" id="options-container"></div>
+                    <div id="ai-explanation-container" class="mt-4 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-800 text-purple-900 dark:text-purple-100 text-sm hidden font-medium shadow-inner leading-relaxed"></div>
+                </div>
+                
+                <!-- Translated Column -->
+                <div id="translated-column" class="hidden border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700 pt-6 md:pt-0 md:pl-6 relative">
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-blue-100 dark:border-blue-900">
+                        <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider"><i class="fas fa-language mr-1"></i> Bản Dịch</span>
+                        <select id="inline-trans-lang" onchange="executeInlineTranslation()" class="text-xs p-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 focus:outline-none focus:border-blue-500">
+                            <option value="vi" selected>Tiếng Việt</option>
+                            <option value="en">Tiếng Anh</option>
+                            <option value="fr">Tiếng Pháp</option>
+                            <option value="ja">Tiếng Nhật</option>
+                            <option value="ko">Tiếng Hàn</option>
+                            <option value="zh-CN">Tiếng Trung</option>
+                        </select>
+                    </div>
+                    <div id="trans-question-area" class="mb-5 md:mb-6">
+                        <h3 class="text-lg md:text-xl font-medium leading-relaxed text-blue-800 dark:text-blue-300" id="trans-question-text"></h3>
+                    </div>
+                    <div class="space-y-3 md:space-y-4" id="trans-options-container"></div>
+                </div>
             </div>
-            <div class="space-y-3 md:space-y-4" id="options-container"></div>
-            <div id="ai-explanation-container" class="mt-4 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-800 text-purple-900 dark:text-purple-100 text-sm hidden font-medium shadow-inner leading-relaxed"></div>
             
             <div class="mt-6 md:mt-8 flex justify-between gap-4">
                 <button id="prev-btn" onclick="handlePrev()" class="hidden w-full md:w-auto justify-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold py-3 px-6 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center text-base">
@@ -419,6 +444,17 @@
             const inputEl = document.getElementById('prompt-input');
             inputEl.placeholder = placeholder || '';
             inputEl.value = '';
+            
+            const pasteBtn = document.getElementById('prompt-paste-btn');
+            pasteBtn.onclick = async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    inputEl.value = text;
+                    inputEl.focus();
+                } catch (err) {
+                    showToast("Không thể dán tự động. Vui lòng dán thủ công!", "error");
+                }
+            };
             
             const okBtn = document.getElementById('prompt-ok-btn');
             const cancelBtn = document.getElementById('prompt-cancel-btn');
@@ -1856,6 +1892,10 @@
                 document.getElementById('quiz-status').innerText = `Tiến trình: ${currentQIndexInQueue + 1}/${queue.length}`;
                 document.getElementById('retry-badge').classList.add('hidden');
             }
+            
+            if (window.isInlineTransActive) {
+                executeInlineTranslation();
+            }
         }
 
         function handleSkip() { if(!hasSubmitted) { selectedOptions = []; handleNext(); } }
@@ -2142,7 +2182,12 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 relative">
             <h3 id="prompt-title" class="text-lg font-bold text-gray-900 dark:text-white mb-2">Nhập liệu</h3>
             <p id="prompt-msg" class="text-gray-600 dark:text-gray-300 text-sm mb-4">Vui lòng nhập thông tin:</p>
-            <input type="text" id="prompt-input" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-white mb-6 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" autocomplete="off">
+            <div class="relative mb-6">
+                <input type="text" id="prompt-input" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" autocomplete="off">
+                <button id="prompt-paste-btn" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 p-2" title="Dán từ khay nhớ tạm">
+                    <i class="fas fa-paste"></i>
+                </button>
+            </div>
             <div class="flex justify-end gap-3">
                 <button id="prompt-cancel-btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md text-sm font-medium transition">Hủy</button>
                 <button id="prompt-ok-btn" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-md text-sm font-medium transition">Xác nhận</button>
@@ -2162,44 +2207,44 @@
             }
         }
 
-        function openTranslationModal() {
-            const modal = document.getElementById('translation-modal');
-            const qEl = document.getElementById('question-text');
-            const optEls = document.querySelectorAll('.option-btn');
+        window.isInlineTransActive = false;
+
+        function toggleInlineTranslation() {
+            window.isInlineTransActive = !window.isInlineTransActive;
+            const quizScreen = document.getElementById('quiz-screen');
+            const grid = document.getElementById('quiz-content-grid');
+            const transCol = document.getElementById('translated-column');
+            const btn = document.getElementById('btn-translate');
             
-            // Populate original content
-            document.getElementById('trans-orig-q').innerHTML = qEl.innerHTML;
-            
-            const origOptsContainer = document.getElementById('trans-orig-opts');
-            origOptsContainer.innerHTML = '';
-            optEls.forEach(el => {
-                const div = document.createElement('div');
-                div.className = 'p-2 bg-gray-100 dark:bg-gray-800 rounded mb-2 text-sm';
-                div.innerHTML = el.innerHTML;
-                origOptsContainer.appendChild(div);
-            });
-            
-            // Clear previous translation
-            document.getElementById('trans-dest-q').innerHTML = '';
-            document.getElementById('trans-dest-opts').innerHTML = '';
-            
-            modal.classList.remove('hidden');
+            if (window.isInlineTransActive) {
+                quizScreen.classList.remove('max-w-3xl');
+                quizScreen.classList.add('max-w-6xl');
+                grid.classList.add('md:grid-cols-2');
+                transCol.classList.remove('hidden');
+                btn.classList.add('ring-2', 'ring-blue-500', 'bg-blue-200');
+                executeInlineTranslation();
+            } else {
+                quizScreen.classList.add('max-w-3xl');
+                quizScreen.classList.remove('max-w-6xl');
+                grid.classList.remove('md:grid-cols-2');
+                transCol.classList.add('hidden');
+                btn.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-200');
+            }
         }
-        
-        async function executeTranslation() {
-            const targetLang = document.getElementById('trans-lang-select').value;
-            const btn = document.getElementById('trans-execute-btn');
-            const origQ = document.getElementById('trans-orig-q');
-            const origOpts = document.querySelectorAll('#trans-orig-opts > div');
+
+        async function executeInlineTranslation() {
+            if (!window.isInlineTransActive) return;
             
-            const destQ = document.getElementById('trans-dest-q');
-            const destOptsContainer = document.getElementById('trans-dest-opts');
+            const targetLang = document.getElementById('inline-trans-lang').value;
+            const destQ = document.getElementById('trans-question-text');
+            const destOptsContainer = document.getElementById('trans-options-container');
+            const origQ = document.getElementById('question-text');
+            const origOpts = document.querySelectorAll('.option-btn');
             
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang dịch...';
-            btn.disabled = true;
+            destQ.innerHTML = '<i class="fas fa-spinner fa-spin text-blue-500"></i> Đang dịch...';
+            destOptsContainer.innerHTML = '';
             
             try {
-                // Translate question
                 let qTextToTranslate = origQ.innerText;
                 let qPrefix = '';
                 const span = origQ.querySelector('span');
@@ -2215,23 +2260,15 @@
                 
                 destQ.innerHTML = qPrefix + results[0];
                 
-                destOptsContainer.innerHTML = '';
                 for (let i = 1; i < results.length; i++) {
                     const div = document.createElement('div');
-                    div.className = 'p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded mb-2 text-sm';
+                    div.className = 'w-full text-left p-3 md:p-4 border-2 border-blue-200 dark:border-blue-900 rounded-xl font-medium text-blue-900 dark:text-blue-100 bg-blue-50 dark:bg-blue-900/20 text-sm md:text-base';
                     div.innerHTML = results[i];
                     destOptsContainer.appendChild(div);
                 }
             } catch (err) {
-                showToast("Lỗi khi dịch!", 'error');
-            } finally {
-                btn.innerHTML = '<i class="fas fa-language"></i> Dịch';
-                btn.disabled = false;
+                destQ.innerHTML = '<span class="text-red-500">Lỗi khi dịch!</span>';
             }
-        }
-        
-        function closeTranslationModal() {
-            document.getElementById('translation-modal').classList.add('hidden');
         }
 
         async function askAIForExplanation() {
@@ -2368,44 +2405,6 @@
             driverObj.drive();
         }
     </script>
-    <!-- Translation Modal -->
-    <div id="translation-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900 rounded-t-2xl">
-                <h3 class="font-bold text-lg"><i class="fas fa-language text-blue-500 mr-2"></i> Dịch Tự Động</h3>
-                <div class="flex items-center gap-3">
-                    <select id="trans-lang-select" class="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:border-blue-500">
-                        <option value="vi" selected>Tiếng Việt (Vietnamese)</option>
-                        <option value="en">Tiếng Anh (English)</option>
-                        <option value="fr">Tiếng Pháp (French)</option>
-                        <option value="ja">Tiếng Nhật (Japanese)</option>
-                        <option value="ko">Tiếng Hàn (Korean)</option>
-                        <option value="zh-CN">Tiếng Trung (Chinese)</option>
-                    </select>
-                    <button onclick="closeTranslationModal()" class="text-gray-400 hover:text-red-500 transition">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="p-4 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-gray-50/50 dark:bg-gray-900/50">
-                    <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Bản Gốc</div>
-                    <div id="trans-orig-q" class="font-bold mb-4 text-base"></div>
-                    <div id="trans-orig-opts"></div>
-                </div>
-                <div class="border border-blue-200 dark:border-blue-900 rounded-xl p-4 bg-blue-50/30 dark:bg-blue-900/10 relative">
-                    <div class="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3">Bản Dịch</div>
-                    <div id="trans-dest-q" class="font-bold mb-4 text-base text-blue-900 dark:text-blue-100"></div>
-                    <div id="trans-dest-opts"></div>
-                </div>
-            </div>
-            <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 rounded-b-2xl">
-                <button onclick="closeTranslationModal()" class="px-5 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition font-medium">Đóng</button>
-                <button id="trans-execute-btn" onclick="executeTranslation()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg font-bold transition flex items-center gap-2">
-                    <i class="fas fa-language"></i> Dịch
-                </button>
-            </div>
-        </div>
-    </div>
+
 </body>
 </html>
