@@ -909,8 +909,29 @@
                 } else if (type === 'docx') {
                     status.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Đang đọc file Word...`;
                     const arrayBuffer = await file.arrayBuffer();
-                    const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
-                    extractedText = result.value;
+                    const result = await mammoth.convertToHtml({arrayBuffer: arrayBuffer});
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = result.value;
+                    
+                    let textContent = '';
+                    tempDiv.childNodes.forEach(node => {
+                        if (node.nodeName === 'P') {
+                            textContent += node.innerText + '\n\n';
+                        } else if (node.nodeName === 'OL' || node.nodeName === 'UL') {
+                            let i = 0;
+                            node.childNodes.forEach(li => {
+                                if (li.nodeName === 'LI') {
+                                    const prefix = String.fromCharCode(65 + i) + '. '; // A., B., C., D.
+                                    textContent += prefix + li.innerText + '\n';
+                                    i++;
+                                }
+                            });
+                            textContent += '\n';
+                        } else if (node.innerText) {
+                            textContent += node.innerText + '\n\n';
+                        }
+                    });
+                    extractedText = textContent.trim();
                 } else if (file.type.startsWith('image/')) {
                     status.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Đang đọc chữ từ ảnh (10-20s)...`;
                     const result = await Tesseract.recognize(file, 'vie');
