@@ -57,6 +57,7 @@
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
 <body class="text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-900 h-[100dvh] flex flex-col overflow-hidden">
 
@@ -1808,8 +1809,7 @@
             const elNextBtn = document.getElementById('next-btn');
             const elPrevBtn = document.getElementById('prev-btn');
             
-            if (currentQIndexInQueue > 0 && !isReviewMode) elPrevBtn.classList.remove('hidden'); 
-            else elPrevBtn.classList.add('hidden');
+            if (elPrevBtn) elPrevBtn.classList.add('hidden');
             
             elNextBtn.disabled = true;
             elNextBtn.innerHTML = 'Enter <i class="fas fa-check ml-2"></i>';
@@ -2197,7 +2197,9 @@
             const container = document.getElementById('ai-explanation-container');
             
             if (!container || !ALL_QUESTIONS || ALL_QUESTIONS.length === 0) return;
-            const currentQ = ALL_QUESTIONS[currentQuestionIndex];
+            const realIdx = queue[currentQIndexInQueue];
+            if (realIdx === undefined) return;
+            const currentQ = ALL_QUESTIONS[realIdx];
             
             if (currentQ.explanation) {
                 container.innerHTML = `<b><i class="fas fa-robot mr-1"></i> AI Giải thích:</b><br/>${currentQ.explanation.replace(/\n/g, '<br/>')}`;
