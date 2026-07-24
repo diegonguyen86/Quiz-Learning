@@ -159,15 +159,13 @@
                 <textarea id="raw-text-input" class="w-full h-48 md:h-64 p-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:border-indigo-500 outline-none font-mono text-xs md:text-sm" placeholder="Dán nội dung bộ đề vào đây, hoặc tải file lên..."></textarea>
             </div>
 
-        </div>
-
-        <div>
-            <label class="block text-base font-bold mb-2 text-green-600 dark:text-green-400">BƯỚC 2: Hoàn tất</label>
-            <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
-                <i class="fas fa-cogs mr-2"></i> Xử lý & Kiểm tra lại
-            </button>
-        </div>
-    </div> <!-- Close import-screen -->
+            <div>
+                <label class="block text-base font-bold mb-2 text-green-600 dark:text-green-400">BƯỚC 2: Hoàn tất</label>
+                <button id="btn-parse" onclick="parseAndSaveData()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform text-base md:text-lg">
+                    <i class="fas fa-cogs mr-2"></i> Xử lý & Kiểm tra lại
+                </button>
+            </div>
+        </div> <!-- Close import-screen -->
 
     <div id="preview-screen" class="max-w-5xl w-full h-[90vh] flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 md:p-8 fade-in hidden">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2 shrink-0">
@@ -1880,7 +1878,8 @@
             if (!hasSubmitted) {
                 // CHỐT ĐÁP ÁN THEO ĐÚNG GỐC CỦA ANH
                 hasSubmitted = true;
-                document.getElementById('skip-btn').classList.add('hidden');
+                const skipBtn = document.getElementById('skip-btn');
+                if (skipBtn) skipBtn.classList.add('hidden');
                 let isCorrect = true;
                 let isMissing = false;
 
