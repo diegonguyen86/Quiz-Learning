@@ -2315,19 +2315,26 @@
         function startTour() {
             const driver = window.driver.js.driver;
             const steps = [
-                { popover: { title: '🌟 Chào mừng', description: 'Cùng tìm hiểu nhanh các tính năng chính của Quiz Learning nhé!', position: 'center' } },
+                { popover: { title: '🌟 Chào mừng', description: 'Cùng tìm hiểu nhanh các tính năng của Quiz Learning nhé!', position: 'center' } },
             ];
             
             if (!document.getElementById('quiz-screen').classList.contains('hidden')) {
                 steps.push({ element: '#header-progress', popover: { title: 'Thanh tiến độ', description: 'Theo dõi xem bạn đã hoàn thành bao nhiêu câu hỏi.' } });
                 steps.push({ element: '#btn-shuffle', popover: { title: '🔀 Trộn đề', description: 'Đảo lộn thứ tự câu hỏi và đáp án để chống học vẹt.' } });
-                steps.push({ element: '#btn-ask-ai', popover: { title: '🤖 Giải thích bằng AI', description: 'AI sẽ giải thích cặn kẽ đáp án sau khi bạn trả lời (rất hữu ích khi tự ôn tập).' } });
+                steps.push({ element: '#btn-srs', popover: { title: '🧠 Ôn tập (SRS)', description: 'Chỉ ôn lại những câu hỏi đã đến hạn (nhớ kém), giúp tối ưu thời gian học.' } });
+                steps.push({ element: '#btn-pdf', popover: { title: '📄 Tải PDF', description: 'Xuất bộ đề ra file PDF để in ấn hoặc học offline.' } });
+                steps.push({ element: '#btn-translate', popover: { title: '🌐 Dịch tự động', description: 'Dịch câu hỏi sang tiếng Việt nếu bạn học ngoại ngữ.' } });
+                steps.push({ element: '#btn-ask-ai', popover: { title: '🤖 Giải thích bằng AI', description: 'Sau khi chốt đáp án, AI sẽ giải thích cặn kẽ vì sao đáp án đó đúng/sai.' } });
+            } else if (!document.getElementById('import-screen').classList.contains('hidden')) {
+                steps.push({ element: '#quiz-title-input', popover: { title: '1️⃣ Đặt tên bộ đề', description: 'Nhập tên môn học hoặc tên bộ đề của bạn vào đây.' } });
+                steps.push({ element: '#raw-text-input', popover: { title: '2️⃣ Nhập nội dung', description: 'Dán trực tiếp đoạn văn bản chứa câu hỏi và đáp án, hoặc bấm nút Tải file lên (hỗ trợ PDF, DOCX).' } });
+                steps.push({ element: '#btn-parse', popover: { title: '3️⃣ Xử lý dữ liệu', description: 'Hệ thống sẽ tự động bóc tách câu hỏi và đáp án từ văn bản thô một cách siêu tốc.' } });
             } else {
-                steps.push({ popover: { title: '💡 Mẹo nhỏ', description: 'Hãy bấm vào một bộ đề để vào chế độ thi, ở đó sẽ có thêm các công cụ như Hỏi AI, Trộn đề, Dịch câu hỏi...', position: 'center' } });
+                steps.push({ popover: { title: '💡 Mẹo nhỏ', description: 'Hãy bấm vào một bộ đề để vào chế độ thi, hoặc bấm Tạo Bộ Đề Mới để bắt đầu.', position: 'center' } });
             }
             
             steps.push({ element: '#music-widget', popover: { title: '🎧 Trạm nhạc', description: 'Vừa học vừa nghe nhạc Lofi, hoặc bạn có thể dán link Playlist Spotify của riêng bạn vào đây.' } });
-            steps.push({ element: '#btn-api-key', popover: { title: '🔑 Cài đặt AI Key', description: 'Nhấn vào đây để thiết lập Google Gemini API Key để dùng tính năng Hỏi AI.' } });
+            steps.push({ element: '#btn-api-key', popover: { title: '🔑 Cài đặt AI Key', description: 'Nhấn vào đây để cập nhật Google Gemini API Key để dùng tính năng Hỏi AI.' } });
             steps.push({ element: '#btn-dark-mode', popover: { title: '🌙 Giao diện tối', description: 'Chuyển đổi sang giao diện nền tối bảo vệ mắt khi học ban đêm.' } });
             
             const driverObj = driver({
