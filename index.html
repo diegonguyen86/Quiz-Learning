@@ -35,13 +35,15 @@
         .option-btn:hover:not(:disabled) { border-color: #6366f1; background-color: #e0e7ff; }
         .option-btn:active:not(:disabled) { transform: scale(0.98); }
         .option-btn.selected { border-color: #1d4ed8; background-color: #eff6ff; font-weight: 600; }
-        .option-btn.correct { border-color: #10b981; background-color: #d1fae5; color: #065f46; font-weight: 600; }
-        .option-btn.wrong { border-color: #ef4444; background-color: #fee2e2; color: #991b1b; }
+        .option-btn.correct { border-color: #22c55e !important; background-color: #dcfce7 !important; color: #15803d !important; font-weight: 700; }
+        .option-btn.wrong { border-color: #ef4444 !important; background-color: #fee2e2 !important; color: #b91c1c !important; font-weight: 700; }
         
         /* Dark mode overrides */
         .dark .option-btn { background-color: #1f2937; border-color: #374151; color: #e5e7eb; }
         .dark .option-btn:hover:not(:disabled) { background-color: #374151; border-color: #818cf8; }
         .dark .option-btn.selected { background-color: #374151; border-color: #818cf8; }
+        .dark .option-btn.correct { border-color: #22c55e !important; background-color: rgba(34, 197, 94, 0.25) !important; color: #4ade80 !important; font-weight: 700; }
+        .dark .option-btn.wrong { border-color: #ef4444 !important; background-color: rgba(239, 68, 68, 0.25) !important; color: #f87171 !important; font-weight: 700; }
 
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
