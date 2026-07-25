@@ -23,14 +23,6 @@
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        #music-widget {
-            position: fixed; bottom: 1rem; right: 1rem; z-index: 50;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: calc(100% - 2rem);
-            max-width: 320px;
-        }
-        #music-widget.minimized { transform: translateY(calc(100% - 48px)); }
-        
         .option-btn { transition: all 0.2s; border-width: 2px; }
         .option-btn:hover:not(:disabled) { border-color: #6366f1; background-color: #e0e7ff; }
         .option-btn:active:not(:disabled) { transform: scale(0.98); }
@@ -338,32 +330,6 @@
         </div>
 
     </main>
-
-    <div id="music-widget" class="bg-white dark:bg-gray-800 rounded-t-xl md:rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="bg-[#1DB954] text-black px-4 py-2.5 md:py-3 flex justify-between items-center cursor-pointer active:bg-[#19a34a] md:hover:bg-[#1ed760] transition" onclick="toggleMusicWidget()">
-            <div class="flex items-center gap-2 font-bold">
-                <i class="fab fa-spotify text-lg"></i> <span class="text-sm">Trạm Nhạc Spotify</span>
-            </div>
-            <i class="fas fa-chevron-down transition-transform" id="music-toggle-icon"></i>
-        </div>
-        <div class="p-3 bg-[#121212] flex flex-col gap-2.5">
-            <div class="text-xs text-gray-400 mb-1 hidden md:block">Dán link Playlist/Bài hát Spotify vào đây:</div>
-            <div class="flex gap-2">
-                <input type="text" id="spotify-input" placeholder="Dán link bài hát vào đây..." class="w-full text-xs p-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-[#1DB954] transition">
-                <button onclick="updateSpotify()" class="bg-[#1DB954] active:bg-[#19a34a] md:hover:bg-[#1ed760] text-black font-bold px-3 py-1 rounded text-xs transition">Phát</button>
-            </div>
-            <iframe id="spotify-player" 
-                style="border-radius:12px" 
-                src="https://open.spotify.com/embed/album/4w6hrJBHXEpFvKg6bwyzSi?utm_source=generator" 
-                width="100%" 
-                height="152" 
-                frameBorder="0" 
-                allowfullscreen="" 
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                loading="lazy">
-            </iframe>
-        </div>
-    </div>
 
     <!-- Custom Notification & Modal Containers -->
     <div id="toast-container" class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2"></div>
@@ -2178,50 +2144,6 @@
             document.getElementById('section-text').innerText = currentSection < TOTAL_SECTIONS ? `Section ${currentSection + 1}/${TOTAL_SECTIONS}` : `Hoàn thành!`;
         }
 
-        // ==========================================
-        // SPOTIFY GỐC TỪ FILE INDEX CỦA ANH
-        // ==========================================
-        // ==========================================
-        // SPOTIFY GỐC 100% CỦA ANH KHÔI
-        // ==========================================
-        // ==========================================
-        // TRẠM NHẠC SPOTIFY: CÓ SẴN PLAYLIST LOFI
-        // ==========================================
-        let isMusicMin = false;
-
-        // 1. Tự động load Playlist Lofi khi vừa mở trang web
-
-        // 2. Thu gọn / Mở rộng trạm nhạc
-        function toggleMusicWidget() {
-            const widget = document.getElementById('music-widget');
-            const icon = document.getElementById('music-toggle-icon');
-            isMusicMin = !isMusicMin;
-            if (isMusicMin) {
-                widget.classList.add('minimized');
-                icon.style.transform = 'rotate(0deg)';
-            } else {
-                widget.classList.remove('minimized');
-                icon.style.transform = 'rotate(180deg)';
-            }
-        }
-
-        // 3. Cập nhật nhạc khi người dùng dán link mới
-        function updateSpotify() {
-            const inputVal = document.getElementById('spotify-input').value.trim();
-            const player = document.getElementById('spotify-player');
-            if(!inputVal) return showToast("Vui lòng dán link Spotify vào ô!", 'error');
-            try {
-                let embedUrl = inputVal;
-                const spDomain = "open." + "spotify." + "com";
-                
-                // Ép link share bình thường thành link Embed để phát được nhạc
-                if (inputVal.includes(spDomain) && !inputVal.includes('/embed/')) {
-                    const url = new URL(inputVal);
-                    embedUrl = 'https://' + spDomain + '/embed' + url.pathname;
-                }
-                player.src = embedUrl + "?utm_source=generator&theme=0";
-            } catch(e) { showToast("Link không hợp lệ. Vui lòng copy đúng link từ app Spotify.", 'error'); }
-        }
         // PHÍM TẮT GỐC CỦA ANH
         document.addEventListener('keydown', function(event) {
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
@@ -2511,7 +2433,6 @@
                 steps.push({ popover: { title: '💡 Mẹo nhỏ', description: 'Hãy bấm vào một bộ đề để vào chế độ thi, hoặc bấm Tạo Bộ Đề Mới để bắt đầu.', position: 'center' } });
             }
             
-            steps.push({ element: '#music-widget', popover: { title: '🎧 Trạm nhạc', description: 'Vừa học vừa nghe nhạc Lofi, hoặc bạn có thể dán link Playlist Spotify của riêng bạn vào đây.' } });
             steps.push({ element: '#btn-api-key', popover: { title: '🔑 Cài đặt AI Key', description: 'Nhấn vào đây để cập nhật Google Gemini API Key để dùng tính năng Hỏi AI.' } });
             steps.push({ element: '#btn-dark-mode', popover: { title: '🌙 Giao diện tối', description: 'Chuyển đổi sang giao diện nền tối bảo vệ mắt khi học ban đêm.' } });
             
