@@ -2286,7 +2286,16 @@
             if (realIdx === undefined) return;
             const currentQ = ALL_QUESTIONS[realIdx];
             
-            if (currentQ.explanation) {
+            const selectedKey = selectedOptions.slice().sort().join(',');
+            const correctKey = currentQ.a.slice().sort().join(',');
+
+            if (currentQ.ai_explanations && currentQ.ai_explanations[selectedKey]) {
+                container.innerHTML = `<b><i class="fas fa-robot mr-1"></i> AI Giải thích:</b><br/>${currentQ.ai_explanations[selectedKey].replace(/\n/g, '<br/>')}`;
+                container.classList.remove('hidden');
+                return;
+            }
+            // Hỗ trợ bộ nhớ cũ nếu chọn đúng
+            if (selectedKey === correctKey && currentQ.explanation) {
                 container.innerHTML = `<b><i class="fas fa-robot mr-1"></i> AI Giải thích:</b><br/>${currentQ.explanation.replace(/\n/g, '<br/>')}`;
                 container.classList.remove('hidden');
                 return;
@@ -2311,7 +2320,10 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> <span>Đang hỏi...</span>';
             btn.disabled = true;
 
-            const promptText = `Đóng vai một trợ giảng xuất sắc. Hãy giải thích ngắn gọn (1-2 câu) tại sao đáp án "${currentQ.a}" lại là đáp án đúng cho câu hỏi sau.\n\nCâu hỏi: ${currentQ.q}\nCác đáp án:\n${currentQ.o.map(opt => "- " + opt).join('\n')}\nĐáp án đúng: ${currentQ.a}\n\nYÊU CẦU:\n- Giải thích trực tiếp vào vấn đề.\n- Viết dưới dạng văn bản thuần, không dùng Markdown.\n- Trả về đúng nội dung giải thích, không cần lặp lại chữ "Giải thích:".`;
+            const userSelectedTexts = selectedOptions.length > 0 ? selectedOptions.map(idx => currentQ.o[idx]).join(', ') : "Không chọn đáp án nào";
+            const correctTexts = currentQ.a.map(idx => currentQ.o[idx]).join(', ');
+
+            const promptText = `Đóng vai một trợ giảng xuất sắc. Học viên vừa chọn đáp án: "${userSelectedTexts}" cho câu hỏi sau.\n\nCâu hỏi: ${currentQ.q}\nCác đáp án:\n${currentQ.o.map(opt => "- " + opt).join('\n')}\nĐáp án đúng: ${correctTexts}\n\nYÊU CẦU:\n- Dựa vào đáp án học viên đã chọn ("${userSelectedTexts}"), hãy giải thích tại sao họ lại chọn đáp án đó. Nếu họ chọn đúng, hãy giải thích tại sao nó đúng. Nếu họ chọn sai, hãy chỉ ra chỗ sai trong tư duy của họ.\n- CHỈ TRONG TRƯỜNG HỢP đáp án họ chọn quá sai, vô lý không thể giải thích được lý do, hoặc họ không chọn đáp án nào, thì bạn mới quay sang hỗ trợ giải thích tại sao đáp án đúng là "${correctTexts}".\n- Giải thích ngắn gọn (2-4 câu), trực tiếp vào vấn đề.\n- Viết dưới dạng văn bản thuần, không dùng Markdown.\n- Trả về đúng nội dung giải thích, không cần lặp lại chữ "Giải thích:".`;
 
             try {
                 let data = null;
@@ -2345,7 +2357,12 @@
                 let aiResult = data.candidates[0].content.parts[0].text;
                 aiResult = aiResult.replace(/^```[a-z]*\n/gm, '').replace(/```$/gm, '').trim();
 
-                currentQ.explanation = aiResult;
+                if (!currentQ.ai_explanations) currentQ.ai_explanations = {};
+                currentQ.ai_explanations[selectedKey] = aiResult;
+                // Vẫn lưu vào explanation cũ nếu là đáp án đúng để tương thích ngược
+                if (selectedKey === correctKey) {
+                    currentQ.explanation = aiResult;
+                }
                 
                 if (!isStudentMode) {
                     try {
