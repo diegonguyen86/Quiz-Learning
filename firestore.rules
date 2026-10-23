@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User profile documents
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // User's own quizzes
+      match /my_quizzes/{quizId} {
+        // Owner has full read/write/delete permissions
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+        
+        // Students subcollection under a teacher's quiz
+        match /students/{studentId} {
+          // Teacher (owner) can read and manage all students
+          allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+          
+          // Students can only read and update their own progress record
+          allow read, write: if request.auth != null && request.auth.uid == studentId;
+        }
+      }
+    }
+    
+    // Collection Group query for sharing quizzes via Share Code
+    // Allows looking up a quiz across users ONLY if they are authenticated
+    match /{path=**}/my_quizzes/{quizDoc} {
+      allow read: if request.auth != null;
+    }
+  }
+}
