@@ -203,8 +203,26 @@ export default function QuizScreen() {
         setTimeout(() => printWindow.print(), 400);
     };
 
+    if (!qData) {
+        return (
+            <div className="w-full max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8 text-center animate-fade-in border border-gray-100 dark:border-gray-700">
+                <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Đang tải câu hỏi hoặc bộ đề vừa cập nhật</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+                    Dữ liệu bộ đề vừa được cập nhật an toàn. Vui lòng quay lại Trang chủ để tiếp tục học nhé!
+                </p>
+                <button
+                    onClick={() => setScreen('dashboard')}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition shadow-sm"
+                >
+                    Về Trang Chủ
+                </button>
+            </div>
+        );
+    }
+
     // Render Question Text
-    const formattedQ = qData.q.replace(/\[Hình minh họa:?.*?\]/gi, '<br/><span class="inline-flex items-center gap-1.5 mt-2 px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-xs font-bold rounded-lg border border-amber-200 dark:border-amber-900/60">Hình minh họa</span><br/>');
+    const formattedQ = (qData.q || '').replace(/\[Hình minh họa:?.*?\]/gi, '<br/><span class="inline-flex items-center gap-1.5 mt-2 px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-xs font-bold rounded-lg border border-amber-200 dark:border-amber-900/60">Hình minh họa</span><br/>');
 
     return (
         <div className={`w-full mx-auto bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-5 md:p-8 animate-fade-in transition-all duration-300 ${

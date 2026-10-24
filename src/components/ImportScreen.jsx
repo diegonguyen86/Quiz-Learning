@@ -7,15 +7,23 @@ import {
     X, 
     Settings, 
     Loader2, 
-    Info 
+    Info,
+    CheckCircle2,
+    ArrowRight
 } from 'lucide-react';
 
 export default function ImportScreen({ onClose, onParsed }) {
-    const { editQuizId, pendingTitle, setPendingTitle, showToast } = useQuiz();
+    const { editQuizId, pendingTitle, setPendingTitle, pendingQuestions, pendingRawText, showToast } = useQuiz();
     const [title, setTitle] = useState(pendingTitle || '');
-    const [rawText, setRawText] = useState('');
+    const [rawText, setRawText] = useState(pendingRawText || '');
     const [isParsing, setIsParsing] = useState(false);
     const [fileStatus, setFileStatus] = useState('');
+
+    // Keep inputs synced if opened for editing
+    React.useEffect(() => {
+        if (pendingTitle) setTitle(pendingTitle);
+        if (pendingRawText) setRawText(pendingRawText);
+    }, [pendingTitle, pendingRawText]);
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
@@ -78,6 +86,27 @@ export default function ImportScreen({ onClose, onParsed }) {
                     <X className="w-5 h-5" />
                 </button>
             </div>
+
+            {/* Direct Visual Editor Jump if editing existing questions */}
+            {editQuizId && pendingQuestions.length > 0 && (
+                <div className="bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-300 dark:border-emerald-700 p-4 mb-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+                    <div className="flex items-center gap-2.5 text-emerald-900 dark:text-emerald-200 text-xs font-bold">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <div>
+                            <p className="text-sm font-black text-emerald-900 dark:text-white">Đang chỉnh sửa bộ đề: {title || pendingTitle}</p>
+                            <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">Bộ đề có {pendingQuestions.length} câu hỏi. Bạn có thể sửa trực tiếp văn bản bên dưới hoặc mở giao diện sửa từng câu.</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => onParsed(pendingQuestions, title || pendingTitle)}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow-sm flex items-center gap-2 active:scale-95 shrink-0"
+                    >
+                        <span>Sửa trực quan từng câu</span>
+                        <ArrowRight className="w-4 h-4" />
+                    </button>
+                </div>
+            )}
 
             {/* Format Instructions Box */}
             <div className="bg-indigo-50/70 dark:bg-indigo-950/30 border-l-4 border-indigo-500 p-4 mb-5 rounded-2xl text-gray-700 dark:text-gray-300">

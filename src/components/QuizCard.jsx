@@ -19,6 +19,7 @@ export default function QuizCard({ quiz, onEdit }) {
         deleteQuiz, 
         resetQuiz, 
         refreshShareCode, 
+        openQuiz,
         setLearnModal, 
         setScoreModal, 
         setAnalyticsModal, 
@@ -27,6 +28,19 @@ export default function QuizCard({ quiz, onEdit }) {
     } = useQuiz();
 
     const isClass = Boolean(quiz.isClassroom);
+
+    const handleStartLearning = () => {
+        if (isClass) {
+            openQuiz(quiz.id, 'quick');
+            return;
+        }
+        // If learnMode was previously selected, continue immediately!
+        if (quiz.learnMode) {
+            openQuiz(quiz.id, quiz.learnMode);
+        } else {
+            setLearnModal({ isOpen: true, quizId: quiz.id, defaultMode: '' });
+        }
+    };
     const totalQuestions = quiz.questions ? quiz.questions.length : 0;
     const totalSec = Math.ceil(totalQuestions / SEC_SIZE) || 1;
     const progressPct = totalSec > 0 ? Math.min(100, Math.round(((quiz.progress || 0) / (isClass ? (quiz.totalSections || 1) : totalSec)) * 100)) : 0;
@@ -132,6 +146,30 @@ export default function QuizCard({ quiz, onEdit }) {
                     )}
                 </div>
 
+                {/* Learn Mode Indicator & Switcher */}
+                {!isClass && (
+                    <div className="flex items-center justify-between text-xs mb-2">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                            quiz.learnMode === 'srs'
+                                ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                                : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                        }`}>
+                            {quiz.learnMode === 'srs' ? '🧠 Nhớ lâu (SRS)' : '⚡ Học nhanh (Tuần tự)'}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setLearnModal({ isOpen: true, quizId: quiz.id, defaultMode: quiz.learnMode || '' });
+                            }}
+                            className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
+                            title="Bấm để đổi phương pháp học"
+                        >
+                            Đổi chế độ
+                        </button>
+                    </div>
+                )}
+
                 {/* Progress Bar */}
                 <div className={`w-full rounded-full h-2 mb-1.5 overflow-hidden ${isClass ? 'bg-blue-100 dark:bg-blue-950/60' : 'bg-gray-100 dark:bg-gray-700'}`}>
                     <div 
@@ -147,7 +185,7 @@ export default function QuizCard({ quiz, onEdit }) {
             {/* Bottom Actions */}
             <div className="flex items-center gap-1.5 pl-2 pt-2 border-t border-gray-100 dark:border-gray-700/60">
                 <button
-                    onClick={() => setLearnModal({ isOpen: true, quizId: quiz.id, defaultMode: quiz.learnMode || '' })}
+                    onClick={handleStartLearning}
                     className={`flex-1 text-white text-xs font-bold py-2.5 px-3 rounded-xl transition shadow-sm flex items-center justify-center gap-1.5 active:scale-[0.98] ${
                         isClass ? 'bg-blue-600 hover:bg-blue-700' : 'bg-indigo-600 hover:bg-indigo-700'
                     }`}

@@ -21,8 +21,37 @@ const SEC_SIZE = 12;
 export function QuizProvider({ children }) {
     const { currentUser } = useAuth();
 
-    // App Navigation State
-    const [screen, setScreen] = useState('dashboard');
+    // App Navigation State with Browser History (Avoid exiting web on Back/Return)
+    const [screen, setScreenState] = useState(() => {
+        const hash = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '';
+        return ['dashboard', 'import', 'preview', 'welcome', 'quiz', 'result', 'finish'].includes(hash) ? hash : 'dashboard';
+    });
+
+    const setScreen = useCallback((newScreen, pushHistory = true) => {
+        setScreenState(newScreen);
+        if (pushHistory && typeof window !== 'undefined' && window.history) {
+            window.history.pushState({ screen: newScreen }, '', '#' + newScreen);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (!window.history.state || !window.history.state.screen) {
+            window.history.replaceState({ screen }, '', '#' + screen);
+        }
+
+        const handlePopState = (event) => {
+            if (event.state && event.state.screen) {
+                setScreenState(event.state.screen);
+            } else {
+                setScreenState('dashboard');
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [screen]);
+
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
 
     // Quizzes Cache
@@ -47,6 +76,7 @@ export function QuizProvider({ children }) {
     const [editQuizId, setEditQuizId] = useState(null);
     const [pendingTitle, setPendingTitle] = useState('');
     const [pendingQuestions, setPendingQuestions] = useState([]);
+    const [pendingRawText, setPendingRawText] = useState('');
 
     // Modals
     const [toasts, setToasts] = useState([]);
@@ -291,12 +321,18 @@ export function QuizProvider({ children }) {
 
         setAllQuestions(questions);
 
+        // Persist learnMode so the user doesn't have to re-select next time
+        if (currentUser && !isClass && mode) {
+            updateQuiz(currentUser.uid, quizId, { learnMode: mode }).catch(console.error);
+            setQuizzes(prev => prev.map(q => q.id === quizId ? { ...q, learnMode: mode } : q));
+        }
+
         if ((quiz.progress || 0) >= Math.ceil(questions.length / SEC_SIZE) && mode !== 'srs') {
             setScreen('finish');
         } else {
             setScreen('welcome');
         }
-    }, [currentUser, quizzes, showToast]);
+    }, [currentUser, quizzes, setScreen, showToast]);
 
     // Start Next Section
     const startNextSection = useCallback(() => {
@@ -426,7 +462,7 @@ export function QuizProvider({ children }) {
         <QuizContext.Provider value={{
             screen, setScreen,
             theme, toggleTheme,
-            quizzes, isQuizzesLoading, searchFilter, setSearchFilter, loadQuizzes,
+            quizzes, setQuizzes, isQuizzesLoading, searchFilter, setSearchFilter, loadQuizzes,
             deleteQuiz, resetQuiz, refreshShareCode, importCopyQuiz, joinClassroom,
             openQuiz, activeQuiz, isStudentMode,
             allQuestions, setAllQuestions, totalSections, currentSection,
@@ -434,6 +470,7 @@ export function QuizProvider({ children }) {
             selectedOptions, hasSubmitted, toggleOption, handleNext,
             startNextSection, startRetry, shuffleQuestions, resetAndRestart,
             editQuizId, setEditQuizId, pendingTitle, setPendingTitle, pendingQuestions, setPendingQuestions,
+            pendingRawText, setPendingRawText,
             toasts, showToast,
             confirmModal, showConfirm, closeConfirm,
             promptModal, showPrompt, closePrompt,

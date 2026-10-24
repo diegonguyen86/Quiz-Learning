@@ -18,7 +18,7 @@ import {
 
 export default function PreviewScreen({ questions: initialQuestions, title, onBack, onSaved }) {
     const { currentUser } = useAuth();
-    const { editQuizId, showToast, showConfirm } = useQuiz();
+    const { editQuizId, quizzes, setQuizzes, showToast, showConfirm } = useQuiz();
     const [questions, setQuestions] = useState(initialQuestions);
     const [isSaving, setIsSaving] = useState(false);
     const containerRef = useRef(null);
@@ -122,11 +122,26 @@ export default function PreviewScreen({ questions: initialQuestions, title, onBa
         setIsSaving(true);
         try {
             if (editQuizId) {
-                await updateQuiz(currentUser.uid, editQuizId, {
+                // Safeguard existing progress: calculate new section bounds
+                const newTotalSec = Math.ceil(questions.length / 12);
+                const currentQuiz = quizzes.find(q => q.id === editQuizId);
+                let safeProgress = currentQuiz?.progress || 0;
+
+                // If question count was reduced below current progress section, safely clamp it
+                if (safeProgress >= newTotalSec) {
+                    safeProgress = Math.max(0, newTotalSec - 1);
+                }
+
+                const patch = {
                     title,
-                    questions
-                });
-                showToast("Đã cập nhật bộ đề thành công!", 'success');
+                    questions,
+                    progress: safeProgress,
+                    totalSections: newTotalSec
+                };
+
+                await updateQuiz(currentUser.uid, editQuizId, patch);
+                setQuizzes(prev => prev.map(q => q.id === editQuizId ? { ...q, ...patch } : q));
+                showToast("Đã cập nhật bộ đề và đồng bộ tiến trình học an toàn!", 'success');
             } else {
                 await createQuiz(currentUser.uid, title, questions);
                 showToast("Đã lưu bộ đề mới thành công!", 'success');

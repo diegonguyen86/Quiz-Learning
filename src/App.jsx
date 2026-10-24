@@ -19,11 +19,13 @@ export default function App() {
     const { 
         screen, 
         setScreen, 
+        quizzes,
         setEditQuizId,
         pendingTitle, 
         setPendingTitle, 
         pendingQuestions, 
         setPendingQuestions,
+        setPendingRawText,
         loadQuizzes
     } = useQuiz();
 
@@ -93,10 +95,31 @@ export default function App() {
                             setEditQuizId(null);
                             setPendingTitle('');
                             setPendingQuestions([]);
+                            setPendingRawText('');
                             setScreen('import');
                         }}
                         onEdit={(quizId) => {
+                            const quiz = quizzes.find(q => q.id === quizId);
+                            if (!quiz) return;
                             setEditQuizId(quizId);
+                            setPendingTitle(quiz.title || '');
+                            setPendingQuestions(quiz.questions || []);
+                            
+                            // Format existing questions into raw editable text
+                            let formattedRaw = '';
+                            if (quiz.questions && quiz.questions.length > 0) {
+                                formattedRaw = quiz.questions.map(q => {
+                                    let cleanQ = (q.q || '').replace(/<br\s*\/?>/gi, '\n').replace(/<span.*?Hình minh họa.*?<\/span><br\s*\/?>/gi, '');
+                                    let text = cleanQ.trim() + '\n';
+                                    (q.o || []).forEach(opt => { text += opt + '\n'; });
+                                    text += (q.a || []).map(idx => String.fromCharCode(65 + idx)).join(',') + '\n';
+                                    if (q.explanation) {
+                                        text += 'Giải thích: ' + q.explanation.replace(/<br\s*\/?>/gi, '\n') + '\n';
+                                    }
+                                    return text;
+                                }).join('\n');
+                            }
+                            setPendingRawText(formattedRaw.trim());
                             setScreen('import');
                         }}
                     />
