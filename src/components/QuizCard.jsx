@@ -34,12 +34,9 @@ export default function QuizCard({ quiz, onEdit }) {
             openQuiz(quiz.id, 'quick');
             return;
         }
-        // If learnMode was previously selected, continue immediately!
-        if (quiz.learnMode) {
-            openQuiz(quiz.id, quiz.learnMode);
-        } else {
-            setLearnModal({ isOpen: true, quizId: quiz.id, defaultMode: '' });
-        }
+        // Always open immediately using current mode (defaults to 'quick'). Never pop up the modal!
+        const mode = quiz.learnMode || 'quick';
+        openQuiz(quiz.id, mode);
     };
     const totalQuestions = quiz.questions ? quiz.questions.length : 0;
     const totalSec = Math.ceil(totalQuestions / SEC_SIZE) || 1;
