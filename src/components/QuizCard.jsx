@@ -34,9 +34,13 @@ export default function QuizCard({ quiz, onEdit }) {
             openQuiz(quiz.id, 'quick');
             return;
         }
-        // Always open immediately using current mode (defaults to 'quick'). Never pop up the modal!
-        const mode = quiz.learnMode || 'quick';
-        openQuiz(quiz.id, mode);
+        // Nếu đã chọn chế độ trước đó -> AUTO vào ngay chế độ đã chọn!
+        if (quiz.learnMode) {
+            openQuiz(quiz.id, quiz.learnMode);
+        } else {
+            // Lần đầu mở bài (hoặc sau khi vừa reset) -> Cho chọn 1 trong 2
+            setLearnModal({ isOpen: true, quizId: quiz.id, defaultMode: '' });
+        }
     };
     const totalQuestions = quiz.questions ? quiz.questions.length : 0;
     const totalSec = Math.ceil(totalQuestions / SEC_SIZE) || 1;
@@ -143,9 +147,9 @@ export default function QuizCard({ quiz, onEdit }) {
                     )}
                 </div>
 
-                {/* Learn Mode Indicator & Switcher */}
-                {!isClass && (
-                    <div className="flex items-center justify-between text-xs mb-2">
+                {/* Learn Mode Indicator: Chỉ hiện khi ĐÃ CHỌN chế độ */}
+                {!isClass && quiz.learnMode && (
+                    <div className="flex items-center gap-1.5 mb-2">
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
                             quiz.learnMode === 'srs'
                                 ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
@@ -153,17 +157,6 @@ export default function QuizCard({ quiz, onEdit }) {
                         }`}>
                             {quiz.learnMode === 'srs' ? '🧠 Nhớ lâu (SRS)' : '⚡ Học nhanh (Tuần tự)'}
                         </span>
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setLearnModal({ isOpen: true, quizId: quiz.id, defaultMode: quiz.learnMode || '' });
-                            }}
-                            className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
-                            title="Bấm để đổi phương pháp học"
-                        >
-                            Đổi chế độ
-                        </button>
                     </div>
                 )}
 

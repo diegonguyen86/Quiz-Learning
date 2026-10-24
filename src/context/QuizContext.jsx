@@ -199,10 +199,18 @@ export function QuizProvider({ children }) {
         }, "Xóa vĩnh viễn", true);
     }, [currentUser, quizzes, showConfirm, showToast]);
 
-    // OPTIMISTIC RESET: Instantly set progress to 0
+    // OPTIMISTIC RESET: Instantly set progress to 0 and allow choosing mode again
     const resetQuiz = useCallback((quizId, quizTitle) => {
-        showConfirm("Reset tiến độ", `Bạn muốn reset tiến độ của <b>"${quizTitle}"</b> về 0% để học lại từ đầu?`, async () => {
-            setQuizzes(prev => prev.map(q => q.id === quizId ? { ...q, progress: 0 } : q));
+        showConfirm("Reset tiến độ", `Bạn muốn reset tiến độ của <b>"${quizTitle}"</b> về 0% để chọn lại chế độ và học lại từ đầu?`, async () => {
+            setQuizzes(prev => prev.map(q => {
+                if (q.id === quizId) {
+                    const copy = { ...q, progress: 0 };
+                    delete copy.learnMode;
+                    delete copy.sessionState;
+                    return copy;
+                }
+                return q;
+            }));
             showToast(`Đã reset tiến độ bộ đề "${quizTitle}"`, 'success');
 
             try {
