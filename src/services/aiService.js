@@ -17,7 +17,31 @@ export async function askGeminiExplanation(currentQ, selectedIndices, apiKey) {
         : "Không chọn đáp án nào";
     const correctTexts = currentQ.a.map(idx => `"${currentQ.o[idx]}"`).join(', ');
 
-    const promptText = `Đóng vai một trợ giảng xuất sắc. Bạn đang chấm bài cho học viên.\n\nCâu hỏi: ${currentQ.q}\nCác đáp án:\n${currentQ.o.map(opt => "- " + opt).join('\n')}\nĐáp án đúng của hệ thống: ${correctTexts}\n\nHọc viên đã chọn: ${userSelectedTexts}\n\nYÊU CẦU:\n- Dựa vào trạng thái (Đúng/Sai) của từng đáp án học viên đã chọn, hãy giải thích tại sao các đáp án Sai (nếu có) lại không chính xác, và tại sao đáp án Đúng lại là đáp án chuẩn xác nhất.\n- Chỉ ra chỗ sai trong tư duy của học viên khi họ chọn các đáp án Sai.\n- Giải thích ngắn gọn (2-4 câu), trực tiếp vào vấn đề.\n- Viết dưới dạng văn bản thuần, không dùng Markdown.\n- Trả về đúng nội dung giải thích, không lặp lại chữ "Giải thích:".`;
+    const promptText = `Bạn là một chuyên gia khảo thí và sư phạm học thuật. Hãy đưa ra một bản GIẢI THÍCH CHUYÊN MÔN, SÚC TÍCH, ĐI THẲNG VÀO BẢN CHẤT KIẾN THỨC cho câu hỏi trắc nghiệm sau:
+
+[CÂU HỎI]:
+${currentQ.q.replace(/<br>/g, '\n')}
+
+[CÁC LỰA CHỌN]:
+${currentQ.o.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n')}
+
+[ĐÁP ÁN ĐÚNG]:
+${correctTexts}
+
+[LỰA CHỌN CỦA HỌC VIÊN]:
+${userSelectedTexts}
+
+=== CÁC QUY TẮC BẮT BUỘC ===
+1. TUYỆT ĐỐI KHÔNG KHEN NGỢI, KHÔNG XÃ GIAO: Nghiêm cấm hoàn toàn các câu thừa thãi như "Em đã làm rất tốt", "Chúc mừng", "Hoàn toàn chính xác", "Việc em chọn đúng cho thấy...", "Chào bạn", v.v. Đi thẳng ngay vào cơ sở kiến thức chuyên môn từ từ đầu tiên.
+2. TẠI SAO ĐÚNG (BẢN CHẤT KIẾN THỨC): Trình bày rõ định nghĩa, bản chất lý thuyết, công thức, căn cứ khoa học hoặc điều luật chứng minh tại sao đáp án đúng là chuẩn xác nhất. Nếu có các yếu tố thành phần (ví dụ: các đặc trưng, các bước, các tính chất), bắt buộc liệt kê rõ ràng bằng gạch đầu dòng (-) kèm in đậm từ khóa để học viên dễ học thuộc.
+3. PHÂN TÍCH BẪY & CÁC PHƯƠNG ÁN SAI:
+- Phân tích ngắn gọn tại sao các phương án còn lại là phương án nhiễu/sai.
+- Nếu học viên chọn phương án Sai: Phân tích cụ thể lỗ hổng kiến thức hoặc bẫy tư duy mà học viên mắc phải khi chọn phương án đó.
+4. MẸO GHI NHỚ (KEY TAKEAWAY): Đưa ra 1 câu chốt ngắn gọn (bắt đầu bằng 💡 Mẹo ghi nhớ: ...) giúp học viên ghi nhớ lâu hoặc phân biệt nhanh trong phòng thi.
+5. HÌNH THỨC TRÌNH BÀY:
+- Súc tích, mạch lạc (khoảng 3 - 6 câu), chia đoạn rõ ràng.
+- Dùng gạch đầu dòng (-) cho các ý liệt kê và in đậm (**từ khóa quan trọng**).
+- Tuyệt đối không lặp lại tiêu đề "Giải thích:".`;
 
     const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash'];
     let lastError = null;

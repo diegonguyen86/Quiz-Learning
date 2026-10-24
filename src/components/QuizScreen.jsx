@@ -3,7 +3,7 @@ import { useQuiz } from '../context/QuizContext';
 import { askGeminiExplanation, translateText } from '../services/aiService';
 import { updateQuiz } from '../services/quizService';
 import { useAuth } from '../context/AuthContext';
-import { sanitizeHtml } from '../services/sanitize';
+import { sanitizeHtml, formatAiExplanation } from '../services/sanitize';
 import { 
     Shuffle, 
     Brain, 
@@ -16,7 +16,8 @@ import {
     AlertTriangle, 
     ArrowRight, 
     Loader2, 
-    Lightbulb 
+    Lightbulb,
+    RotateCcw
 } from 'lucide-react';
 
 export default function QuizScreen() {
@@ -115,7 +116,7 @@ export default function QuizScreen() {
     };
 
     // Ask AI handler
-    const handleAskAI = async () => {
+    const handleAskAI = async (forceRefresh = false) => {
         if (!hasSubmitted) {
             showToast("Vui lòng chốt đáp án trước khi xem giải thích nhé!", 'warning');
             return;
@@ -124,14 +125,16 @@ export default function QuizScreen() {
         const selectedKey = selectedOptions.slice().sort().join(',');
         const correctKey = qData.a.slice().sort().join(',');
 
-        if (qData.ai_explanations && qData.ai_explanations[selectedKey]) {
-            setAiExplanation(qData.ai_explanations[selectedKey]);
-            return;
-        }
+        if (!forceRefresh) {
+            if (qData.ai_explanations && qData.ai_explanations[selectedKey]) {
+                setAiExplanation(qData.ai_explanations[selectedKey]);
+                return;
+            }
 
-        if (selectedKey === correctKey && qData.explanation) {
-            setAiExplanation(qData.explanation);
-            return;
+            if (selectedKey === correctKey && qData.explanation) {
+                setAiExplanation(qData.explanation);
+                return;
+            }
         }
 
         const apiKey = localStorage.getItem('GEMINI_API_KEY');
@@ -335,10 +338,24 @@ export default function QuizScreen() {
                     {/* Dynamic AI Explanation */}
                     {aiExplanation && (
                         <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-950/40 rounded-2xl border border-purple-200 dark:border-purple-800 text-purple-950 dark:text-purple-100 text-xs md:text-sm leading-relaxed animate-fade-in shadow-inner">
-                            <strong className="flex items-center gap-1.5 text-purple-700 dark:text-purple-300 mb-1.5">
-                                <Bot className="w-4 h-4" /> AI Giải thích chi tiết:
-                            </strong>
-                            <div className="whitespace-pre-line">{aiExplanation}</div>
+                            <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-purple-200/60 dark:border-purple-800/60">
+                                <strong className="flex items-center gap-1.5 text-purple-700 dark:text-purple-300">
+                                    <Bot className="w-4 h-4" /> AI Giải thích chuyên sâu:
+                                </strong>
+                                <button
+                                    onClick={() => handleAskAI(true)}
+                                    disabled={isAskingAI}
+                                    className="text-[11px] text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-200 font-semibold flex items-center gap-1 transition px-2 py-0.5 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg disabled:opacity-50"
+                                    title="Tạo lại giải thích AI mới"
+                                >
+                                    <RotateCcw className={`w-3 h-3 ${isAskingAI ? 'animate-spin' : ''}`} />
+                                    <span>Hỏi lại</span>
+                                </button>
+                            </div>
+                            <div 
+                                className="leading-relaxed"
+                                dangerouslySetInnerHTML={{ __html: formatAiExplanation(aiExplanation) }}
+                            />
                         </div>
                     )}
                 </div>

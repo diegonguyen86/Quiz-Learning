@@ -10,3 +10,16 @@ export function sanitizeHtml(dirty) {
         ALLOWED_ATTR: ['href', 'target', 'class', 'style', 'rel'],
     });
 }
+
+/**
+ * Format AI markdown highlights (bold, bullets, linebreaks) cleanly and safely
+ */
+export function formatAiExplanation(text) {
+    if (!text) return '';
+    let formatted = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>')
+        .replace(/^-\s+(.*)$/gm, '• $1')
+        .replace(/\n/g, '<br/>');
+    return sanitizeHtml(formatted);
+}
