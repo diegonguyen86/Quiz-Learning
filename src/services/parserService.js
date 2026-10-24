@@ -99,6 +99,40 @@ function checkIsRepeatedFuzzy(txt, options) {
     return false;
 }
 
+export function parseAnswerLine(line) {
+    if (!line || typeof line !== 'string') return null;
+    const trimmed = line.trim();
+    if (!trimmed) return null;
+
+    // 1. Pure answer letters: e.g. "A", "A, B", "A, B, C, D", "A. B. C.", "[A]", "(A, C)", "A."
+    const pureMatch = trimmed.match(/^\(?\[?\s*([A-H](?:(?:\s*[,;\/\.\-&]\s*|\s+)[A-H])*)\s*\]?\)?[\.\s]*$/iu);
+    if (pureMatch) {
+        const letters = pureMatch[1].match(/(?<!\p{L})[A-H](?!\p{L})/giu);
+        if (letters && letters.length > 0) {
+            return [...new Set(letters.map(l => l.toUpperCase()))];
+        }
+    }
+
+    // 2. Lines with prefix: "Đáp án: A", "Đáp án: A, B", "Chọn A", "Chọn: B", "Answer: C", "Key: D"
+    // Must NOT match questions starting with "Chọn các...", "Chọn câu...", etc.
+    const prefixMatch = trimmed.match(/^(?:đáp\s*án|kết\s*quả|answer|key|chọn|câu\s*trả\s*lời)(?:\s*(?:đúng|chính\s*xác|là|câu|phương\s*án|đáp\s*án))?[:\s-]+([A-H](?:(?:\s*[,;\/\.\-&]\s*|\s+)[A-H])*)[\s\.]*$/iu);
+    if (prefixMatch) {
+        const letters = prefixMatch[1].match(/(?<!\p{L})[A-H](?!\p{L})/giu);
+        if (letters && letters.length > 0) {
+            return [...new Set(letters.map(l => l.toUpperCase()))];
+        }
+    }
+
+    // 3. Lines with prefix and option text: e.g. "Đáp án: A. Tri giác" or "Đáp án: A - Tri giác"
+    const prefixWithTextMatch = trimmed.match(/^(?:đáp\s*án|kết\s*quả|answer|key)(?:\s*(?:đúng|chính\s*xác|là|câu))?[:\s-]+([A-H])[\.\)\s:-]+(.*)$/iu);
+    if (prefixWithTextMatch) {
+        const letter = prefixWithTextMatch[1].toUpperCase();
+        return [letter];
+    }
+
+    return null;
+}
+
 export function parseRawQuestions(text, oldQuestions = []) {
     const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
     let questionsData = [];
@@ -135,10 +169,9 @@ export function parseRawQuestions(text, oldQuestions = []) {
                     let isNextOption = /^([A-H])[\.\)](?:\s|$)/i.test(nextLine) || (/^([A-H])[\.\)]/i.test(nextLine) && !/^([A-H])[\.\)][a-z][\.\)]/i.test(nextLine) && !/^e\.g\./i.test(nextLine));
                     let isNewQ = /^câu\s*\d+:/i.test(nextLine) || /^\d+[\.\)]/i.test(nextLine);
                     let isExpl = nextLine.toLowerCase().includes('giải thích:');
-                    let m1 = nextLine.match(/^([A-H](?:\s*,?\s*[A-H])*)$/i);
-                    let m2 = nextLine.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,?\s*[A-H])*)/i);
+                    let nextAns = parseAnswerLine(nextLine);
 
-                    if (isNewQ || isExpl || m1 || m2) break;
+                    if (isNewQ || isExpl || nextAns) break;
                     if (isNextOption) {
                         let nextOptLetter = nextLine.match(/^([A-H])/i)[1].toUpperCase();
                         if (nextOptLetter !== 'A') isContinuation = true;
@@ -147,15 +180,12 @@ export function parseRawQuestions(text, oldQuestions = []) {
                 }
 
                 let lower = line.toLowerCase();
-                let m1 = line.match(/^([A-H](?:\s*,?\s*[A-H])*)$/i);
-                let m2 = line.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,?\s*[A-H])*)/i);
-                let m3 = line.match(/^[A-H][\.\)]?$/i);
-                let isAnsFormat = m1 || m2 || m3;
+                let ans = parseAnswerLine(line);
                 let isExpl = lower.includes('giải thích:');
                 let isNewQ = /^câu\s*\d+:/i.test(line) || /^\d+[\.\)]/i.test(line);
                 let startsWithLowercase = /^\p{Ll}/u.test(line);
 
-                if (!isAnsFormat && !isExpl && !isNewQ && (isContinuation || startsWithLowercase)) {
+                if (!ans && !isExpl && !isNewQ && (isContinuation || startsWithLowercase)) {
                     currentQ.options[currentQ.options.length - 1] += " " + line;
                 } else {
                     phase = 'post';
@@ -173,11 +203,7 @@ export function parseRawQuestions(text, oldQuestions = []) {
                     for (let k = currentQ.postOptions.length - 1; k >= 0; k--) {
                         let txt = currentQ.postOptions[k];
                         let lower = txt.toLowerCase();
-                        let m1 = txt.match(/^([A-H](?:\s*,?\s*[A-H])*)$/i);
-                        let m2 = txt.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,?\s*[A-H])*)/i);
-                        let m3 = txt.match(/^[A-H][\.\)]?$/i);
-                        let isAnsFormat = m1 || m2 || m3;
-
+                        let ans = parseAnswerLine(txt);
                         let isRepeated = checkIsRepeatedFuzzy(txt, currentQ.options);
                         let isExpl = lower.includes('giải thích:');
 
@@ -186,7 +212,7 @@ export function parseRawQuestions(text, oldQuestions = []) {
                             isOptContinuation = currentQ.options.some(opt => opt.replace(/\s+/g, '').toLowerCase().includes(txt.replace(/\s+/g, '').toLowerCase()));
                         }
 
-                        if (isAnsFormat || isRepeated || isExpl) { hitAnswerOrExpl = true; }
+                        if (ans || isRepeated || isExpl) { hitAnswerOrExpl = true; }
 
                         if (!hitAnswerOrExpl) {
                             if (isOptContinuation) {
@@ -199,7 +225,7 @@ export function parseRawQuestions(text, oldQuestions = []) {
                         }
                     }
 
-                    let isOnlyPrefix = newQText.length > 0 && newQText.every(t => /^(?:đáp án|kết quả|answer|chọn)[:\s]*$/i.test(t.trim()));
+                    let isOnlyPrefix = newQText.length > 0 && newQText.every(t => /^(?:đáp\s*án|kết\s*quả|answer|chọn|câu\s*trả\s*lời)[:\s]*$/i.test(t.trim()));
                     let isRepeatedOptA = checkIsRepeatedFuzzy(line, currentQ.options);
 
                     let isNewQuestion = false;
@@ -238,11 +264,7 @@ export function parseRawQuestions(text, oldQuestions = []) {
 
         item.postOptions.forEach(txt => {
             let lower = txt.toLowerCase();
-            let m1 = txt.match(/^([A-H](?:\s*,?\s*[A-H])*)$/i);
-            let m2 = txt.match(/^(?:đáp án|kết quả|answer|chọn)[:\s]*([A-H](?:\s*,?\s*[A-H])*)/i);
-            let m3 = txt.match(/^[A-H][\.\)]?$/i);
-            let isAnsFormat = m1 || m2 || m3;
-
+            let ans = parseAnswerLine(txt);
             let isRepeated = checkIsRepeatedFuzzy(txt, item.options);
 
             if (lower.includes('giải thích:')) {
@@ -254,11 +276,9 @@ export function parseRawQuestions(text, oldQuestions = []) {
                     let c = letterMatch[1].toUpperCase();
                     if (!ansLetters.includes(c)) ansLetters.push(c);
                 }
-            } else if (isAnsFormat) {
-                let matchedStr = (m1 ? m1[1] : (m2 ? m2[1] : txt));
-                let chars = matchedStr.toUpperCase().split(',').map(s => s.trim().replace(/[\.\)]/g, ''));
-                chars.forEach(c => {
-                    if (c.match(/^[A-H]$/) && !ansLetters.includes(c)) ansLetters.push(c);
+            } else if (ans) {
+                ans.forEach(c => {
+                    if (!ansLetters.includes(c)) ansLetters.push(c);
                 });
             } else {
                 if (inExplanation) {
@@ -283,12 +303,12 @@ export function parseRawQuestions(text, oldQuestions = []) {
         });
 
         if (correctIndexes.length === 0 && leftOverText.length > 0) {
-            let possibleAnsLine = leftOverText.join(' ').toUpperCase();
+            let possibleAnsLine = leftOverText.join(' ');
             item.options.forEach((opt, idx) => {
                 let optLetterMatch = opt.match(/^([A-H])/i);
                 if (optLetterMatch) {
                     let letter = optLetterMatch[1].toUpperCase();
-                    let regex = new RegExp(`\\b${letter}\\b`, 'i');
+                    let regex = new RegExp(`(?<!\\p{L})${letter}(?!\\p{L})`, 'iu');
                     if (regex.test(possibleAnsLine)) {
                         correctIndexes.push(idx);
                     }
