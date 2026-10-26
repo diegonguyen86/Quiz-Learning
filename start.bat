@@ -4,6 +4,5 @@ echo ==============================================
 echo   Dang khoi dong Quiz Learning (React + Vite)
 echo ==============================================
 echo.
-start http://localhost:3000
-call npm.cmd run dev
+call npm.cmd run dev -- --open
 pause
