@@ -113,8 +113,12 @@ export default function App() {
                                     let text = cleanQ.trim() + '\n';
                                     (q.o || []).forEach(opt => { text += opt + '\n'; });
                                     text += (q.a || []).map(idx => String.fromCharCode(65 + idx)).join(',') + '\n';
-                                    if (q.explanation) {
-                                        text += 'Giải thích: ' + q.explanation.replace(/<br\s*\/?>/gi, '\n') + '\n';
+                                    const expl = q.e || q.explanation;
+                                    if (expl) {
+                                        let cleanExpl = expl.replace(/<br\s*\/?>/gi, '\n').replace(/^giải\s*thích:\s*/i, '').trim();
+                                        if (cleanExpl) {
+                                            text += 'Giải thích: ' + cleanExpl + '\n';
+                                        }
                                     }
                                     return text;
                                 }).join('\n');

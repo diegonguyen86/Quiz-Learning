@@ -43,7 +43,7 @@ ${userSelectedTexts}
 - Dùng gạch đầu dòng (-) cho các ý liệt kê và in đậm (**từ khóa quan trọng**).
 - Tuyệt đối không lặp lại tiêu đề "Giải thích:".`;
 
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash'];
+    const modelsToTry = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
     let lastError = null;
 
     for (let model of modelsToTry) {

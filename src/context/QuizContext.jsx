@@ -369,14 +369,48 @@ export function QuizProvider({ children }) {
         setScreen('quiz');
     }, [mistakes]);
 
-    // Option selection
+    // Option selection: Smart handling for single-choice (radio) vs multi-choice (checkbox)
     const toggleOption = useCallback((idx) => {
         if (hasSubmitted) return;
+        const realIdx = queue[currentQIndexInQueue];
+        const qData = allQuestions[realIdx];
+        const isMultiChoice = qData && qData.a && qData.a.length > 1;
+
         setSelectedOptions(prev => {
-            if (prev.includes(idx)) return prev.filter(i => i !== idx);
-            return [...prev, idx];
+            if (isMultiChoice) {
+                // Multi-choice: Checkbox toggle behavior
+                if (prev.includes(idx)) return prev.filter(i => i !== idx);
+                return [...prev, idx];
+            } else {
+                // Single-choice: Direct switch (radio button behavior)
+                return [idx];
+            }
         });
-    }, [hasSubmitted]);
+    }, [allQuestions, currentQIndexInQueue, hasSubmitted, queue]);
+
+    // Persist AI explanation to state, cache and Firestore
+    const saveQuestionExplanation = useCallback((realIdx, explanation, selectedKey) => {
+        setAllQuestions(prevQuestions => {
+            const copy = [...prevQuestions];
+            if (!copy[realIdx]) return prevQuestions;
+            const q = { ...copy[realIdx] };
+            if (!q.ai_explanations) q.ai_explanations = {};
+            q.ai_explanations[selectedKey] = explanation;
+            // Also store as default question explanation if none exists
+            if (!q.e) q.e = explanation;
+            copy[realIdx] = q;
+
+            // Sync with activeQuiz and quizzes list
+            if (activeQuiz) {
+                setActiveQuiz(prevActive => ({ ...prevActive, questions: copy }));
+                setQuizzes(prevQuizzes => prevQuizzes.map(item => item.id === activeQuiz.id ? { ...item, questions: copy } : item));
+                if (!isStudentMode && currentUser) {
+                    updateQuiz(currentUser.uid, activeQuiz.id, { questions: copy }).catch(console.error);
+                }
+            }
+            return copy;
+        });
+    }, [activeQuiz, currentUser, isStudentMode]);
 
     // Submit answer or proceed to next question
     const handleNext = useCallback(() => {
@@ -477,6 +511,7 @@ export function QuizProvider({ children }) {
             queue, currentQIndexInQueue, mistakes, isReviewMode,
             selectedOptions, hasSubmitted, toggleOption, handleNext,
             startNextSection, startRetry, shuffleQuestions, resetAndRestart,
+            saveQuestionExplanation,
             editQuizId, setEditQuizId, pendingTitle, setPendingTitle, pendingQuestions, setPendingQuestions,
             pendingRawText, setPendingRawText,
             toasts, showToast,

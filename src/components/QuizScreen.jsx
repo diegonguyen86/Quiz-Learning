@@ -36,6 +36,7 @@ export default function QuizScreen() {
         toggleOption, 
         handleNext,
         shuffleQuestions,
+        saveQuestionExplanation,
         showToast,
         showPrompt,
         showConfirm
@@ -63,7 +64,23 @@ export default function QuizScreen() {
         }
     }, [currentQIndexInQueue]);
 
-    // Keyboard navigation (1-9 for options, Enter for check/next)
+    // Auto-load previously saved AI explanation or answer explanation upon submission
+    useEffect(() => {
+        if (!hasSubmitted || !qData) return;
+        const selectedKey = selectedOptions.slice().sort().join(',');
+        const correctKey = (qData.a || []).slice().sort().join(',');
+
+        if (qData.ai_explanations && qData.ai_explanations[selectedKey]) {
+            setAiExplanation(qData.ai_explanations[selectedKey]);
+        } else if (selectedKey === correctKey && (qData.e || qData.explanation)) {
+            setAiExplanation(qData.e || qData.explanation);
+        } else if (qData.ai_explanations && Object.keys(qData.ai_explanations).length > 0) {
+            const firstKey = Object.keys(qData.ai_explanations)[0];
+            setAiExplanation(qData.ai_explanations[firstKey]);
+        }
+    }, [hasSubmitted, qData, selectedOptions]);
+
+    // Keyboard navigation (1-9 or A-H for options, Enter for check/next)
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -75,10 +92,21 @@ export default function QuizScreen() {
                 return;
             }
 
+            // Keyboard shortcut 1-9
             const num = parseInt(e.key);
             if (num >= 1 && num <= 9 && qData) {
                 const optIndex = num - 1;
                 if (optIndex < qData.o.length && !hasSubmitted) {
+                    toggleOption(optIndex);
+                }
+                return;
+            }
+
+            // Keyboard shortcut A, B, C, D, E, F, G, H
+            const keyUpper = e.key.toUpperCase();
+            if (/^[A-H]$/.test(keyUpper) && qData) {
+                const optIndex = keyUpper.charCodeAt(0) - 65;
+                if (optIndex >= 0 && optIndex < qData.o.length && !hasSubmitted) {
                     toggleOption(optIndex);
                 }
             }
@@ -123,7 +151,7 @@ export default function QuizScreen() {
         }
 
         const selectedKey = selectedOptions.slice().sort().join(',');
-        const correctKey = qData.a.slice().sort().join(',');
+        const correctKey = (qData.a || []).slice().sort().join(',');
 
         if (!forceRefresh) {
             if (qData.ai_explanations && qData.ai_explanations[selectedKey]) {
@@ -131,8 +159,8 @@ export default function QuizScreen() {
                 return;
             }
 
-            if (selectedKey === correctKey && qData.explanation) {
-                setAiExplanation(qData.explanation);
+            if (selectedKey === correctKey && (qData.e || qData.explanation)) {
+                setAiExplanation(qData.e || qData.explanation);
                 return;
             }
         }
@@ -158,16 +186,9 @@ export default function QuizScreen() {
             const explanation = await askGeminiExplanation(qData, selectedOptions, apiKey);
             setAiExplanation(explanation);
 
-            // Save to question memory
-            const updatedAll = [...allQuestions];
-            if (!updatedAll[realIdx].ai_explanations) updatedAll[realIdx].ai_explanations = {};
-            updatedAll[realIdx].ai_explanations[selectedKey] = explanation;
-            setAllQuestions(updatedAll);
-
-            if (!isStudentMode && activeQuiz) {
-                updateQuiz(currentUser.uid, activeQuiz.id, { questions: updatedAll }).catch(console.error);
-            }
-            showToast("Đã lưu giải thích AI vĩnh viễn!", 'success');
+            // Save persistently to question memory and sync with Firestore & Cache
+            saveQuestionExplanation(realIdx, explanation, selectedKey);
+            showToast("Đã lưu giải thích AI vĩnh viễn vào bộ đề!", 'success');
         } catch (err) {
             console.error(err);
             showToast("Lỗi AI: " + err.message, 'error');
@@ -282,6 +303,12 @@ export default function QuizScreen() {
                 {/* Original Language Column */}
                 <div>
                     <div className="mb-5 md:mb-6">
+                        {qData.a && qData.a.length > 1 && (
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700 mb-2.5 shadow-sm">
+                                <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                                <span>Câu hỏi nhiều đáp án (Hãy chọn {qData.a.length} phương án đúng)</span>
+                            </div>
+                        )}
                         <h3 className="text-base md:text-xl font-semibold leading-relaxed text-gray-900 dark:text-gray-100">
                             <span className="text-indigo-600 dark:text-indigo-400 font-bold mr-2">Câu {realIdx + 1}.</span>
                             <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(formattedQ) }} />
